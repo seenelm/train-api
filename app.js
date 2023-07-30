@@ -6,6 +6,8 @@ const mongoose = require("mongoose");
 
 const FitSpace = require("./models/fitspace");
 
+const userRoutes = require("./routes/users");
+
 // Handle initial connection errors
 mongoose
   .connect("mongodb://127.0.0.1:27017/train")
@@ -20,7 +22,8 @@ mongoose
 // Middleware
 app.use(bodyParser.json());
 app.use(cors());
-app.use(express.urlencoded({ extended: true }));
+
+app.use("/", userRoutes);
 
 app.get("/ping", (req, res) => {
   res.send("home");
@@ -38,6 +41,8 @@ app.post("/fitspaces", async (req, res) => {
   await fitspace.save();
 });
 
-app.listen(3000, () => {
+const server = app.listen(3000, () => {
   console.log("APP IS LISTENING ON PORT 3000");
 });
+
+module.exports = { app, server };
