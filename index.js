@@ -9,6 +9,10 @@ const client = new MongoClient(uri);
 
 app.use(bodyParser.json()); // for parsing application/json
 
+app.get("/", (req, res) => {
+  res.render("home");
+});
+
 app.post("/signup", async (req, res) => {
   try {
     await client.connect();
