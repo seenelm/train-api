@@ -8,26 +8,19 @@ const FitSpace = require("./models/fitspace");
 
 const userRoutes = require("./routes/users");
 
-// Handle initial connection errors
-mongoose
-  .connect("mongodb://127.0.0.1:27017/train")
-  .then(() => {
-    console.log("Mongo Connection Open");
-  })
-  .catch((error) => {
-    console.log("Oh No Mongo Connection Error");
-    console.log(error);
-  });
+mongoose.connect("mongodb://127.0.0.1:27017/train");
+
+const db = mongoose.connection;
+db.on("error", console.error.bind(console, "connection error:"));
+db.once("open", () => {
+  console.log("Database connected");
+});
 
 // Middleware
 app.use(bodyParser.json());
 app.use(cors());
 
 app.use("/", userRoutes);
-
-app.get("/ping", (req, res) => {
-  res.send("home");
-});
 
 app.post("/fitspaces", async (req, res) => {
   console.log("Request: ", req.body);
