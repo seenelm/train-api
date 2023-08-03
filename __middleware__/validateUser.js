@@ -1,7 +1,7 @@
 const { userSchema } = require("../schemas");
 
 module.exports.validateUser = (req, res, next) => {
-  const { error } = userSchema.validate(req.body);
+  const { error } = userSchema.validate(req.body, { abortEarly: false });
 
   if (error) {
     // const errorMessages = error.details
@@ -16,6 +16,7 @@ module.exports.validateUser = (req, res, next) => {
     if (!req.body.username || !req.body.password) {
       return res.status(404).json({ errors });
     } else {
+      console.log("Errors: ", errors);
       return res.status(400).json({ errors });
     }
   } else {
