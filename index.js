@@ -1,17 +1,17 @@
-const express = require("express");
-const app = express();
-const bodyParser = require("body-parser");
-const { MongoClient } = require("mongodb");
-const bcrypt = require("bcrypt");
+// const express = require("express");
+// const app = express();
+// const bodyParser = require("body-parser");
+// const { MongoClient } = require("mongodb");
+// const bcrypt = require("bcrypt");
 
-const uri = "mongodb://localhost:27017";
-const client = new MongoClient(uri);
+// const uri = "mongodb://localhost:27017";
+// const client = new MongoClient(uri);
 
-app.use(bodyParser.json()); // for parsing application/json
+// app.use(bodyParser.json()); // for parsing application/json
 
-app.get("/", (req, res) => {
-  res.render("home");
-});
+// app.get("/", (req, res) => {
+//   res.render("home");
+// });
 
 // app.post("/signup", async (req, res) => {
 //   try {
