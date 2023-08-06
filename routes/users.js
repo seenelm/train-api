@@ -4,6 +4,25 @@ const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const { validateUser } = require("../__middleware__/validateUser");
 
+router.post("/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    console.log(req.body);
+
+    const user = await User.findOne({ username });
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (validPassword) {
+      return res.status(201).json({ success: true });
+    } else {
+      return res
+        .status(400)
+        .json({ errorMessage: "Incorrect Username or Password" });
+    }
+  } catch (error) {
+    return res.status(503).json({ error: "Error Logging in User" });
+  }
+});
+
 router.post("/signup", validateUser, async (req, res) => {
   try {
     const { username, password, name } = req.body;

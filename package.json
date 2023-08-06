@@ -8,6 +8,7 @@
   "main": "app.js",
   "scripts": {
     "test": "jest",
+    "test:debug": "jest --runInBand",
     "start": "node app.js",
     "dev": "nodemon app.js"
   },
