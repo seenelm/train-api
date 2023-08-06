@@ -6,17 +6,20 @@ const { validateUser } = require("../__middleware__/validateUser");
 
 router.post("/signup", validateUser, async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, name } = req.body;
     console.log(req.body);
 
     const existingUser = await User.findOne({ username });
     if (existingUser) {
-      return res.status(409).json({ errorMessage: "username already taken" });
+      let errors = { username: "username already taken" };
+
+      return res.status(409).json({ errors });
     } else {
       const hash = await bcrypt.hash(password, 12);
       const newUser = new User({
         username,
         password: hash,
+        name,
       });
       await newUser.save();
 
