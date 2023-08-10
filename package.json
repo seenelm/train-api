@@ -7,11 +7,12 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "jest",
-    "test:debug": "jest --runInBand",
+    "test": "NODE_ENV=testing jest",
+    "test:debug": "NODE_ENV=testing jest --runInBand",
     "start": "node app.js",
     "dev": "nodemon app.js"
-  },
+},
+
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -19,9 +20,10 @@
     "axios": "^1.4.0",
     "bcrypt": "^5.1.0",
     "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "joi": "^17.9.2",
-    "mongodb": "^5.6.0",
+    "mongodb": "^5.7.0",
     "mongodb-memory-server": "^8.13.0",
     "mongoose": "^7.4.1"
   },
