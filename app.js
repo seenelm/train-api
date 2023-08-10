@@ -1,4 +1,5 @@
 const express = require("express");
+require("dotenv").config();
 const app = express();
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -8,7 +9,16 @@ const FitSpace = require("./models/fitspace");
 
 const userRoutes = require("./routes/users");
 
-mongoose.connect("mongodb://127.0.0.1:27017/train");
+console.log("TEST: ", process.env.TEST_URI);
+
+const dbUri =
+  process.env.NODE_ENV === "testing"
+    ? process.env.TEST_URI
+    : process.env.DEV_URI;
+
+console.log("TEST: ", process.env.TEST_URI);
+
+mongoose.connect(dbUri);
 
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));

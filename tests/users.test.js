@@ -1,23 +1,24 @@
 const request = require("supertest");
 const { app, server } = require("../app");
 const User = require("../models/user");
+const bcrypt = require("bcrypt");
 
 const { connectDB, disconnectDB, cleanData } = require("../database");
 
+beforeAll(async () => {
+  await connectDB();
+});
+
+beforeEach(async () => {
+  await cleanData();
+});
+
+afterAll(async () => {
+  await disconnectDB();
+  server.close();
+});
+
 describe("POST /signup", () => {
-  beforeAll(async () => {
-    await connectDB();
-  });
-
-  beforeEach(async () => {
-    await cleanData();
-  });
-
-  afterAll(async () => {
-    await disconnectDB();
-    server.close();
-  });
-
   describe("when username and password exists", () => {
     test("should respond with a 201 status code", async () => {
       const user = {
@@ -77,13 +78,11 @@ describe("POST /signup", () => {
       expect(response.body.errors.name).toBe("Name is required");
     });
     test("should return 400 status code when name exceeds 35 characters", async () => {
-      const response = await request(app)
-        .post("/signup")
-        .send({
-          name: "Longestnameinthehistoryofnamesintheworld",
-          username: "username",
-          password: "Password123!",
-        });
+      const response = await request(app).post("/signup").send({
+        name: "Longestnameinthehistoryofnamesintheworld",
+        username: "username",
+        password: "Password123!",
+      });
       expect(response.status).toBe(400);
       expect(response.body.errors.name).toBe(
         "Name should not exceed 35 characters"
@@ -165,8 +164,6 @@ describe("POST /signup", () => {
         password: "Password123!",
       });
 
-      await User.create(existingUser);
-
       const response = await request(app)
         .post("/signup")
         .send({ name: "name", username: "username", password: "Password123!" });
@@ -187,6 +184,104 @@ describe("POST /signup", () => {
       const savedUser = await newUser.save();
 
       expect(savedUser).toBeDefined();
+    });
+  });
+});
+
+describe("POST /login", () => {
+  describe("when username and password has valid data", () => {
+    test("when user is verified by database", async () => {
+      const hashedPassword = await bcrypt.hash("Password123!", 12);
+      const existingUser = await User.create({
+        name: "name",
+        username: "username",
+        password: hashedPassword,
+      });
+
+      const response = await request(app).post("/login").send({
+        username: "username",
+        password: "Password123!",
+      });
+
+      const user = await User.findOne({ username: "username" });
+      expect(user).not.toBeNull();
+
+      const existingPassword = existingUser.password;
+      const validPassword = await bcrypt.compare(
+        "Password123!",
+        existingPassword
+      );
+      if (validPassword) {
+        expect(response.status).toBe(201);
+        expect(response.body.success).toBe(true);
+      }
+    });
+  });
+  describe("when username and password has invalid data", () => {
+    test("when username and password is missing", async () => {
+      const response = await request(app)
+        .post("/login")
+        .send({ username: "", password: "" });
+      expect(response.status).toBe(400);
+      expect(response.body.errors.username).toBe("Username is required");
+      expect(response.body.errors.password).toBe("Password is required");
+    });
+    test("when username is missing", async () => {
+      const response = await request(app)
+        .post("/login")
+        .send({ username: "", password: "Password123!" });
+      expect(response.status).toBe(400);
+      expect(response.body.errors.username).toBe("Username is required");
+    });
+    test("when password is missing", async () => {
+      const response = await request(app)
+        .post("/login")
+        .send({ username: "username", password: "" });
+      expect(response.status).toBe(400);
+      expect(response.body.errors.password).toBe("Password is required");
+    });
+    test("when username is incorrect", async () => {
+      const hashedPassword = await bcrypt.hash("Password123!", 12);
+      const existingUser = await User.create({
+        name: "name",
+        username: "username",
+        password: hashedPassword,
+      });
+
+      const response = await request(app).post("/login").send({
+        username: "user",
+        password: "Password123!",
+      });
+
+      const user = await User.findOne({ username: "user" });
+      if (!user) {
+        expect(response.status).toBe(400);
+        expect(response.body.errors.message).toBe(
+          "Incorrect Username or Password"
+        );
+      }
+    });
+    test("when password is incorrect", async () => {
+      const hashedPassword = await bcrypt.hash("Password123!", 12);
+      const existingUser = await User.create({
+        name: "name",
+        username: "username",
+        password: hashedPassword,
+      });
+
+      const response = await request(app).post("/login").send({
+        username: "username",
+        password: "Password",
+      });
+
+      const existingPassword = existingUser.password;
+      const validPassword = await bcrypt.compare("Password", existingPassword);
+      if (!validPassword) {
+        expect(response.status).toBe(400);
+        expect(response.body.errors.message).toBe(
+          "Incorrect Username or Password"
+        );
+      }
     });
   });
 });
