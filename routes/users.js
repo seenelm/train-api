@@ -9,14 +9,34 @@ router.post("/login", async (req, res) => {
     const { username, password } = req.body;
     console.log(req.body);
 
+    let errors = {};
+
+    if (!username && !password) {
+      errors = {
+        username: "Username is required",
+        password: "Password is required",
+      };
+      return res.status(400).json({ errors });
+    } else if (!username) {
+      errors = { username: "Username is required" };
+      return res.status(400).json({ errors });
+    } else if (!password) {
+      errors = { password: "Password is required" };
+      return res.status(400).json({ errors });
+    }
+
     const user = await User.findOne({ username });
-    const validPassword = await bcrypt.compare(password, user.password);
-    if (validPassword) {
-      return res.status(201).json({ success: true });
+    if (user) {
+      const validPassword = await bcrypt.compare(password, user.password);
+      if (validPassword) {
+        return res.status(201).json({ success: true });
+      } else {
+        errors = { message: "Incorrect Username or Password" };
+        return res.status(400).json({ errors });
+      }
     } else {
-      return res
-        .status(400)
-        .json({ errorMessage: "Incorrect Username or Password" });
+      errors = { message: "Incorrect Username or Password" };
+      return res.status(400).json({ errors });
     }
   } catch (error) {
     return res.status(503).json({ error: "Error Logging in User" });
