@@ -3,12 +3,26 @@ const app = express();
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const mongoose = require("mongoose");
+require("dotenv").config();
 
 const FitSpace = require("./models/fitspace");
 
 const userRoutes = require("./routes/users");
 
-mongoose.connect("mongodb://127.0.0.1:27017/train");
+// mongoose.connect();
+
+// mongoose.connect(
+//   "mongodb+srv://yassinelmellouki:Yassine99$@train.hygn1it.mongodb.net/?retryWrites=true&w=majority"
+// );
+
+const dbUri =
+  process.env.NODE_ENV === "testing"
+    ? process.env.TEST_DB_URI
+    : process.env.DB_URI;
+
+console.log("DB URI:", dbUri);
+
+mongoose.connect(dbUri);
 
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
