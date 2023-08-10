@@ -9,18 +9,10 @@ const FitSpace = require("./models/fitspace");
 
 const userRoutes = require("./routes/users");
 
-// mongoose.connect();
-
-// mongoose.connect(
-//   "mongodb+srv://yassinelmellouki:Yassine99$@train.hygn1it.mongodb.net/?retryWrites=true&w=majority"
-// );
-
 const dbUri =
   process.env.NODE_ENV === "testing"
     ? process.env.TEST_DB_URI
     : process.env.DB_URI;
-
-console.log("DB URI:", dbUri);
 
 mongoose.connect(dbUri);
 

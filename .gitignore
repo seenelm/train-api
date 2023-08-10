@@ -1,6 +1,2 @@
-<<<<<<< HEAD
 node_modules/
-=======
-node_modules
-.expo
->>>>>>> origin/TRAIN-29
+.env
