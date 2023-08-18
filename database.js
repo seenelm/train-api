@@ -18,7 +18,7 @@ const disconnectDB = async () => {
 };
 
 const cleanData = async () => {
-  await mongoose.connection.db.dropDatabase();
+  await mongoose.connection.dropDatabase();
 };
 
 module.exports = { connectDB, disconnectDB, cleanData };
