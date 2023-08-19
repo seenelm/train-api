@@ -26,12 +26,12 @@ describe("POST /signup", () => {
         username: "username",
         password: "Password123!",
       };
-      const response = await request(app).post("/signup").send(user);
+      const response = await request(app).post("/api/signup").send(user);
 
       expect(response.status).toBe(201);
     });
     test("should specify json in the content type header", async () => {
-      const response = await request(app).post("/signup").send({
+      const response = await request(app).post("/api/signup").send({
         name: "name",
         username: "username",
         password: "Password123!",
@@ -42,7 +42,7 @@ describe("POST /signup", () => {
       );
     });
     test("response has userId", async () => {
-      const response = await request(app).post("/signup").send({
+      const response = await request(app).post("/api/signup").send({
         name: "name",
         username: "username",
         password: "Password123!",
@@ -59,26 +59,26 @@ describe("POST /signup", () => {
         username: "",
         password: "Password123!",
       };
-      const response = await request(app).post("/signup").send(user);
+      const response = await request(app).post("/api/signup").send(user);
       expect(response.status).toBe(400);
       expect(response.body.errors.username).toBe("Username is required");
     });
     test("should return 400 status code when password is missing", async () => {
       const response = await request(app)
-        .post("/signup")
+        .post("/api/signup")
         .send({ name: "name", username: "username", password: "" });
       expect(response.status).toBe(400);
       expect(response.body.errors.password).toBe("Password is required");
     });
     test("should return 400 status code when name is missing", async () => {
       const response = await request(app)
-        .post("/signup")
+        .post("/api/signup")
         .send({ name: "", username: "username", password: "Password123!" });
       expect(response.status).toBe(400);
       expect(response.body.errors.name).toBe("Name is required");
     });
     test("should return 400 status code when name exceeds 35 characters", async () => {
-      const response = await request(app).post("/signup").send({
+      const response = await request(app).post("/api/signup").send({
         name: "Longestnameinthehistoryofnamesintheworld",
         username: "username",
         password: "Password123!",
@@ -89,7 +89,7 @@ describe("POST /signup", () => {
       );
     });
     test("should return error response for invalid username, username should be at least 6 characters", async () => {
-      const response = await request(app).post("/signup").send({
+      const response = await request(app).post("/api/signup").send({
         name: "name",
         username: "Abc",
         password: "Password123!",
@@ -100,7 +100,7 @@ describe("POST /signup", () => {
       );
     });
     test("should return error response for invalid username, username should not exceed 10 characters", async () => {
-      const response = await request(app).post("/signup").send({
+      const response = await request(app).post("/api/signup").send({
         name: "name",
         username: "Longpassword123",
         password: "Password123!",
@@ -111,7 +111,7 @@ describe("POST /signup", () => {
       );
     });
     test("should return error response for invalid password, password must contain at least one special character", async () => {
-      const response = await request(app).post("/signup").send({
+      const response = await request(app).post("/api/signup").send({
         name: "name",
         username: "username",
         password: "Password123",
@@ -122,7 +122,7 @@ describe("POST /signup", () => {
       );
     });
     test("should return error response for invalid password, password must contain at least one digit", async () => {
-      const response = await request(app).post("/signup").send({
+      const response = await request(app).post("/api/signup").send({
         name: "name",
         username: "username",
         password: "Password!",
@@ -133,7 +133,7 @@ describe("POST /signup", () => {
       );
     });
     test("should return error response for invalid password, password must contain at least one uppercase letter", async () => {
-      const response = await request(app).post("/signup").send({
+      const response = await request(app).post("/api/signup").send({
         name: "name",
         username: "username",
         password: "password123!",
@@ -144,7 +144,7 @@ describe("POST /signup", () => {
       );
     });
     test("should return error response for invalid password, password must contain at least one lowercase letter", async () => {
-      const response = await request(app).post("/signup").send({
+      const response = await request(app).post("/api/signup").send({
         name: "name",
         username: "username",
         password: "PASSWORD123!",
@@ -165,7 +165,7 @@ describe("POST /signup", () => {
       });
 
       const response = await request(app)
-        .post("/signup")
+        .post("/api/signup")
         .send({ name: "name", username: "username", password: "Password123!" });
 
       expect(response.status).toBe(409);
@@ -198,7 +198,7 @@ describe("POST /login", () => {
         password: hashedPassword,
       });
 
-      const response = await request(app).post("/login").send({
+      const response = await request(app).post("/api/login").send({
         username: "username",
         password: "Password123!",
       });
@@ -220,7 +220,7 @@ describe("POST /login", () => {
   describe("when username and password has invalid data", () => {
     test("when username and password is missing", async () => {
       const response = await request(app)
-        .post("/login")
+        .post("/api/login")
         .send({ username: "", password: "" });
       expect(response.status).toBe(400);
       expect(response.body.errors.username).toBe("Username is required");
@@ -228,14 +228,14 @@ describe("POST /login", () => {
     });
     test("when username is missing", async () => {
       const response = await request(app)
-        .post("/login")
+        .post("/api/login")
         .send({ username: "", password: "Password123!" });
       expect(response.status).toBe(400);
       expect(response.body.errors.username).toBe("Username is required");
     });
     test("when password is missing", async () => {
       const response = await request(app)
-        .post("/login")
+        .post("/api/login")
         .send({ username: "username", password: "" });
       expect(response.status).toBe(400);
       expect(response.body.errors.password).toBe("Password is required");
@@ -248,7 +248,7 @@ describe("POST /login", () => {
         password: hashedPassword,
       });
 
-      const response = await request(app).post("/login").send({
+      const response = await request(app).post("/api/login").send({
         username: "user",
         password: "Password123!",
       });
@@ -269,7 +269,7 @@ describe("POST /login", () => {
         password: hashedPassword,
       });
 
-      const response = await request(app).post("/login").send({
+      const response = await request(app).post("/api/login").send({
         username: "username",
         password: "Password",
       });
