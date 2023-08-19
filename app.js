@@ -1,30 +1,33 @@
 const express = require("express");
+require("dotenv").config();
 const app = express();
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const mongoose = require("mongoose");
+require("dotenv").config();
 
 const FitSpace = require("./models/fitspace");
 
-// Handle initial connection errors
-mongoose
-  .connect("mongodb://127.0.0.1:27017/train")
-  .then(() => {
-    console.log("Mongo Connection Open");
-  })
-  .catch((error) => {
-    console.log("Oh No Mongo Connection Error");
-    console.log(error);
-  });
+const userRoutes = require("./routes/users");
+
+const dbUri =
+  process.env.NODE_ENV === "dev" ? process.env.DEV_DB_URI : process.env.DB_URI;
+
+console.log("DB URI:", dbUri);
+
+mongoose.connect(dbUri);
+
+const db = mongoose.connection;
+db.on("error", console.error.bind(console, "connection error:"));
+db.once("open", () => {
+  console.log("Database connected");
+});
 
 // Middleware
 app.use(bodyParser.json());
 app.use(cors());
-app.use(express.urlencoded({ extended: true }));
 
-app.get("/ping", (req, res) => {
-  res.send("home");
-});
+app.use("/api", userRoutes);
 
 app.post("/fitspaces", async (req, res) => {
   console.log("Request: ", req.body);
@@ -38,6 +41,8 @@ app.post("/fitspaces", async (req, res) => {
   await fitspace.save();
 });
 
-app.listen(3000, () => {
+const server = app.listen(3000, () => {
   console.log("APP IS LISTENING ON PORT 3000");
 });
+
+module.exports = { app, server };
