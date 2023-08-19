@@ -4,19 +4,16 @@ const app = express();
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const mongoose = require("mongoose");
+require("dotenv").config();
 
 const FitSpace = require("./models/fitspace");
 
 const userRoutes = require("./routes/users");
 
-console.log("TEST: ", process.env.TEST_URI);
-
 const dbUri =
-  process.env.NODE_ENV === "testing"
-    ? process.env.TEST_URI
-    : process.env.DEV_URI;
+  process.env.NODE_ENV === "dev" ? process.env.DEV_DB_URI : process.env.DB_URI;
 
-console.log("TEST: ", process.env.TEST_URI);
+console.log("DB URI:", dbUri);
 
 mongoose.connect(dbUri);
 
@@ -30,7 +27,7 @@ db.once("open", () => {
 app.use(bodyParser.json());
 app.use(cors());
 
-app.use("/", userRoutes);
+app.use("/api", userRoutes);
 
 app.post("/fitspaces", async (req, res) => {
   console.log("Request: ", req.body);

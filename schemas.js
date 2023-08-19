@@ -20,7 +20,8 @@ module.exports.userSchema = Joi.object({
     )
     .required()
     .messages({
-      "string.base": "Password must be a string",
+      "string.base": "This field must be a string",
+      "string.empty": "Password cannot be empty",
       "string.pattern.base":
         "Password must be a mix of upper & lower case letters, numbers & symbols",
       "string.empty": "Password is required",

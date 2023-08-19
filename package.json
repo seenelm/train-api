@@ -1,16 +1,13 @@
 {
   "name": "trainsvc",
-  "jest": {
-    "verbose": true
-  },
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test:debug": "jest --runInBand",
-    "test": "NODE_ENV=testing nodemon jest",
-    "start": "nodemon app.js",
-    "dev": "nodemon app.js"
+    "start:dev": "NODE_ENV=dev nodemon app.js",
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "NODE_ENV=dev jest --runInBand"
   },
   "keywords": [],
   "author": "",
@@ -22,9 +19,9 @@
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "joi": "^17.9.2",
-    "mongodb": "^5.6.0",
+    "mongodb": "^5.7.0",
     "mongodb-memory-server": "^8.13.0",
-    "mongoose": "^7.3.1"
+    "mongoose": "^7.4.1"
   },
   "devDependencies": {
     "@shelf/jest-mongodb": "^4.1.7",
