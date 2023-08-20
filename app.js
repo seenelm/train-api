@@ -4,11 +4,9 @@ const app = express();
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const mongoose = require("mongoose");
-require("dotenv").config();
-
-const FitSpace = require("./models/fitspace");
 
 const userRoutes = require("./routes/users");
+const groupRoutes = require("./routes/groupRoutes");
 
 const dbUri =
   process.env.NODE_ENV === "dev" ? process.env.DEV_DB_URI : process.env.DB_URI;
@@ -28,18 +26,7 @@ app.use(bodyParser.json());
 app.use(cors());
 
 app.use("/api", userRoutes);
-
-app.post("/fitspaces", async (req, res) => {
-  console.log("Request: ", req.body);
-  const { fitspaceName } = req.body;
-  console.log({ fitspaceName });
-
-  if (!fitspaceName) {
-    return res.status(400).json({ error: "Name is required" });
-  }
-  const fitspace = new FitSpace(req.body);
-  await fitspace.save();
-});
+app.use("/api/groups", groupRoutes);
 
 const server = app.listen(3000, () => {
   console.log("APP IS LISTENING ON PORT 3000");
