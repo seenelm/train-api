@@ -10,10 +10,18 @@ const FitSpace = require("./models/fitspace");
 
 const userRoutes = require("./routes/users");
 
-const dbUri =
-  process.env.NODE_ENV === "testing"
-    ? process.env.TEST_DB_URI
-    : process.env.DB_URI;
+let dbUri;
+
+switch (process.env.NODE_ENV) {
+  case "testing":
+    dbUri = process.env.TEST_DB_URI;
+    break;
+  case "production":
+    dbUri = process.env.PROD_DB_URI;
+    break;
+  default:
+    dbUri = process.env.DEV_DB_URI;
+}
 
 mongoose.connect(dbUri);
 
@@ -27,7 +35,7 @@ db.once("open", () => {
 app.use(bodyParser.json());
 app.use(cors());
 
-app.use("/", userRoutes);
+app.use("/api", userRoutes);
 
 app.post("/fitspaces", async (req, res) => {
   console.log("Request: ", req.body);

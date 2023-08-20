@@ -7,11 +7,13 @@
   "description": "",
   "main": "app.js",
   "scripts": {
+    "start": "NODE_ENV=production node app.js",
+    "start:dev": "NODE_ENV=development node app.js",
     "test": "NODE_ENV=testing jest",
     "test:debug": "NODE_ENV=testing jest --runInBand",
-    "start": "node app.js",
     "dev": "nodemon app.js"
-},
+  },
+  
 
   "keywords": [],
   "author": "",
