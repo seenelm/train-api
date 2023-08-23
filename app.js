@@ -5,13 +5,15 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const mongoose = require("mongoose");
 
-const userRoutes = require("./routes/users");
+const userRoutes = require("./routes/userRoutes");
 const groupRoutes = require("./routes/groupRoutes");
 
 const dbUri =
   process.env.NODE_ENV === "dev" ? process.env.DEV_DB_URI : process.env.DB_URI;
 
 console.log("DB URI:", dbUri);
+
+// dbUri = process.env.DB_URI;
 
 mongoose.connect(dbUri);
 
