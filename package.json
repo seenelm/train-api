@@ -1,8 +1,5 @@
 {
   "name": "trainsvc",
-  "jest": {
-    "verbose": true
-  },
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
@@ -13,8 +10,6 @@
     "test:debug": "NODE_ENV=testing jest --runInBand",
     "dev": "nodemon app.js"
   },
-  
-
   "keywords": [],
   "author": "",
   "license": "ISC",
