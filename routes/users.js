@@ -4,6 +4,22 @@ const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const { validateUser } = require("../__middleware__/validateUser");
 
+// Get user's groups.
+router.get("/:userId", async (req, res) => {
+  try {
+    console.log("User ID: ", req.params.userId);
+    const user = await User.findById(req.params.userId).populate("groups");
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    console.log("Groups: ", user.groups);
+    return res.status(201).json({ groups: user.groups });
+  } catch (error) {
+    return res.status(503);
+  }
+});
+
 router.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
