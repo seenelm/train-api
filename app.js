@@ -5,7 +5,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const mongoose = require("mongoose");
 
-const userRoutes = require("./routes/users");
+const userRoutes = require("./routes/userRoutes");
 const groupRoutes = require("./routes/groupRoutes");
 
 let dbUri;
@@ -22,6 +22,8 @@ switch (process.env.NODE_ENV) {
 }
 
 console.log("DB URI:", dbUri);
+
+// dbUri = process.env.DB_URI;
 
 mongoose.connect(dbUri);
 
