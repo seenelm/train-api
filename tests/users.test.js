@@ -285,3 +285,11 @@ describe("POST /api/login", () => {
     });
   });
 });
+
+describe("Fetch User Groups", () => {
+  describe("when fetching user groups is successful", () => {
+    test("when user id is found", async () => {
+      const response = await request(app).get("/api/:userId");
+    });
+  });
+});
