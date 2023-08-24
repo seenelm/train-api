@@ -21,10 +21,16 @@ router.post("/", async (req, res) => {
     group.users.push(userId);
     user.groups.push(group._id);
     console.log("User: ", user);
-    await group.save();
+    const savedGroup = await group.save();
+
+    const newGroup = {
+      id: savedGroup._id,
+      name: savedGroup.name,
+    };
+
     await user.save();
 
-    return res.status(201).json({ success: true });
+    return res.status(201).json({ success: true, newGroup: newGroup });
   } catch (error) {
     return res.status(503).json({ error: "Internal server error" });
   }
