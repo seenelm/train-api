@@ -21,6 +21,18 @@ const userSchema = new Schema({
       ref: "Group",
     },
   ],
+  following: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
+  followers: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
 });
 
 const User = mongoose.model("User", userSchema);

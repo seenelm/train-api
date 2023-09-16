@@ -1,6 +1,8 @@
 const request = require("supertest");
+const mongoose = require("mongoose");
 const { app, server } = require("../app");
 const User = require("../models/user");
+const Group = require("../models/group");
 const bcrypt = require("bcrypt");
 
 const { connectDB, disconnectDB, cleanData } = require("../database");
@@ -286,10 +288,49 @@ describe("POST /login", () => {
   });
 });
 
-describe("Fetch User Groups", () => {
-  describe("when fetching user groups is successful", () => {
-    test("when user id is found", async () => {
-      const response = await request(app).get("/api/:userId");
+// usersController
+describe("GET /api/:userId", () => {
+  test("should return user groups when user id is found", async () => {
+    const group1 = await Group.create({
+      name: "Group 1",
     });
+
+    const group2 = await Group.create({
+      name: "Group 2",
+    });
+
+    const user = await User.create({
+      name: "name",
+      username: "Username",
+      password: "Password123!",
+      groups: [group1._id, group2._id],
+    });
+
+    const response = await request(app).get(`/api/${user._id}`);
+
+    expect(response.status).toBe(201);
+
+    expect(response.body).toEqual({
+      groups: [
+        { id: group1._id.toJSON(), name: "Group 1" },
+        { id: group2._id.toJSON(), name: "Group 2" },
+      ],
+    });
+  });
+  test("should return an error when userId is not found", async () => {
+    const userId = new mongoose.Types.ObjectId();
+
+    const response = await request(app).get(`/api/${userId}`);
+
+    expect(response.status).toBe(404);
+    expect(response.body.error).toEqual("User not found");
+  });
+  test("should return a 503 status code", async () => {
+    try {
+      const userId = new mongoose.Types.ObjectId();
+      await request(app).get(`/api/${userId}`);
+    } catch (error) {
+      expect(error.response.status).toBe(503);
+    }
   });
 });

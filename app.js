@@ -5,8 +5,9 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const mongoose = require("mongoose");
 
-const userRoutes = require("./routes/userRoutes");
-const groupRoutes = require("./routes/groupRoutes");
+const authRoutes = require("./src/routes/authRoutes");
+const userRoutes = require("./src/routes/userRoutes");
+const groupRoutes = require("./src/routes/groupRoutes");
 
 const dbUri =
   process.env.NODE_ENV === "dev" ? process.env.DEV_DB_URI : process.env.DB_URI;
@@ -27,7 +28,8 @@ db.once("open", () => {
 app.use(bodyParser.json());
 app.use(cors());
 
-app.use("/api", userRoutes);
+app.use("/api", authRoutes);
+app.use("/api/users", userRoutes);
 app.use("/api/groups", groupRoutes);
 
 const server = app.listen(3000, () => {
