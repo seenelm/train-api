@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/user");
+const jwt = require("jsonwebtoken");
 
 module.exports.register = async (req, res) => {
   try {
@@ -20,7 +21,16 @@ module.exports.register = async (req, res) => {
       });
       await newUser.save();
 
-      return res.status(201).json({ success: true, userId: newUser._id });
+      const payload = {
+        name: newUser.name,
+        id: newUser._id,
+      };
+
+      const token = jwt.sign(payload, process.env.SECRET_CODE);
+
+      return res
+        .status(201)
+        .json({ success: true, userId: newUser._id, token: token });
     }
   } catch (error) {
     return res.status(503).json({ error: "Error Adding User" });
@@ -52,7 +62,14 @@ module.exports.login = async (req, res) => {
     if (user) {
       const validPassword = await bcrypt.compare(password, user.password);
       if (validPassword) {
-        return res.status(201).json({ success: true, userId: user._id });
+        const payload = {
+          name: user.name,
+          id: user._id,
+        };
+        const token = jwt.sign(payload, process.env.SECRET_CODE);
+        return res
+          .status(201)
+          .json({ success: true, userId: user._id, token: token });
       } else {
         errors = { message: "Incorrect Username or Password" };
         return res.status(400).json({ errors });
