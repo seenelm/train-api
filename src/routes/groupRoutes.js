@@ -3,9 +3,10 @@ const router = express.Router();
 const Group = require("../models/group");
 const User = require("../models/user");
 const Role = require("../models/role");
+const authenticate = require("../__middleware__/authenticate");
 
 // Add group to database.
-router.post("/", async (req, res) => {
+router.post("/", authenticate, async (req, res) => {
   try {
     const { name, userId } = req.body;
     const user = await User.findById(userId);

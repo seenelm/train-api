@@ -1,4 +1,5 @@
-import CustomError from "../utils/CustomError";
+const CustomError = require("../utils/CustomError");
+
 const jwt = require("jsonwebtoken");
 const util = require("util");
 
