@@ -17,6 +17,18 @@ const groupSchema = new Schema({
       ref: "User",
     },
   ],
+  requests: [
+    {
+      user: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+      status: {
+        type: String,
+        default: "pending",
+      },
+    },
+  ],
 });
 
 const Group = mongoose.model("Group", groupSchema);

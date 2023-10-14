@@ -1,19 +1,20 @@
 const mongoose = require("mongoose");
+const Joi = require("joi");
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
   name: {
     type: String,
-    required: [true, "Name can't be black"],
+    required: true,
   },
   username: {
     type: String,
-    required: [true, "Username can't be blank"],
+    required: true,
     unique: true,
   },
   password: {
     type: String,
-    required: [true, "Password can't be blank"],
+    required: true,
   },
   groups: [
     {
@@ -36,4 +37,5 @@ const userSchema = new Schema({
 });
 
 const User = mongoose.model("User", userSchema);
+
 module.exports = User;
