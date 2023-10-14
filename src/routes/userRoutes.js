@@ -1,11 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const usersController = require("../controllers/usersController");
+const authenticate = require("../__middleware__/authenticate");
 
-router.get("/:userId", usersController.showGroups);
+router.get("/:userId", authenticate, usersController.fetchGroups);
 
-router.get("/", usersController.findUsers);
-
-router.post("/:userId/groups/:groupId", usersController.requestGroup);
+router.get("/", authenticate, usersController.findUsers);
 
 module.exports = router;

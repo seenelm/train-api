@@ -1,4 +1,4 @@
 {
   "verbose": true,
-  "setupFilesAfterEnv": ["./database.js"]
+  "setupFilesAfterEnv": ["./src/database.js"]
 }

@@ -1,13 +1,13 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
+const authService = require("../services/AuthService");
 
 module.exports.register = async (req, res) => {
   try {
     const { username, password, name } = req.body;
-    console.log(req.body);
 
-    const existingUser = await User.findOne({ username });
+    const existingUser = await User.findOne({ username: username });
     if (existingUser) {
       let errors = { username: "username already taken" };
 
@@ -28,35 +28,25 @@ module.exports.register = async (req, res) => {
 
       const token = jwt.sign(payload, process.env.SECRET_CODE);
 
-      return res
-        .status(201)
-        .json({ success: true, userId: newUser._id, token: token });
+      console.log("Token: ", token);
+
+      return res.status(201).json({
+        success: true,
+        userId: newUser._id,
+        token: token,
+        username: username,
+      });
     }
   } catch (error) {
-    return res.status(503).json({ error: "Error Adding User" });
+    return res.status(503).json({ error: error.message });
   }
 };
 
 module.exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
-    console.log(req.body);
 
     let errors = {};
-
-    if (!username && !password) {
-      errors = {
-        username: "Username is required",
-        password: "Password is required",
-      };
-      return res.status(400).json({ errors });
-    } else if (!username) {
-      errors = { username: "Username is required" };
-      return res.status(400).json({ errors });
-    } else if (!password) {
-      errors = { password: "Password is required" };
-      return res.status(400).json({ errors });
-    }
 
     const user = await User.findOne({ username });
     if (user) {
@@ -67,9 +57,12 @@ module.exports.login = async (req, res) => {
           id: user._id,
         };
         const token = jwt.sign(payload, process.env.SECRET_CODE);
-        return res
-          .status(201)
-          .json({ success: true, userId: user._id, token: token });
+        return res.status(201).json({
+          success: true,
+          userId: user._id,
+          token: token,
+          username: username,
+        });
       } else {
         errors = { message: "Incorrect Username or Password" };
         return res.status(400).json({ errors });
@@ -82,3 +75,6 @@ module.exports.login = async (req, res) => {
     return res.status(503).json({ error: "Error Logging in User" });
   }
 };
+
+// Logout of application and remove token.
+module.exports.logout = async (req, res) => {};

@@ -3,32 +3,18 @@ const router = express.Router();
 const Group = require("../models/group");
 const User = require("../models/user");
 const Role = require("../models/role");
+const groupController = require("../controllers/groupController");
+const authenticate = require("../__middleware__/authenticate");
 
-// Add group to database.
-router.post("/", async (req, res) => {
-  try {
-    const { name, userId } = req.body;
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-    const group = new Group({ name });
-    group.owner = userId;
-    user.groups.push(group._id);
+router.post("/", authenticate, groupController.addGroup);
 
-    const savedGroup = await group.save();
-    await user.save();
+router.post("/:groupId/requests", authenticate, groupController.requestGroup);
 
-    const newGroup = {
-      id: savedGroup._id,
-      name: savedGroup.name,
-    };
-
-    return res.status(201).json({ success: true, newGroup: newGroup });
-  } catch (error) {
-    return res.status(503).json({ error: "Internal server error" });
-  }
-});
+router.post(
+  "/:groupId/requests/:userId",
+  authenticate,
+  groupController.confirmGroupRequest
+);
 
 // Delete group.
 router.delete("/:groupId", async (req, res) => {

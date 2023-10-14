@@ -4,24 +4,24 @@ const app = express();
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const config = require("config");
+
+const MongoDB = require("./src/datastore/MongoDB");
 
 const authRoutes = require("./src/routes/authRoutes");
 const userRoutes = require("./src/routes/userRoutes");
 const groupRoutes = require("./src/routes/groupRoutes");
 
-const dbUri =
-  process.env.NODE_ENV === "dev" ? process.env.DEV_DB_URI : process.env.DB_URI;
+const dbUri = config.get("MongoDB.dbConfig.host");
+const port = config.get("MongoDB.dbConfig.port");
 
-console.log("DB URI:", dbUri);
+const db = new MongoDB(dbUri);
 
-// dbUri = process.env.DB_URI;
-
-mongoose.connect(dbUri);
-
-const db = mongoose.connection;
-db.on("error", console.error.bind(console, "connection error:"));
-db.once("open", () => {
-  console.log("Database connected");
+app.use(async (req, res, next) => {
+  if (!mongoose.connection.readyState) {
+    await db.connect();
+  }
+  next();
 });
 
 // Middleware
@@ -32,8 +32,14 @@ app.use("/api", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/groups", groupRoutes);
 
-const server = app.listen(3000, () => {
-  console.log("APP IS LISTENING ON PORT 3000");
+const server = app.listen(port, () => {
+  console.log(`APP IS LISTENING ON PORT ${port}`);
+});
+
+process.on("SIGINT", () => {
+  db.close().then(() => {
+    process.exit(0);
+  });
 });
 
 module.exports = { app, server };

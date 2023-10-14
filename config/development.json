@@ -1,0 +1,8 @@
+{
+  "MongoDB": {
+    "dbConfig": {
+      "host": "mongodb+srv://yassinelmellouki:Yassine99$@train.hygn1it.mongodb.net/?retryWrites=true&w=majority",
+      "port": 3000
+    }
+  }
+}

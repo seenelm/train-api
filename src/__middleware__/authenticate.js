@@ -1,27 +1,32 @@
-import CustomError from "../utils/CustomError";
 const jwt = require("jsonwebtoken");
 const util = require("util");
+const User = require("../models/user");
 
-const authenticate = async (req, res, next) => {
+const authenticate = (req, res, next) => {
   const testToken = req.headers.authorization;
   let token;
 
-  if (testToken && testToken.startsWith("bearer")) {
+  if (testToken && testToken.startsWith("Bearer")) {
     token = testToken.split(" ")[1];
   }
 
+  console.log("Token: ", token);
+
   if (!token) {
-    next(new CustomError("You are not logged in", 401));
+    console.log("Not authorized");
+    // next(new CustomError("You are not logged in", 401));
+    res.status(401).json({ error: "Not authorized" });
   }
 
-  const decodedToken = await util.promisify(jwt.verify)(
-    token,
-    process.env.SECRET_CODE
-  );
+  try {
+    const decodedToken = jwt.verify(token, process.env.SECRET_CODE);
 
-  console.log(decodedToken);
+    req.user = decodedToken;
 
-  next();
+    next();
+  } catch (error) {
+    // console.log("Token verification error");
+  }
 };
 
 module.exports = authenticate;

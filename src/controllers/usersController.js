@@ -2,9 +2,8 @@ const User = require("../models/user");
 const Group = require("../models/group");
 
 // Find user's groups.
-module.exports.showGroups = async (req, res) => {
+module.exports.fetchGroups = async (req, res) => {
   try {
-    console.log("User ID: ", req.params.userId);
     const user = await User.findById(req.params.userId).populate("groups");
 
     if (!user) {
@@ -16,7 +15,6 @@ module.exports.showGroups = async (req, res) => {
       name: group.name,
     }));
 
-    console.log("Groups: ", user.groups);
     return res.status(201).json({ groups: userGroups });
   } catch (error) {
     return res.status(503);
@@ -46,22 +44,9 @@ module.exports.findUsers = async (req, res) => {
   }
 };
 
-// Send request to join group.
-module.exports.requestGroup = async (req, res) => {
-  try {
-    const { userId, groupId } = req.params;
+// Request to follow users private account.
+module.exports.requestUser = async (req, res) => {};
 
-    const group = await Group.findById(groupId);
-    if (!group) {
-      return res.status(404).json({ error: "Group not found" });
-    }
+module.exports.confirmUserRequest = async (req, res) => {};
 
-    group.users.push(userId);
-
-    await group.save();
-
-    res.status(201).json({ message: "User added to group" });
-  } catch (error) {
-    return res.status(503);
-  }
-};
+module.exports.deleteAccount = async (req, res) => {};
