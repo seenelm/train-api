@@ -2,45 +2,49 @@ const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 const authService = require("../services/AuthService");
+const catchError = require("../utils/catchError");
 
-module.exports.register = async (req, res) => {
-  try {
-    const { username, password, name } = req.body;
+module.exports.register = catchError(async (req, res) => {
+  const { username, password, name } = req.body;
 
-    const existingUser = await User.findOne({ username: username });
-    if (existingUser) {
-      let errors = { username: "username already taken" };
+  const result = await authService.registerUser(username, password, name);
+  return res.status(200).json({
+    userId: result.userId,
+    token: result.token,
+    username: result.username,
+  });
 
-      return res.status(409).json({ errors });
-    } else {
-      const hash = await bcrypt.hash(password, 12);
-      const newUser = new User({
-        username,
-        password: hash,
-        name,
-      });
-      await newUser.save();
+  // const existingUser = await User.findOne({ username: username });
+  // if (existingUser) {
+  //   let errors = { username: "username already taken" };
 
-      const payload = {
-        name: newUser.name,
-        id: newUser._id,
-      };
+  //   return res.status(409).json({ errors });
+  // } else {
+  //   const hash = await bcrypt.hash(password, 12);
+  //   const newUser = new User({
+  //     username,
+  //     password: hash,
+  //     name,
+  //   });
+  //   await newUser.save();
 
-      const token = jwt.sign(payload, process.env.SECRET_CODE);
+  //   const payload = {
+  //     name: newUser.name,
+  //     id: newUser._id,
+  //   };
 
-      console.log("Token: ", token);
+  //   const token = jwt.sign(payload, process.env.SECRET_CODE);
 
-      return res.status(201).json({
-        success: true,
-        userId: newUser._id,
-        token: token,
-        username: username,
-      });
-    }
-  } catch (error) {
-    return res.status(503).json({ error: error.message });
-  }
-};
+  //   console.log("Token: ", token);
+
+  //   return res.status(201).json({
+  //     success: true,
+  //     userId: newUser._id,
+  //     token: token,
+  //     username: username,
+  //   });
+  // }
+});
 
 module.exports.login = async (req, res) => {
   try {
