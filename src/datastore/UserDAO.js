@@ -13,7 +13,7 @@ class UserDAO {
   }
 
   async findOneUser(userData) {
-    const user = await this.User.findOne(userData)
+    const user = await this.User.findOne({ userData })
       .exec()
       .catch((error) => {
         console.error("Unable to find user: ", error);
