@@ -1,9 +1,9 @@
-const Group = require("../models/group");
-const User = require("../models/user");
-const mongoose = require("mongoose");
+import Group from "../models/group.js";
+import User from "../models/user.js";
+import mongoose from "mongoose";
 
 // Add group to associated Users model.
-module.exports.addGroup = async (req, res) => {
+export const addGroup = async (req, res) => {
   try {
     const { name, userId } = req.body;
     const user = await User.findById(userId);
@@ -29,7 +29,7 @@ module.exports.addGroup = async (req, res) => {
 };
 
 // Request to join private group.
-module.exports.requestGroup = async (req, res) => {
+export const requestGroup = async (req, res) => {
   try {
     const { groupId } = req.params;
     const userId = new mongoose.Types.ObjectId(req.user.id);
@@ -67,7 +67,7 @@ module.exports.requestGroup = async (req, res) => {
 };
 
 // Owner of private group confirms users request to join group.
-module.exports.confirmGroupRequest = async (req, res) => {
+export const confirmGroupRequest = async (req, res) => {
   try {
     const { groupId, userId } = req.params;
     const ownerId = new mongoose.Types.ObjectId(req.user.id);
@@ -102,10 +102,10 @@ module.exports.confirmGroupRequest = async (req, res) => {
 };
 
 // Join public group.
-module.exports.joinPublicGroup = async (req, res) => {};
+export const joinPublicGroup = async (req, res) => {};
 
 // Delete group if you are owner of group.
-module.exports.deleteGroup = async (req, res) => {};
+export const deleteGroup = async (req, res) => {};
 
 // Leave group.
-module.exports.leaveGroup = async (req, res) => {};
+export const leaveGroup = async (req, res) => {};

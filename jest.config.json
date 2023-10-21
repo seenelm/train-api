@@ -1,4 +1,7 @@
 {
   "verbose": true,
-  "setupFilesAfterEnv": ["./src/database.js"]
+  "setupFilesAfterEnv": ["./src/database.js"],
+  "transform": {
+    "^.+\\.[t|j]sx?$": "babel-jest"
+  }
 }

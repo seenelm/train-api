@@ -1,8 +1,8 @@
-const UserDAO = require("../datastore/UserDAO");
-const User = require("../models/user");
-const Errors = require("../utils/errors");
-const jwtToken = require("../utils/jwtToken");
-const bcryptUtil = require("../utils/bcryptUtil");
+import UserDAO from "../datastore/UserDAO.js";
+import User from "../models/user.js";
+import * as Errors from "../utils/errors.js";
+import jwtToken from "../utils/jwtToken.js";
+import bcryptUtil from "../utils/bcryptUtil.js";
 
 class AuthService {
   constructor() {
@@ -13,7 +13,7 @@ class AuthService {
     const existingUser = await this.userDAO.findOneUser(username);
     if (existingUser) {
       let errors = { username: "username already taken" };
-      throw new Errors.ConflictError(errors);
+      throw new Errors.ConflictError("Conflict Error", errors);
     } else {
       const hash = await bcryptUtil.hashPassword(password).catch((error) => {
         console.error(error);
@@ -45,5 +45,4 @@ class AuthService {
   async loginUser(username, password) {}
 }
 
-const authService = new AuthService();
-module.exports = authService;
+export default new AuthService();

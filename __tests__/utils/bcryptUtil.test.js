@@ -1,5 +1,5 @@
-const bcrypt = require("bcrypt");
-const bcryptUtil = require("../bcryptUtil");
+import bcrypt from "bcrypt";
+import bcryptUtil from "../../src/utils/bcryptUtil";
 
 const mockPassword = "Password123!";
 

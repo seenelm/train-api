@@ -1,5 +1,5 @@
-const UserDAO = require("../datastore/UserDAO");
-const User = require("../models/user");
+import UserDAO from "../datastore/UserDAO.js";
+import User from "../models/user.js";
 
 class UserService {
   constructor() {
@@ -12,4 +12,4 @@ class UserService {
   }
 }
 
-module.exports = UserService;
+export default UserService;

@@ -1,4 +1,4 @@
-module.exports.CustomError = class CustomError extends Error {
+export const CustomError = class CustomError extends Error {
   constructor(message, statusCode) {
     super();
     this.message = message;
@@ -6,17 +6,16 @@ module.exports.CustomError = class CustomError extends Error {
   }
 };
 
-module.exports.ConflictError = class ConflictError extends Error {
-  constructor(message) {
+export const ConflictError = class ConflictError extends Error {
+  constructor(message, errors) {
     super(message);
     this.name = "ConflictError";
     this.statusCode = 409;
+    this.errors = errors;
   }
 };
 
-module.exports.ResourceNotFoundError = class ResourceNotFoundError extends (
-  Error
-) {
+export const ResourceNotFoundError = class ResourceNotFoundError extends Error {
   constructor(message) {
     super(message);
     this.name = "ResourceNotFoundError";
@@ -24,7 +23,7 @@ module.exports.ResourceNotFoundError = class ResourceNotFoundError extends (
   }
 };
 
-module.exports.InternalServerError = class InternalServerError extends Error {
+export const InternalServerError = class InternalServerError extends Error {
   constructor(message) {
     super(message);
     this.statusCode = 500;

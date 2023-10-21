@@ -1,9 +1,9 @@
-const UserDAO = require("../../datastore/UserDAO");
-const bcryptUtil = require("../../utils/bcryptUtil");
-const jwtToken = require("../../utils/jwtToken");
-const authService = require("../../services/AuthService");
-const Errors = require("../../utils/errors");
-jest.mock("../../datastore/UserDAO");
+import UserDAO from "../../src/datastore/UserDAO.js";
+import bcryptUtil from "../../src/utils/bcryptUtil.js";
+import jwtToken from "../../src/utils/jwtToken.js";
+import AuthService from "../../src/services/AuthService.js";
+import * as Errors from "../../src/utils/errors.js";
+jest.mock("../../src/datastore/UserDAO.js");
 
 const mockHash = "Password123!Hash";
 const username = "username";
@@ -18,6 +18,9 @@ const newUser = {
 };
 
 describe("AuthService", () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+  });
   describe("registerUser", () => {
     test("should register a user", async () => {
       UserDAO.findOneUser = jest.fn().mockResolvedValue(null);
@@ -30,7 +33,7 @@ describe("AuthService", () => {
       jwtToken.sign = jest.fn().mockResolvedValue(payload);
 
       try {
-        const result = await authService.registerUser(username, password, name);
+        const result = await AuthService.registerUser(username, password, name);
         expect(result).toEqual({
           userId: newUser._id,
           token: "mockToken",
@@ -55,7 +58,7 @@ describe("AuthService", () => {
       UserDAO.findOneUser = jest.fn().mockResolvedValue(existingUser);
 
       try {
-        const response = await authService.registerUser(
+        const response = await AuthService.registerUser(
           username,
           password,
           name
@@ -71,7 +74,7 @@ describe("AuthService", () => {
         .mockRejectedValue(new Error("Database Error"));
 
       try {
-        const response = await authService.registerUser(
+        const response = await AuthService.registerUser(
           username,
           password,
           name
