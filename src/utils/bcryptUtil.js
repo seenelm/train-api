@@ -1,4 +1,4 @@
-const bcrypt = require("bcrypt");
+import bcrypt from "bcrypt";
 
 const bcryptUtil = {
   hashPassword: (password) => {
@@ -14,4 +14,4 @@ const bcryptUtil = {
   },
 };
 
-module.exports = bcryptUtil;
+export default bcryptUtil;

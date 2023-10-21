@@ -1,8 +1,8 @@
-const User = require("../models/user");
-const Group = require("../models/group");
+import User from "../models/user.js";
+import Group from "../models/group.js";
 
 // Find user's groups.
-module.exports.fetchGroups = async (req, res) => {
+export const fetchGroups = async (req, res) => {
   try {
     const user = await User.findById(req.params.userId).populate("groups");
 
@@ -22,7 +22,7 @@ module.exports.fetchGroups = async (req, res) => {
 };
 
 // Search for user.
-module.exports.findUsers = async (req, res) => {
+export const findUsers = async (req, res) => {
   try {
     const { search } = req.query;
 
@@ -45,8 +45,8 @@ module.exports.findUsers = async (req, res) => {
 };
 
 // Request to follow users private account.
-module.exports.requestUser = async (req, res) => {};
+export const requestUser = async (req, res) => {};
 
-module.exports.confirmUserRequest = async (req, res) => {};
+export const confirmUserRequest = async (req, res) => {};
 
-module.exports.deleteAccount = async (req, res) => {};
+export const deleteAccount = async (req, res) => {};

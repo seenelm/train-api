@@ -1,4 +1,4 @@
-const Joi = require("joi");
+import Joi from "joi";
 
 const registerUserSchema = Joi.object({
   name: Joi.string().max(35).required().messages({
@@ -51,7 +51,7 @@ const userLoginSchema = Joi.object({
     }),
 });
 
-module.exports.validateRegistration = (req, res, next) => {
+export const validateRegistration = (req, res, next) => {
   const { error } = registerUserSchema.validate(req.body, {
     abortEarly: false,
   });
@@ -68,7 +68,7 @@ module.exports.validateRegistration = (req, res, next) => {
   }
 };
 
-module.exports.validateLogin = (req, res, next) => {
+export const validateLogin = (req, res, next) => {
   const { error } = userLoginSchema.validate(req.body, {
     abortEarly: false,
   });

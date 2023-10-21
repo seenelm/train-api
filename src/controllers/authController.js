@@ -1,52 +1,27 @@
-const bcrypt = require("bcrypt");
-const User = require("../models/user");
-const jwt = require("jsonwebtoken");
-const authService = require("../services/AuthService");
-const catchError = require("../utils/catchError");
+import bcrypt from "bcrypt";
+import User from "../models/user.js";
+import jwt from "jsonwebtoken";
 
-module.exports.register = catchError(async (req, res) => {
-  const { username, password, name } = req.body;
+import AuthService from "../services/AuthService.js";
+import catchError from "../utils/catchError.js";
 
-  const result = await authService.registerUser(username, password, name);
-  return res.status(200).json({
-    userId: result.userId,
-    token: result.token,
-    username: result.username,
-  });
+// const authService = new AuthService();
+export const register = async (req, res, next) => {
+  try {
+    const { username, password, name } = req.body;
 
-  // const existingUser = await User.findOne({ username: username });
-  // if (existingUser) {
-  //   let errors = { username: "username already taken" };
+    const result = await AuthService.registerUser(username, password, name);
+    return res.status(201).json({
+      userId: result.userId,
+      token: result.token,
+      username: result.username,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
-  //   return res.status(409).json({ errors });
-  // } else {
-  //   const hash = await bcrypt.hash(password, 12);
-  //   const newUser = new User({
-  //     username,
-  //     password: hash,
-  //     name,
-  //   });
-  //   await newUser.save();
-
-  //   const payload = {
-  //     name: newUser.name,
-  //     id: newUser._id,
-  //   };
-
-  //   const token = jwt.sign(payload, process.env.SECRET_CODE);
-
-  //   console.log("Token: ", token);
-
-  //   return res.status(201).json({
-  //     success: true,
-  //     userId: newUser._id,
-  //     token: token,
-  //     username: username,
-  //   });
-  // }
-});
-
-module.exports.login = async (req, res) => {
+export const login = async (req, res) => {
   try {
     const { username, password } = req.body;
 
@@ -81,4 +56,4 @@ module.exports.login = async (req, res) => {
 };
 
 // Logout of application and remove token.
-module.exports.logout = async (req, res) => {};
+export const logout = async (req, res) => {};

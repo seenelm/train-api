@@ -1,8 +1,7 @@
-const jwt = require("jsonwebtoken");
-const util = require("util");
-const User = require("../models/user");
+import jwt from "jsonwebtoken";
+import User from "../models/user.js";
 
-const authenticate = (req, res, next) => {
+export const authenticate = (req, res, next) => {
   const testToken = req.headers.authorization;
   let token;
 
@@ -28,5 +27,3 @@ const authenticate = (req, res, next) => {
     // console.log("Token verification error");
   }
 };
-
-module.exports = authenticate;

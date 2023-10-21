@@ -1,4 +1,5 @@
-const UserDAO = require("../UserDAO");
+import UserDAO from "../../src/datastore/UserDAO";
+import { ResourceNotFoundError } from "../../src/utils/errors";
 
 const UserModel = {
   create: jest.fn(),
@@ -37,7 +38,9 @@ describe("UserDAO", () => {
     it("should find a user", async () => {
       UserModel.findOne.mockResolvedValue(userData.username);
       const user = await userDAO.findOneUser(userData.username);
-      expect(UserModel.findOne).toHaveBeenCalledWith(userData.username);
+      expect(UserModel.findOne).toHaveBeenCalledWith({
+        username: userData.username,
+      });
       expect(user).toBeDefined();
     });
     it("should throw a ResourceNotFoundError", async () => {
@@ -45,6 +48,7 @@ describe("UserDAO", () => {
       try {
         const response = await userDAO.findOneUser(userData.username);
         expect(response.status).toBe(404);
+        expect(response.error).toThrow(ResourceNotFoundError);
       } catch (error) {
         expect(error.message).toBe("Error: User not found");
       }

@@ -1,11 +1,26 @@
-const Errors = require("../utils/errors");
+import * as Errors from "../utils/errors.js";
 
 function handleInternalServerError(error, res) {
   res.status(error.statusCode);
 }
 
-function handleConflictError(error, res) {}
+function handleConflictError(error, res) {
+  console.log(error.errors);
+  res.status(error.statusCode).json(error.errors);
+}
 
-function handleResourceNotFoundError(error, res) {}
+function handleResourceNotFoundError(error, res) {
+  res.status(error.statusCode);
+}
 
-module.exports = (error, req, res, next) => {};
+export const errorController = (error, req, res, next) => {
+  if (error instanceof Errors.ConflictError) {
+    error = handleConflictError(error, res);
+  }
+  if (error instanceof Errors.InternalServerError) {
+    error = handleInternalServerError(error, res);
+  }
+  if (error instanceof Errors.ResourceNotFoundError) {
+    error = handleResourceNotFoundError(error, res);
+  }
+};

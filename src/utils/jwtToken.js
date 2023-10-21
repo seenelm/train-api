@@ -1,4 +1,4 @@
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken";
 
 const jwtToken = {
   sign: (payload) => {
@@ -14,4 +14,4 @@ const jwtToken = {
   },
 };
 
-module.exports = jwtToken;
+export default jwtToken;

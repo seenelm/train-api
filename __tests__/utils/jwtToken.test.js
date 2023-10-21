@@ -1,5 +1,5 @@
-const jwt = require("jsonwebtoken");
-const jwtToken = require("../jwtToken");
+import jwt from "jsonwebtoken";
+import jwtToken from "../../src/utils/jwtToken";
 
 const payload = {
   name: "Albert Einstein",

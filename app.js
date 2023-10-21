@@ -1,16 +1,17 @@
-const express = require("express");
-require("dotenv").config();
+import express from "express";
+import "dotenv/config";
 const app = express();
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const mongoose = require("mongoose");
-const config = require("config");
+import bodyParser from "body-parser";
+import cors from "cors";
+import mongoose from "mongoose";
+import config from "config";
 
-const MongoDB = require("./src/datastore/MongoDB");
+import MongoDB from "./src/datastore/MongoDB.js";
+import { errorController } from "./src/controllers/errorController.js";
 
-const authRoutes = require("./src/routes/authRoutes");
-const userRoutes = require("./src/routes/userRoutes");
-const groupRoutes = require("./src/routes/groupRoutes");
+import authRouter from "./src/routes/authRouter.js";
+import userRouter from "./src/routes/userRouter.js";
+import groupRouter from "./src/routes/groupRouter.js";
 
 const dbUri = config.get("MongoDB.dbConfig.host");
 const port = config.get("MongoDB.dbConfig.port");
@@ -28,9 +29,11 @@ app.use(async (req, res, next) => {
 app.use(bodyParser.json());
 app.use(cors());
 
-app.use("/api", authRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/groups", groupRoutes);
+app.use("/api", authRouter);
+app.use("/api/users", userRouter);
+app.use("/api/groups", groupRouter);
+
+app.use(errorController);
 
 const server = app.listen(port, () => {
   console.log(`APP IS LISTENING ON PORT ${port}`);
@@ -42,4 +45,4 @@ process.on("SIGINT", () => {
   });
 });
 
-module.exports = { app, server };
+export { app, server };
