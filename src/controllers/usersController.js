@@ -1,10 +1,10 @@
-import User from "../models/user.js";
+import UserModel from "../models/userModel.js";
 import Group from "../models/group.js";
 
 // Find user's groups.
 export const fetchGroups = async (req, res) => {
   try {
-    const user = await User.findById(req.params.userId).populate("groups");
+    const user = await UserModel.findById(req.params.userId).populate("groups");
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -26,7 +26,7 @@ export const findUsers = async (req, res) => {
   try {
     const { search } = req.query;
 
-    const searchUsers = await User.find({
+    const searchUsers = await UserModel.find({
       $or: [
         { username: { $regex: search, $options: "i" } },
         { name: { $regex: search, $options: "i" } },

@@ -1,13 +1,13 @@
 import UserDAO from "../datastore/UserDAO.js";
-import User from "../models/user.js";
+import UserModel from "../models/userModel.js";
 
 class UserService {
   constructor() {
-    this.userDAO = new UserDAO(User);
+    this.userDAO = new UserDAO(UserModel);
   }
 
   async isExistingUser(username) {
-    const existingUser = await User.findOne({ username: username });
+    const existingUser = await UserModel.findOne({ username: username });
     return existingUser;
   }
 }

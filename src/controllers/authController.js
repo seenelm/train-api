@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import User from "../models/user.js";
+import UserModel from "../models/userModel.js";
 import jwt from "jsonwebtoken";
 
 import AuthService from "../services/AuthService.js";
@@ -27,7 +27,7 @@ export const login = async (req, res) => {
 
     let errors = {};
 
-    const user = await User.findOne({ username });
+    const user = await UserModel.findOne({ username });
     if (user) {
       const validPassword = await bcrypt.compare(password, user.password);
       if (validPassword) {

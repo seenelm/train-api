@@ -1,12 +1,12 @@
-import UserDAO from "../datastore/UserDAO.js";
-import User from "../models/user.js";
+import UserDAO from "../dataAccess/UserDAO.js";
+import UserModel from "../models/userModel.js";
 import * as Errors from "../utils/errors.js";
 import jwtToken from "../utils/jwtToken.js";
 import bcryptUtil from "../utils/bcryptUtil.js";
 
 class AuthService {
   constructor() {
-    this.userDAO = new UserDAO(User);
+    this.userDAO = new UserDAO(UserModel);
   }
 
   async registerUser(username, password, name) {
