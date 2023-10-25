@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
-const Schema = mongoose.Schema;
+import { Schema, model } from "mongoose";
+import User from "./interfaces/User.js";
 
 const userSchema = new Schema({
   name: {
@@ -35,6 +35,6 @@ const userSchema = new Schema({
   ],
 });
 
-const User = mongoose.model("User", userSchema);
+const UserModel = model<User>("User", userSchema);
 
-export default User;
+export default UserModel;

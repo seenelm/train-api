@@ -1,12 +1,12 @@
 import Group from "../models/group.js";
-import User from "../models/user.js";
+import UserModel from "../models/userModel.js";
 import mongoose from "mongoose";
 
 // Add group to associated Users model.
 export const addGroup = async (req, res) => {
   try {
     const { name, userId } = req.body;
-    const user = await User.findById(userId);
+    const user = await UserModel.findById(userId);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
