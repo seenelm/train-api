@@ -1,7 +1,7 @@
 import * as Errors from "../utils/errors.js";
-import UserModel from "../models/userModel.js";
-import User from "../models/interfaces/User.js";
-import BaseDAO from "./BaseDAO.js";
+import UserModel from "../models/userModel";
+import User from "../models/interfaces/User";
+import BaseDAO from "./BaseDAO";
 
 class UserDAO extends BaseDAO<User> {
   
