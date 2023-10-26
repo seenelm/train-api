@@ -4,7 +4,8 @@ export default {
   testEnvironment: "node",
   verbose: true,
   setupFilesAfterEnv: ["./src/database.js"],
-  // transform: {
-  //   "^.+\\.[t|j]sx?$": "babel-jest",
-  // },
+  transform: {
+    "^.+\\.tsx?$": "ts-jest",
+    "^.+\\.[t|j]sx?$": "babel-jest",
+  },
 };

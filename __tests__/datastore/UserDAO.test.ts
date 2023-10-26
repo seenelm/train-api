@@ -1,5 +1,5 @@
 import UserDAO from "../../src/dataAccess/UserDAO";
-import { ResourceNotFoundError } from "../../src/utils/errors";
+import { ResourceNotFoundError, InternalServerError } from "../../src/utils/errors";
 
 const UserModel = {
   create: jest.fn(),
@@ -7,16 +7,14 @@ const UserModel = {
   findById: jest.fn(),
 };
 
-// const userData = {
-//   name: "Name",
-//   username: "Username98",
-//   password: "Password123!",
-// };
-
 describe("UserDAO", () => {
   let userDAO: UserDAO;
 
-  describe("createUser", () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+  });
+
+  describe("create", () => {
     // arrange
     it("should create a new user", async () => {
       const userDoc = {
@@ -36,69 +34,85 @@ describe("UserDAO", () => {
         expect(user).toEqual(userDoc);
       } catch (error) {}
     })
+    it("should throw an Internal Server Error", async () => {
+
+      // arrange 
+      const userDoc = {
+        name: "Name",
+        username: "Username98",
+        password: "Password123!",
+      };
+
+      UserModel.create.mockRejectedValue(new Error("Database Error"));
+      try {
+        // act
+        const user = await userDAO.create(userDoc);
+
+        // assert
+        expect(user).rejects.toThrow(InternalServerError);
+      } catch (error) {}
+    });
   })
+  describe("findById", () => {
+    it("should find a user by id", async () => {
+      // arrange
+      const userId = "123DB78";
+      UserModel.findById.mockResolvedValue(userId);
+
+      try {
+        // act
+        const user = await userDAO.findById(userId);
+
+        // assert
+        expect(UserModel.findById).toHaveBeenCalledWith(userId);
+        expect(user).toBeDefined();
+        expect(user).toHaveBeenCalledWith(userId);
+      } catch (error) {}
+    });
+    it("should throw a ResourceNotFoundError", async () => {
+      // arrange
+      const userId = "123DB78";
+      UserModel.findById.mockRejectedValue(new Error("User not found"));
+
+      try {
+        // act
+        const user = await userDAO.findById(userId);
+
+        // assert
+        expect(user).rejects.toThrow(ResourceNotFoundError);
+      } catch (error) {}
+    });
+  });
+  describe("findOne", () => {
+  it("should find a user", async () => {
+    // arrange
+    const userDoc = {
+      name: "Name",
+      username: "Username98",
+      password: "Password123!",
+    };
+    
+    let query = { username: userDoc.username };
+    UserModel.findOne.mockResolvedValue(query);
+
+    try {
+      // act
+      const user = await userDAO.findOne(query);
+
+      // assert
+      expect(UserModel.findOne).toHaveBeenCalledWith(query);
+      expect(user).toBeDefined();
+    } catch (error) {}
+  });
+  // it("should throw a ResourceNotFoundError", async () => {
+  //   UserModel.findOne.mockRejectedValue(new Error("User not found"));
+  //   try {
+  //     const response = await userDAO.findOneUser(userData.username);
+  //     expect(response.status).toBe(404);
+  //     expect(response.error).toThrow(ResourceNotFoundError);
+  //   } catch (error) {
+  //     expect(error.message).toBe("Error: User not found");
+  //   }
+  // });
+});
 })
-
-// const userDAO = new UserDAO(UserModel);
-
-// describe("UserDAO", () => {
-//   let userDAO: UserDAO;
-  
-//   describe("createUser", () => {
-//     it("should create a user", async () => {
-//       UserModel.create.mockResolvedValue(userData);
-
-//       const user = await userDAO.createUser(userData);
-//       expect(UserModel.create).toHaveBeenCalledWith(userData);
-//       expect(user).toEqual(userData);
-//     });
-//     it("should throw an Internal Server Error", async () => {
-//       UserModel.create.mockRejectedValue(new Error("Database Error"));
-//       try {
-//         const response = await userDAO.createUser(userData);
-//         expect(response.status).toBe(500);
-//       } catch (error) {
-//         expect(error.message).toBe("Error: Database Error");
-//       }
-//     });
-//   });
-//   describe("findOneUser", () => {
-//     it("should find a user", async () => {
-//       UserModel.findOne.mockResolvedValue(userData.username);
-//       const user = await userDAO.findOneUser(userData.username);
-//       expect(UserModel.findOne).toHaveBeenCalledWith({
-//         username: userData.username,
-//       });
-//       expect(user).toBeDefined();
-//     });
-//     it("should throw a ResourceNotFoundError", async () => {
-//       UserModel.findOne.mockRejectedValue(new Error("User not found"));
-//       try {
-//         const response = await userDAO.findOneUser(userData.username);
-//         expect(response.status).toBe(404);
-//         expect(response.error).toThrow(ResourceNotFoundError);
-//       } catch (error) {
-//         expect(error.message).toBe("Error: User not found");
-//       }
-//     });
-//   });
-//   describe("findUserById", () => {
-//     it("should find a user by id", async () => {
-//       const userId = "123DB78";
-//       UserModel.findById.mockResolvedValue(userId);
-//       const user = await userDAO.findUserById(userId);
-//       expect(UserModel.findById).toHaveBeenCalledWith(userId);
-//       expect(user).toBeDefined();
-//     });
-//     it("should throw a ResourceNotFoundError", async () => {
-//       const userId = "123DB78";
-//       UserModel.findById.mockRejectedValue(new Error("User not found"));
-//       try {
-//         const response = await userDAO.findUserById(userId);
-//         expect(response.status).toBe(404);
-//       } catch (error) {
-//         expect(error.message).toBe("Error: User not found");
-//       }
-//     });
-//   });
-// });

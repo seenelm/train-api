@@ -1,25 +1,26 @@
-import UserDAO from "../dataAccess/UserDAO.js";
-import UserModel from "../models/userModel.js";
+import UserDAO from "../dataAccess/UserDAO";
 import * as Errors from "../utils/errors.js";
 import jwtToken from "../utils/jwtToken.js";
-import bcryptUtil from "../utils/bcryptUtil.js";
+import BcryptUtil from "../utils/BcryptUtil";
 
 class AuthService {
+  private userDAO: UserDAO;
+
   constructor() {
-    this.userDAO = new UserDAO(UserModel);
+    this.userDAO = new UserDAO();
   }
 
-  async registerUser(username, password, name) {
-    const existingUser = await this.userDAO.findOneUser(username);
+  public async registerUser(username: string, password: string, name: string) {
+    const existingUser = await this.userDAO.findOne({ username: username });
     if (existingUser) {
       let errors = { username: "username already taken" };
       throw new Errors.ConflictError("Conflict Error", errors);
     } else {
-      const hash = await bcryptUtil.hashPassword(password).catch((error) => {
+      const hash = await BcryptUtil.hashPassword(password).catch((error) => {
         console.error(error);
       });
       const newUser = await this.userDAO
-        .createUser({
+        .create({
           username,
           password: hash,
           name,
@@ -42,7 +43,7 @@ class AuthService {
     }
   }
 
-  async loginUser(username, password) {}
+  public async loginUser(username: string, password: string) {}
 }
 
 export default new AuthService();

@@ -1,4 +1,4 @@
-import { Document, Model } from "mongoose";
+import { Document, Model, FilterQuery } from "mongoose";
 import * as Errors from "../utils/errors.js";
 
 export default abstract class BaseDAO<T extends Document> {
@@ -20,5 +20,9 @@ export default abstract class BaseDAO<T extends Document> {
             throw new Errors.ResourceNotFoundError(error);
         });
         return entity;
+    }
+
+    public async findOne(query: FilterQuery<T>): Promise<T> {
+        return await this.model.findOne(query);
     }
 }
