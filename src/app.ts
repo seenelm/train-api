@@ -6,12 +6,12 @@ import cors from "cors";
 import mongoose from "mongoose";
 import config from "config";
 
-import MongoDB from "./src/datastore/MongoDB.js";
-import { errorController } from "./src/controllers/errorController.js";
+import MongoDB from "./dataAccess/MongoDB";
+import { errorController } from "./controllers/errorController.js";
 
-import authRouter from "./src/routes/authRouter.js";
-import userRouter from "./src/routes/userRouter.js";
-import groupRouter from "./src/routes/groupRouter.js";
+import authRouter from "./routes/authRouter.js";
+import userRouter from "./routes/userRouter.js";
+import groupRouter from "./routes/groupRouter.js";
 
 const dbUri = config.get("MongoDB.dbConfig.host");
 const port = config.get("MongoDB.dbConfig.port");

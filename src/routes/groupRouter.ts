@@ -1,7 +1,5 @@
 import express from "express";
 const groupRouter = express.Router();
-import Group from "../models/group.js";
-import UserModel from "../models/userModel.js";
 import * as groupController from "../controllers/groupController.js";
 import { authenticate } from "../__middleware__/authenticate.js";
 

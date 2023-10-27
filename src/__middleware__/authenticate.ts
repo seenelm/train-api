@@ -1,9 +1,9 @@
 import jwt from "jsonwebtoken";
-import UserModel from "../models/userModel.js";
+import { NextFunction, Request, Response } from "express";
 
-export const authenticate = (req, res, next) => {
+export const authenticate = (req: Request, res: Response, next: NextFunction) => {
   const testToken = req.headers.authorization;
-  let token;
+  let token: string;
 
   if (testToken && testToken.startsWith("Bearer")) {
     token = testToken.split(" ")[1];
@@ -20,10 +20,9 @@ export const authenticate = (req, res, next) => {
   try {
     const decodedToken = jwt.verify(token, process.env.SECRET_CODE);
 
-    req.user = decodedToken;
+    // req.user = decodedToken;
 
     next();
   } catch (error) {
-    // console.log("Token verification error");
   }
 };

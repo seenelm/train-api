@@ -1,6 +1,6 @@
 import UserDAO from "../../src/dataAccess/UserDAO";
 import BcryptUtil from "../../src/utils/BcryptUtil";
-import jwtToken from "../../src/utils/jwtToken.js";
+import JWTUtil from "../../src/utils/JWTUtil";
 import AuthService from "../../src/services/AuthService";
 import * as Errors from "../../src/utils/errors.js";
 jest.mock("../../src/dataAccess/UserDAO");
@@ -32,7 +32,7 @@ describe("AuthService", () => {
         userDAO.create= jest.fn().mockResolvedValue(newUser);
 
         const payload = { name: newUser.name, id: newUser._id };
-        jwtToken.sign = jest.fn().mockResolvedValue(payload);
+        JWTUtil.sign = jest.fn().mockResolvedValue(payload);
 
         // act
         const result = await AuthService.registerUser(username, password, name);
@@ -96,6 +96,64 @@ describe("AuthService", () => {
         );
         
         expect(response).rejects.toThrow(Errors.InternalServerError);
+      } catch (error) {}
+    });
+  });
+  describe("loginUser", () => {
+    it("should login the user", async () => {
+      const mockUser = {
+        username: "username",
+        password: "Password123!",
+        name: "name",
+        _id: "userId",
+      }
+
+      const mockToken = "mockToken";
+
+      try {
+        userDAO.findOne = jest.fn().mockResolvedValue(mockUser);
+        BcryptUtil.comparePassword = jest.fn().mockResolvedValue(true);
+        JWTUtil.sign = jest.fn().mockResolvedValue(mockToken);
+
+        const response = await AuthService.loginUser("username", "Password123!");
+        expect(response).toEqual({
+          userId: mockUser._id,
+          token: mockToken,
+          username: mockUser.username
+        })
+      } catch (error) {}
+    });
+    it("should throw an error when password is not valid", async () => {
+      const mockUser = {
+        username: "username",
+        password: "Password123!",
+        name: "name",
+        _id: "userId",
+      }
+
+      const mockToken = "mockToken";
+
+      try {
+        userDAO.findOne = jest.fn().mockResolvedValue(mockUser);
+        BcryptUtil.comparePassword = jest.fn().mockResolvedValue(false);
+        JWTUtil.sign = jest.fn().mockResolvedValue(mockToken);
+
+        const response = await AuthService.loginUser("username", "Password123!");
+        expect(response).rejects.toThrow(Errors.ConflictError);
+
+      } catch (error) {}
+    });
+    it("should throw an error when user is not found", async () => {
+      const mockToken = "mockToken";
+
+      try {
+        userDAO.findOne = jest.fn().mockResolvedValue(null);
+        BcryptUtil.comparePassword = jest.fn().mockResolvedValue(true);
+        JWTUtil.sign = jest.fn().mockResolvedValue(mockToken);
+
+        const response = await AuthService.loginUser("username", "Password123!");
+        expect(response).rejects.toThrow(Errors.ConflictError);
+
       } catch (error) {}
     });
   });

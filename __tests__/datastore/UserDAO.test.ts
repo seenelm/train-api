@@ -56,17 +56,24 @@ describe("UserDAO", () => {
   describe("findById", () => {
     it("should find a user by id", async () => {
       // arrange
+      const mockUser = {
+        name: "Name",
+        username: "Username98",
+        password: "Password123!",
+        _id: "userId"
+      };
+
       const userId = "123DB78";
-      UserModel.findById.mockResolvedValue(userId);
+
+      UserModel.findById.mockResolvedValue(mockUser);
 
       try {
         // act
         const user = await userDAO.findById(userId);
 
         // assert
-        expect(UserModel.findById).toHaveBeenCalledWith(userId);
-        expect(user).toBeDefined();
-        expect(user).toHaveBeenCalledWith(userId);
+        expect(UserModel.findById).toHaveBeenCalledWith(mockUser);
+        expect(user).toEqual(mockUser);
       } catch (error) {}
     });
     it("should throw a ResourceNotFoundError", async () => {
@@ -86,22 +93,23 @@ describe("UserDAO", () => {
   describe("findOne", () => {
   it("should find a user", async () => {
     // arrange
-    const userDoc = {
+    const mockUser = {
       name: "Name",
       username: "Username98",
       password: "Password123!",
     };
     
-    let query = { username: userDoc.username };
-    UserModel.findOne.mockResolvedValue(query);
+    let query = { username: mockUser.username };
+
+    UserModel.findOne.mockResolvedValue(mockUser);
 
     try {
       // act
       const user = await userDAO.findOne(query);
 
       // assert
-      expect(UserModel.findOne).toHaveBeenCalledWith(query);
-      expect(user).toBeDefined();
+      expect(UserModel.findOne).toHaveBeenCalledWith(mockUser);
+      expect(user).toEqual(mockUser);
     } catch (error) {}
   });
   // it("should throw a ResourceNotFoundError", async () => {
