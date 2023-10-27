@@ -24,7 +24,6 @@ const registerUserSchema = Joi.object({
       "string.empty": "Password cannot be empty",
       "string.pattern.base":
         "Password must be a mix of upper & lower case letters, numbers & symbols",
-      "string.empty": "Password is required",
     }),
 });
 
@@ -47,7 +46,6 @@ const userLoginSchema = Joi.object({
       "string.empty": "Password cannot be empty",
       "string.pattern.base":
         "Password must be a mix of upper & lower case letters, numbers & symbols",
-      "string.empty": "Password is required",
     }),
 });
 

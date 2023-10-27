@@ -1,8 +1,8 @@
-const request = require("supertest");
-import { app, server } from "../../app";
-import User from "../../src/models/user";
-import UserDAO from "../../src/datastore/UserDAO";
-import { InternalServerError } from "../../src/utils/errors";
+import request from "supertest";
+import { app, server } from "../../src/app";
+import UserModel from "../../src/models/userModel";
+// import UserDAO from "../../src/datastore/UserDAO";
+// import { InternalServerError } from "../../src/utils/errors";
 
 const { connectDB, disconnectDB, cleanData } = require("../../src/database");
 
@@ -21,7 +21,7 @@ describe("AuthController", () => {
   });
 
   describe("register", () => {
-    test("should register user and send username, userId and token back to user", async () => {
+    it("should register user and send username, userId and token back to user", async () => {
       // arrange
       const user = {
         name: "name",
@@ -37,9 +37,9 @@ describe("AuthController", () => {
         token: expect.any(String),
       });
     });
-    test("should throw a Conflict Error when username already exists", async () => {
+    it("should throw a Conflict Error when username already exists", async () => {
       // arrange
-      const existingUser = await User.create({
+      const existingUser = await UserModel.create({
         name: "name",
         username: "username",
         password: "Password123!",
@@ -56,25 +56,19 @@ describe("AuthController", () => {
       expect(response.status).toBe(409);
       expect(response.body.username).toBe("username already taken");
     });
-    // test("should throw an InternalServerError when database is unable to create user", async () => {
-    //   // arrange
-    //   const user = {
-    //     name: "name",
-    //     username: "username",
-    //     password: "Password123!",
-    //   };
-
-    //   const userDAO = new UserDAO(User);
-
-    //   jest
-    //     .spyOn(userDAO, "createUser")
-    //     .mockRejectedValue(new InternalServerError("Creating User Failed"));
-
-    //   // act
-    //   const response = await request(app).post("/api/register").send(user);
-
-    //   // assert
-    //   expect(response.status).toBe(500);
-    // });
   });
+  // describe("login", () => {
+  //   it("should login user", async () => {
+  //     const response = await request(app).post("/api/login").send({
+  //       username: "username",
+  //       password: "Password123!",
+  //     });
+
+  //     expect(response.body).toEqual({
+  //       userId: expect.any(String),
+  //       token: expect.any(String),
+  //       username: "username",
+  //     });
+  //   });
+  // });
 });

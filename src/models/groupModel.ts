@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
-const Schema = mongoose.Schema;
+import { Schema, model } from "mongoose";
+import Group from "./interfaces/Group";
 
 const groupSchema = new Schema({
   name: {
@@ -30,6 +30,6 @@ const groupSchema = new Schema({
   ],
 });
 
-const Group = mongoose.model("Group", groupSchema);
+const GroupModel = model<Group>("Group", groupSchema);
 
-export default Group;
+export default GroupModel;

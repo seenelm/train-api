@@ -1,4 +1,3 @@
-import * as Errors from "../utils/errors.js";
 import UserModel from "../models/userModel";
 import User from "../models/interfaces/User";
 import BaseDAO from "./BaseDAO";

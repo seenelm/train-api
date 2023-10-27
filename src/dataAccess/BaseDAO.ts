@@ -15,11 +15,15 @@ export default abstract class BaseDAO<T extends Document> {
         return entity;
     }
 
-    public async findById(id: any): Promise<T> {
-        const entity = await this.model.findById(id).catch((error) => {
-            throw new Errors.ResourceNotFoundError(error);
-        });
-        return entity;
+    public async findById(id: string, populateField?: string): Promise<T | null> {
+        let query = null;
+        if (populateField) {
+            query = await this.model.findById(id).populate(populateField);
+        } else {
+            query = await this.model.findById(id);
+        }
+
+        return query;
     }
 
     public async findOne(query: FilterQuery<T>): Promise<T> {

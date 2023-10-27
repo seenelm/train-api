@@ -1,19 +1,20 @@
-import * as Errors from "../utils/errors.js";
+import * as Errors from "../utils/errors";
+import { NextFunction, Request, Response } from "express";
 
-function handleInternalServerError(error, res) {
+function handleInternalServerError(error: any, res: Response) {
   res.status(error.statusCode);
 }
 
-function handleConflictError(error, res) {
+function handleConflictError(error: any, res: Response) {
   console.log(error.errors);
   res.status(error.statusCode).json(error.errors);
 }
 
-function handleResourceNotFoundError(error, res) {
+function handleResourceNotFoundError(error: any, res: Response) {
   res.status(error.statusCode);
 }
 
-export const errorController = (error, req, res, next) => {
+export const errorController = (error: any, req: Request, res: Response, next: NextFunction) => {
   if (error instanceof Errors.ConflictError) {
     error = handleConflictError(error, res);
   }

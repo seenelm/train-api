@@ -1,16 +1,16 @@
 import mongoose from "mongoose";
 
 class MongoDB {
-  constructor(dbUri) {
+  private dbUri: any;
+
+  constructor(dbUri: any) {
     this.dbUri = dbUri;
   }
 
   /**
    * Connect to MongoDB database.
-   * @param {*} dbUri uri of database to connect to
-   * @param {*} collection
    */
-  async connect() {
+  async connect(): Promise<void> {
     await mongoose.connect(this.dbUri).catch((error) => {
       console.error("Error on initial connection: ", error);
     });
@@ -22,7 +22,7 @@ class MongoDB {
   }
 
   // Close connection to MongoDB database.
-  async close() {
+  async close(): Promise<void> {
     await mongoose.connection.close().catch((error) => {
       console.error(error);
     });

@@ -1,8 +1,8 @@
-import UserModel from "../models/userModel.js";
-import Group from "../models/group.js";
+import UserModel from "../models/userModel";
+import { Request, Response } from "express";
 
 // Find user's groups.
-export const fetchGroups = async (req, res) => {
+export const fetchGroups = async (req: Request, res: Response) => {
   try {
     const user = await UserModel.findById(req.params.userId).populate("groups");
 
@@ -12,7 +12,7 @@ export const fetchGroups = async (req, res) => {
 
     const userGroups = user.groups.map((group) => ({
       id: group._id,
-      name: group.name,
+      // name: group.name,
     }));
 
     return res.status(201).json({ groups: userGroups });
@@ -22,7 +22,7 @@ export const fetchGroups = async (req, res) => {
 };
 
 // Search for user.
-export const findUsers = async (req, res) => {
+export const findUsers = async (req: Request, res: Response) => {
   try {
     const { search } = req.query;
 
@@ -45,8 +45,8 @@ export const findUsers = async (req, res) => {
 };
 
 // Request to follow users private account.
-export const requestUser = async (req, res) => {};
+export const requestUser = async (req: Request, res: Response) => {};
 
-export const confirmUserRequest = async (req, res) => {};
+export const confirmUserRequest = async (req: Request, res: Response) => {};
 
-export const deleteAccount = async (req, res) => {};
+export const deleteAccount = async (req: Request, res: Response) => {};

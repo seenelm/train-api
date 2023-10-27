@@ -1,6 +1,6 @@
 import UserDAO from "../dataAccess/UserDAO";
 import * as Errors from "../utils/errors.js";
-import jwtToken from "../utils/jwtToken.js";
+import JWTUtil from "../utils/JWTUtil";
 import BcryptUtil from "../utils/BcryptUtil";
 
 class AuthService {
@@ -35,7 +35,7 @@ class AuthService {
         id: newUser._id,
       };
 
-      const token = await jwtToken.sign(payload).catch((error) => {
+      const token = await JWTUtil.sign(payload, process.env.SECRET_CODE).catch((error) => {
         console.error(error);
       });
 
@@ -43,7 +43,32 @@ class AuthService {
     }
   }
 
-  public async loginUser(username: string, password: string) {}
+  public async loginUser(username: string, password: string) {
+    let errors = {};
+
+    const user = await this.userDAO.findOne({ username });
+    if (user) {
+      const validPassword = await BcryptUtil.comparePassword(password, user.password);
+      if (validPassword) {
+        const payload = {
+          name: user.name,
+          id: user._id,
+        };
+        const token = JWTUtil.sign(payload, process.env.SECRET_CODE);
+        return {
+          userId: user._id,
+          token: token,
+          username: username,
+        };
+      } else {
+        errors = { message: "Incorrect Username or Password" };
+        throw new Errors.CustomError(errors, 400);
+      }
+    } else {
+      errors = { message: "Incorrect Username or Password" };
+      throw new Errors.CustomError(errors, 400);
+    }
+  }
 }
 
 export default new AuthService();
