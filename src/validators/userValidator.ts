@@ -1,4 +1,5 @@
 import Joi from "joi";
+import { NextFunction, Request, Response } from "express";
 
 const registerUserSchema = Joi.object({
   name: Joi.string().max(35).required().messages({
@@ -21,7 +22,7 @@ const registerUserSchema = Joi.object({
     .required()
     .messages({
       "string.base": "This field must be a string",
-      "string.empty": "Password cannot be empty",
+      "string.empty": "Password is required",
       "string.pattern.base":
         "Password must be a mix of upper & lower case letters, numbers & symbols",
     }),
@@ -43,13 +44,13 @@ const userLoginSchema = Joi.object({
     .required()
     .messages({
       "string.base": "This field must be a string",
-      "string.empty": "Password cannot be empty",
+      "string.empty": "Password is required",
       "string.pattern.base":
         "Password must be a mix of upper & lower case letters, numbers & symbols",
     }),
 });
 
-export const validateRegistration = (req, res, next) => {
+export const validateRegistration = (req: Request, res: Response, next: NextFunction) => {
   const { error } = registerUserSchema.validate(req.body, {
     abortEarly: false,
   });
@@ -66,7 +67,7 @@ export const validateRegistration = (req, res, next) => {
   }
 };
 
-export const validateLogin = (req, res, next) => {
+export const validateLogin = (req: Request, res: Response, next: NextFunction) => {
   const { error } = userLoginSchema.validate(req.body, {
     abortEarly: false,
   });

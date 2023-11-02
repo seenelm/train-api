@@ -1,11 +1,10 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
-export default {
+module.exports = {
   preset: "ts-jest",
   testEnvironment: "node",
   verbose: true,
-  setupFilesAfterEnv: ["./src/database.js"],
+  setupFilesAfterEnv: ["./src/database.ts"],
   transform: {
     "^.+\\.tsx?$": "ts-jest",
-    "^.+\\.[t|j]sx?$": "babel-jest",
   },
 };

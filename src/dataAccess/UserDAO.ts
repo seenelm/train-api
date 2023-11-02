@@ -1,37 +1,24 @@
-import UserModel from "../models/userModel";
 import User from "../models/interfaces/User";
 import BaseDAO from "./BaseDAO";
+import { Model, Types } from "mongoose";
+import Group from "../models/interfaces/Group";
 
 class UserDAO extends BaseDAO<User> {
+
+  private userModel: Model<User>;
   
-  constructor() {
-    super(UserModel);
+  constructor(userModel: Model<User>) {
+    super(userModel);
+    this.userModel = userModel;
   }
-  // constructor(UserModel) {
-  //   this.User = UserModel;
-  // }
 
-  // async createUser(userData) {
-  //   const user = await this.User.create(userData).catch((error) => {
-  //     throw new Errors.InternalServerError(error);
-  //   });
-  //   return user;
-  // }
-
-  // async findOneUser(username) {
-  //   const user = await this.User.findOne({ username: username });
-  //   if (!user) {
-  //     throw new Errors.ResourceNotFoundError("User not found");
-  //   }
-  //   return user;
-  // }
-
-  // async findUserById(userId) {
-  //   const user = await this.User.findById(userId).catch((error) => {
-  //     throw new Errors.ResourceNotFoundError(error);
-  //   });
-  //   return user;
-  // }
+  public async findUserById(id: Types.ObjectId | string, path: string): Promise<User | null> {
+    return await this.userModel.findById(id)
+    .populate<{group: Group}>({path: path})
+    .exec();
+  }
+  
+  
 }
 
 export default UserDAO;

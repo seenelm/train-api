@@ -3,8 +3,8 @@ const authRouter = express.Router();
 import {
   validateLogin,
   validateRegistration,
-} from "../validators/userValidator.js";
-import * as authController from "../controllers/authController.js";
+} from "../validators/userValidator";
+import * as authController from "../controllers/authController";
 
 authRouter.post("/register", validateRegistration, authController.register);
 

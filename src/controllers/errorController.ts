@@ -6,12 +6,15 @@ function handleInternalServerError(error: any, res: Response) {
 }
 
 function handleConflictError(error: any, res: Response) {
-  console.log(error.errors);
   res.status(error.statusCode).json(error.errors);
 }
 
 function handleResourceNotFoundError(error: any, res: Response) {
   res.status(error.statusCode);
+}
+
+function handleCustomError(error: any, res: Response) {
+  res.status(error.statusCode).json(error.errors);
 }
 
 export const errorController = (error: any, req: Request, res: Response, next: NextFunction) => {
@@ -23,5 +26,8 @@ export const errorController = (error: any, req: Request, res: Response, next: N
   }
   if (error instanceof Errors.ResourceNotFoundError) {
     error = handleResourceNotFoundError(error, res);
+  }
+  if (error instanceof Errors.CustomError) {
+    error = handleCustomError(error, res);
   }
 };

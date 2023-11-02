@@ -1,5 +1,5 @@
-import { Document, Model, FilterQuery } from "mongoose";
-import * as Errors from "../utils/errors.js";
+import { Document, Model, FilterQuery, Types } from "mongoose";
+import * as Errors from "../utils/errors";
 
 export default abstract class BaseDAO<T extends Document> {
     private model: Model<T>;
@@ -15,18 +15,11 @@ export default abstract class BaseDAO<T extends Document> {
         return entity;
     }
 
-    public async findById(id: string, populateField?: string): Promise<T | null> {
-        let query = null;
-        if (populateField) {
-            query = await this.model.findById(id).populate(populateField);
-        } else {
-            query = await this.model.findById(id);
-        }
-
-        return query;
+    public async findById(id: Types.ObjectId | string): Promise<T | null> {
+        return await this.model.findById(id).exec();
     }
 
-    public async findOne(query: FilterQuery<T>): Promise<T> {
-        return await this.model.findOne(query);
+    public async findOne(query: FilterQuery<T>): Promise<T | null> {
+        return await this.model.findOne(query).exec();
     }
 }

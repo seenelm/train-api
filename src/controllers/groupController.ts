@@ -1,31 +1,17 @@
 import GroupModel from "../models/groupModel";
 import UserModel from "../models/userModel";
 import mongoose from "mongoose";
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
+import GroupService from "../services/GroupService";
 
 // Add group to associated Users model.
-export const addGroup = async (req: Request, res: Response) => {
+export const addGroup = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { name, userId } = req.body;
-    const user = await UserModel.findById(userId);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-    const group = new GroupModel({ name });
-    group.owner = userId;
-    user.groups.push(group._id);
-
-    const savedGroup = await group.save();
-    await user.save();
-
-    const newGroup = {
-      id: savedGroup._id,
-      name: savedGroup.name,
-    };
-
-    return res.status(201).json({ success: true, newGroup: newGroup });
+    const result = await GroupService.addGroup(name, userId);
+    return res.status(201).json(result.newGroup);
   } catch (error) {
-    return res.status(503).json({ error });
+    next(error);
   }
 };
 

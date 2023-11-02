@@ -1,6 +1,8 @@
 import GroupDAO from "../dataAccess/GroupDAO";
 import UserDAO from "../dataAccess/UserDAO";
-import * as Errors from "../utils/errors.js";
+import * as Errors from "../utils/errors";
+import UserModel from "../models/userModel";
+import { Types } from "mongoose";
 
 
 class GroupService {
@@ -9,21 +11,23 @@ class GroupService {
 
     constructor() {
         this.groupDAO = new GroupDAO();
-        this.userDAO = new UserDAO();
+        this.userDAO = new UserDAO(UserModel);
     }
 
-    public async addGroup(name: string, userId: any) {
-        
+    public async addGroup(name: string, userId: Types.ObjectId | string) {
         const user = await this.userDAO.findById(userId);
         if (!user) {
             throw new Errors.ResourceNotFoundError("User not found");
         }
+
+        const ownerId = userId instanceof Types.ObjectId ? userId : new Types.ObjectId(userId);
        
         const group = await this.groupDAO.create({ name });
-        group.owner = userId;
+        group.owner.push(ownerId);
         user.groups.push(group._id);
     
         await user.save();
+        await group.save();
     
         const newGroup = {
             id: group._id,

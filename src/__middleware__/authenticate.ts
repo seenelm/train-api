@@ -1,7 +1,15 @@
-import jwt from "jsonwebtoken";
 import { NextFunction, Request, Response } from "express";
+import JWTUtil from "../utils/JWTUtil";
 
-export const authenticate = (req: Request, res: Response, next: NextFunction) => {
+// declare global {
+//   namespace Express {
+//     interface Request {
+//       user: any
+//     }
+//   }
+// }
+
+export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
   const testToken = req.headers.authorization;
   let token: string;
 
@@ -18,7 +26,8 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
   }
 
   try {
-    const decodedToken = jwt.verify(token, process.env.SECRET_CODE);
+    const decodedToken = await JWTUtil.verify(token, process.env.SECRET_CODE);
+    console.log("Decoded: ", decodedToken);
 
     // req.user = decodedToken;
 
