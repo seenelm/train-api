@@ -112,15 +112,5 @@ describe("UserDAO", () => {
       expect(user).toEqual(mockUser);
     } catch (error) {}
   });
-  // it("should throw a ResourceNotFoundError", async () => {
-  //   UserModel.findOne.mockRejectedValue(new Error("User not found"));
-  //   try {
-  //     const response = await userDAO.findOneUser(userData.username);
-  //     expect(response.status).toBe(404);
-  //     expect(response.error).toThrow(ResourceNotFoundError);
-  //   } catch (error) {
-  //     expect(error.message).toBe("Error: User not found");
-  //   }
-  // });
 });
 })

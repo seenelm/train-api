@@ -1,7 +1,7 @@
 import express from "express";
 const groupRouter = express.Router();
-import * as groupController from "../controllers/groupController.js";
-import { authenticate } from "../__middleware__/authenticate.js";
+import * as groupController from "../controllers/groupController";
+import { authenticate } from "../__middleware__/authenticate";
 
 groupRouter.post("/", authenticate, groupController.addGroup);
 

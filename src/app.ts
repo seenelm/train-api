@@ -7,11 +7,11 @@ import mongoose from "mongoose";
 import config from "config";
 
 import MongoDB from "./dataAccess/MongoDB";
-import { errorController } from "./controllers/errorController.js";
+import { errorController } from "./controllers/errorController";
 
-import authRouter from "./routes/authRouter.js";
-import userRouter from "./routes/userRouter.js";
-import groupRouter from "./routes/groupRouter.js";
+import authRouter from "./routes/authRouter";
+import userRouter from "./routes/userRouter";
+import groupRouter from "./routes/groupRouter";
 
 const dbUri = config.get("MongoDB.dbConfig.host");
 const port = config.get("MongoDB.dbConfig.port");

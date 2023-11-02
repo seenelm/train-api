@@ -2,7 +2,7 @@ import UserDAO from "../../src/dataAccess/UserDAO";
 import BcryptUtil from "../../src/utils/BcryptUtil";
 import JWTUtil from "../../src/utils/JWTUtil";
 import AuthService from "../../src/services/AuthService";
-import * as Errors from "../../src/utils/errors.js";
+import * as Errors from "../../src/utils/errors";
 jest.mock("../../src/dataAccess/UserDAO");
 
 describe("AuthService", () => {

@@ -1,4 +1,5 @@
-import { Types, Document } from "mongoose";
+import { Document, Types } from "mongoose";
+import User from "./User";
 
 interface Request {
     user: Types.ObjectId;
@@ -7,7 +8,7 @@ interface Request {
 
 export default interface Group extends Document {
     name: string;
-    owner: Types.ObjectId;
-    users: Types.ObjectId[];
+    owner?: Types.DocumentArray<User>;
+    users: Types.DocumentArray<User>;
     requests: Request[];
 }

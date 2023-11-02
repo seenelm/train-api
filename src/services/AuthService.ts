@@ -1,13 +1,14 @@
 import UserDAO from "../dataAccess/UserDAO";
-import * as Errors from "../utils/errors.js";
+import * as Errors from "../utils/errors";
 import JWTUtil from "../utils/JWTUtil";
 import BcryptUtil from "../utils/BcryptUtil";
+import UserModel from "../models/userModel";
 
 class AuthService {
   private userDAO: UserDAO;
 
   constructor() {
-    this.userDAO = new UserDAO();
+    this.userDAO = new UserDAO(UserModel);
   }
 
   public async registerUser(username: string, password: string, name: string) {
@@ -45,16 +46,23 @@ class AuthService {
 
   public async loginUser(username: string, password: string) {
     let errors = {};
-
+    
     const user = await this.userDAO.findOne({ username });
     if (user) {
-      const validPassword = await BcryptUtil.comparePassword(password, user.password);
+      const validPassword = await BcryptUtil.comparePassword(password, user.password).catch((error) => {
+        console.error(error);
+      });
+
       if (validPassword) {
         const payload = {
           name: user.name,
           id: user._id,
         };
-        const token = JWTUtil.sign(payload, process.env.SECRET_CODE);
+        
+        const token = await JWTUtil.sign(payload, process.env.SECRET_CODE).catch((error) => {
+          console.error(error);
+        });
+       
         return {
           userId: user._id,
           token: token,
