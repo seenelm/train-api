@@ -7,4 +7,7 @@ userRouter.get("/:userId", authenticate, usersController.fetchGroups);
 
 userRouter.get("/", authenticate, usersController.findUsers);
 
+userRouter.put("/:userId/bio", authenticate, usersController.updateUserBio);
+
+
 export default userRouter;

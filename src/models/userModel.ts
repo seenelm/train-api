@@ -1,5 +1,15 @@
-import { Schema, model } from "mongoose";
-import User from "./interfaces/User";
+import { Schema, model, Types, Document } from "mongoose";
+import Group from "./interfaces/Group";
+
+interface IUser extends Document {
+  name: string;
+  username: string;
+  password: string;
+  bio?: string;
+  groups?: Types.DocumentArray<Group>;
+  following: Types.ObjectId[];
+  followers: Types.ObjectId[];
+}
 
 const userSchema = new Schema({
   name: {
@@ -14,6 +24,9 @@ const userSchema = new Schema({
   password: {
     type: String,
     required: true,
+  },
+  bio: {
+    type: Schema.Types.String
   },
   groups: [
     {
@@ -35,6 +48,23 @@ const userSchema = new Schema({
   ],
 });
 
-const UserModel = model<User>("User", userSchema);
+const UserModel = model<IUser>("User", userSchema);
 
-export default UserModel;
+class User {
+  public user: IUser;
+
+  constructor(user: IUser) {
+    this.user = user;
+  }
+
+  public async setBio(bio: string) {
+    this.user.bio = bio;
+    await this.user.save();
+  }
+
+  public getBio(): string {
+    return this.user.bio;
+  }
+}
+
+export { UserModel, User, IUser };

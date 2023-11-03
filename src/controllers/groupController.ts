@@ -1,5 +1,5 @@
 import GroupModel from "../models/groupModel";
-import UserModel from "../models/userModel";
+import { UserModel } from "../models/userModel";
 import mongoose from "mongoose";
 import { Request, Response, NextFunction } from "express";
 import GroupService from "../services/GroupService";

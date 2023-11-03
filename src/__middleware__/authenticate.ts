@@ -17,8 +17,6 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     token = testToken.split(" ")[1];
   }
 
-  console.log("Token: ", token);
-
   if (!token) {
     console.log("Not authorized");
     // next(new CustomError("You are not logged in", 401));
@@ -27,7 +25,6 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
 
   try {
     const decodedToken = await JWTUtil.verify(token, process.env.SECRET_CODE);
-    console.log("Decoded: ", decodedToken);
 
     // req.user = decodedToken;
 

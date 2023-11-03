@@ -10,11 +10,15 @@ function handleConflictError(error: any, res: Response) {
 }
 
 function handleResourceNotFoundError(error: any, res: Response) {
-  res.status(error.statusCode);
+  res.status(error.statusCode).json(error.message);
 }
 
 function handleCustomError(error: any, res: Response) {
   res.status(error.statusCode).json(error.errors);
+}
+
+function handleBadRequestError(error: any, res: Response) {
+  res.status(error.statusCode).json(error.message);
 }
 
 export const errorController = (error: any, req: Request, res: Response, next: NextFunction) => {
@@ -29,5 +33,8 @@ export const errorController = (error: any, req: Request, res: Response, next: N
   }
   if (error instanceof Errors.CustomError) {
     error = handleCustomError(error, res);
+  }
+  if (error instanceof Errors.BadRequestError) {
+    error = handleBadRequestError(error, res);
   }
 };

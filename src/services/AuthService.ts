@@ -2,7 +2,7 @@ import UserDAO from "../dataAccess/UserDAO";
 import * as Errors from "../utils/errors";
 import JWTUtil from "../utils/JWTUtil";
 import BcryptUtil from "../utils/BcryptUtil";
-import UserModel from "../models/userModel";
+import { UserModel } from "../models/userModel";
 
 class AuthService {
   private userDAO: UserDAO;
@@ -12,6 +12,8 @@ class AuthService {
   }
 
   public async registerUser(username: string, password: string, name: string) {
+    // Refactor
+
     const existingUser = await this.userDAO.findOne({ username: username });
     if (existingUser) {
       let errors = { username: "username already taken" };
@@ -47,6 +49,7 @@ class AuthService {
   public async loginUser(username: string, password: string) {
     let errors = {};
     
+    // Refactor
     const user = await this.userDAO.findOne({ username });
     if (user) {
       const validPassword = await BcryptUtil.comparePassword(password, user.password).catch((error) => {

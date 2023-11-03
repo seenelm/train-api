@@ -1,13 +1,15 @@
 import UserDAO from "../dataAccess/UserDAO";
 import * as Errors from "../utils/errors";
-import UserModel from "../models/userModel";
+import { UserModel, User } from "../models/userModel";
 import { Types } from "mongoose";
 
 class UserService {
   private userDAO: UserDAO;
+  private userInstance: User;
 
   constructor() {
     this.userDAO = new UserDAO(UserModel);
+    this.userInstance = new User(null);
   }
 
   public async fetchGroups(userId: Types.ObjectId | string) {
@@ -23,6 +25,38 @@ class UserService {
     }));
 
     return { userGroups };
+  }
+
+  public async findUsers(query: any) {
+    const users = await this.userDAO.searchUsers(query);
+    
+    if (!users) {
+      throw new Errors.BadRequestError("User does not exist");
+    }
+
+    const usersList = users.map((user) => ({
+      username: user.username,
+      name: user.name,
+    }));
+
+    return { usersList };
+    
+  }
+
+  public async updateUserBio(userId: Types.ObjectId | string, userBio: string): Promise<void> {
+    
+    if (userBio === null) {
+      throw new Errors.BadRequestError("Invalid User Bio");
+    }
+
+    const user = await this.userDAO.findById(userId);
+
+    if (!user) {
+      throw new Errors.ResourceNotFoundError("User does not exist");
+    }
+
+    this.userInstance.user = user;
+    await this.userInstance.setBio(userBio);
   }
 
 }
