@@ -1,7 +1,7 @@
 import GroupDAO from "../dataAccess/GroupDAO";
 import UserDAO from "../dataAccess/UserDAO";
 import * as Errors from "../utils/errors";
-import UserModel from "../models/userModel";
+import { UserModel } from "../models/userModel";
 import { Types } from "mongoose";
 
 

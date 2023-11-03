@@ -8,7 +8,7 @@ export default abstract class BaseDAO<T extends Document> {
         this.model = model;
     }
 
-    public async create(doc: object): Promise<T> {
+    public async create(doc: object | Array<T>): Promise<T> {
         const entity = await this.model.create(doc).catch((error) => {
             throw new Errors.InternalServerError(error);
         });
