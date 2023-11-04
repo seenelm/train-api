@@ -17,6 +17,9 @@ groupRouter.post(
   groupController.confirmGroupRequest
 );
 
+groupRouter.put("/:groupId/users/:userId/profile/bio", authenticate, groupController.updateGroupBio);
+groupRouter.patch("/:groupId/users/:userId/profile/name", authenticate, groupController.updateGroupName);
+
 // Delete group.
 // router.delete("/:groupId", async (req, res) => {
 //   try {

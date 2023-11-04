@@ -8,7 +8,7 @@ interface Request {
 
 export default interface Group extends Document {
     name: string;
-    owner?: Types.DocumentArray<User>;
+    owner: Types.DocumentArray<User>;
     users: Types.DocumentArray<User>;
     requests: Request[];
 }

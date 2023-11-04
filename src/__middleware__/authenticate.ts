@@ -1,13 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 import JWTUtil from "../utils/JWTUtil";
 
-// declare global {
-//   namespace Express {
-//     interface Request {
-//       user: any
-//     }
-//   }
-// }
+declare global {
+  namespace Express {
+    interface Request {
+      user: any
+    }
+  }
+}
 
 export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
   const testToken = req.headers.authorization;
@@ -26,7 +26,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
   try {
     const decodedToken = await JWTUtil.verify(token, process.env.SECRET_CODE);
 
-    // req.user = decodedToken;
+    req.user = decodedToken;
 
     next();
   } catch (error) {
