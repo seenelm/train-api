@@ -1,12 +1,23 @@
-import { Schema, model } from "mongoose";
-import Group from "./interfaces/Group";
+import { Schema, model, Types, Document } from "mongoose";
+import { IUser } from "./userModel";
+
+interface IGroup extends Document {
+  name: string;
+  bio: string;
+  owners: Types.DocumentArray<IUser>;
+  users: Types.DocumentArray<IUser>;
+  requests: Types.DocumentArray<IUser>;
+}
 
 const groupSchema = new Schema({
   name: {
     type: String,
     required: true,
   },
-  owner: [
+  bio: {
+    type: Schema.Types.String
+  },
+  owners: [
     {
       type: Schema.Types.ObjectId,
       ref: "User",
@@ -20,18 +31,39 @@ const groupSchema = new Schema({
   ],
   requests: [
     {
-      user: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-      },
-      status: {
-        type: String,
-        default: "pending",
-      },
+      type: Schema.Types.ObjectId,
+      ref: "User",
     },
   ],
 });
 
-const GroupModel = model<Group>("Group", groupSchema);
+const GroupModel = model<IGroup>("Group", groupSchema);
 
-export default GroupModel;
+class Group {
+  public group: IGroup;
+
+  constructor(group: IGroup) {
+    this.group = group;
+  }
+
+  public async setBio(bio: string) {
+    console.log("Group Bio: ", bio);
+    this.group.bio = bio;
+    await this.group.save();
+  }
+
+  public getBio(): string {
+    return this.group.bio;
+  }
+
+  public async setName(name: string) {
+    this.group.name = name;
+    await this.group.save();
+  }
+
+  public getName(): string {
+    return this.group.name;
+  }
+}
+
+export { GroupModel, IGroup, Group };

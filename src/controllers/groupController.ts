@@ -1,19 +1,43 @@
-import GroupModel from "../models/groupModel";
+import { GroupModel } from "../models/groupModel";
 import { UserModel } from "../models/userModel";
 import mongoose from "mongoose";
 import { Request, Response, NextFunction } from "express";
 import GroupService from "../services/GroupService";
 
+const groupService = new GroupService();
+
 // Add group to associated Users model.
 export const addGroup = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { name, userId } = req.body;
-    const result = await GroupService.addGroup(name, userId);
+    const result = await groupService.addGroup(name, userId);
     return res.status(201).json(result.newGroup);
   } catch (error) {
     next(error);
   }
 };
+
+export const updateGroupBio = async (req: Request, res: Response, next: NextFunction) => {
+  const { groupBio } = req.body;
+  const { userId, groupId } = req.params;
+  try {
+    await groupService.updateGroupBio(userId, groupId, groupBio);
+    return res.status(201).json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export const updateGroupName = async (req: Request, res: Response, next: NextFunction) => {
+  const { groupName } = req.body;
+  const { userId, groupId } = req.params;
+  try {
+    await groupService.updateGroupName(userId, groupId, groupName);
+    return res.status(201).json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+}
 
 // Request to join private group.
 export const requestGroup = async (req: Request, res: Response) => {

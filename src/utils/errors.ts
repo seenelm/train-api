@@ -40,10 +40,19 @@ export class ResourceNotFoundError extends Error {
 };
 
 export class InternalServerError extends Error {
-  public statusCode: 500;
+  public statusCode: number;
   
   constructor(message: string) {
     super(message);
     this.statusCode = 500;
+  }
+};
+
+export class ForbiddenError extends Error {
+  public statusCode: number;
+  
+  constructor(message: string) {
+    super(message);
+    this.statusCode = 403;
   }
 };
