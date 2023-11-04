@@ -27,11 +27,18 @@ class UserService {
     return { userGroups };
   }
 
-  public async findUsers(query: any) {
+  public async findUsers(query: string | object) {
+    if (typeof query === 'string' && (!query || query.trim() === "")) {
+      throw new Errors.BadRequestError("Invalid query string");
+    }
+
+    if (typeof query === "object" && (!query || Object.keys(query).length === 0)) {
+      throw new Errors.BadRequestError("Invalid query object");
+    }
+
     const users = await this.userDAO.searchUsers(query);
-    
     if (!users) {
-      throw new Errors.BadRequestError("User does not exist");
+      throw new Errors.ResourceNotFoundError("User does not exist");
     }
 
     const usersList = users.map((user) => ({
@@ -43,10 +50,10 @@ class UserService {
     
   }
 
-  public async updateUserBio(userId: Types.ObjectId | string, userBio: string): Promise<void> {
+  public async updateUserBio(userId: Types.ObjectId | string, userBio: string | null): Promise<void> {
     
-    if (userBio === null) {
-      throw new Errors.BadRequestError("Invalid User Bio");
+    if (!userBio) {
+      throw new Errors.BadRequestError("Users Bio is Undefined");
     }
 
     const user = await this.userDAO.findById(userId);
@@ -59,6 +66,22 @@ class UserService {
     await this.userInstance.setBio(userBio);
   }
 
+  public async updateUsersFullName(userId: Types.ObjectId | string, name: string | null): Promise<void> {
+    
+    if (!name) {
+      throw new Errors.BadRequestError("Users Name is Undefined");
+    }
+
+    const user = await this.userDAO.findById(userId);
+
+    if (!user) {
+      throw new Errors.ResourceNotFoundError("User does not exist");
+    }
+
+    this.userInstance.user = user;
+    await this.userInstance.setName(name);
+  }
+
 }
 
-export default new UserService();
+export default UserService;

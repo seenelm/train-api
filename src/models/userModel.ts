@@ -5,8 +5,8 @@ interface IUser extends Document {
   name: string;
   username: string;
   password: string;
-  bio?: string;
-  groups?: Types.DocumentArray<Group>;
+  bio: string;
+  groups: Types.DocumentArray<Group>;
   following: Types.ObjectId[];
   followers: Types.ObjectId[];
 }
@@ -64,6 +64,15 @@ class User {
 
   public getBio(): string {
     return this.user.bio;
+  }
+
+  public async setName(name: string) {
+    this.user.name = name;
+    await this.user.save();
+  }
+
+  public getName(): string {
+    return this.user.name;
   }
 }
 

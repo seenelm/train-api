@@ -18,7 +18,7 @@ class UserDAO extends BaseDAO<IUser> {
     .exec();
   }
 
-  public async searchUsers(query: string): Promise<IUser[] | null> {
+  public async searchUsers(query: string | object): Promise<IUser[] | null> {
     return await this.userModel.find({
       $or: [
         { username: { $regex: query, $options: "i" } },
