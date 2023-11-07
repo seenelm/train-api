@@ -28,9 +28,12 @@ module.exports.register = async (req, res) => {
 
       const token = jwt.sign(payload, process.env.SECRET_CODE);
 
-      return res
-        .status(201)
-        .json({ success: true, userId: newUser._id, token: token });
+      return res.status(201).json({
+        success: true,
+        userId: newUser._id,
+        token: token,
+        username: username,
+      });
     }
   } catch (error) {
     return res.status(503).json({ error: "Error Adding User" });
@@ -69,7 +72,12 @@ module.exports.login = async (req, res) => {
         const token = jwt.sign(payload, process.env.SECRET_CODE);
         return res
           .status(201)
-          .json({ success: true, userId: user._id, token: token });
+          .json({
+            success: true,
+            userId: user._id,
+            token: token,
+            username: username,
+          });
       } else {
         errors = { message: "Incorrect Username or Password" };
         return res.status(400).json({ errors });
