@@ -14,6 +14,7 @@ module.exports.showGroups = async (req, res) => {
     const userGroups = user.groups.map((group) => ({
       id: group._id,
       name: group.name,
+      // owner: group.owner,
     }));
 
     console.log("Groups: ", user.groups);
