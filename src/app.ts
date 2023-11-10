@@ -9,9 +9,11 @@ import config from "config";
 import MongoDB from "./dataAccess/MongoDB";
 import { errorController } from "./controllers/errorController";
 
-import authRouter from "./routes/authRouter";
 import userRouter from "./routes/userRouter";
+import userGroupsRouter from "./routes/userGroupsRouter";
 import groupRouter from "./routes/groupRouter";
+import userProfileRouter from "./routes/userProfileRouter";
+import searchRouter from "./routes/searchRouter";
 
 const dbUri = config.get("MongoDB.dbConfig.host");
 const port = config.get("MongoDB.dbConfig.port");
@@ -29,9 +31,11 @@ app.use(async (req, res, next) => {
 app.use(bodyParser.json());
 app.use(cors());
 
-app.use("/api", authRouter);
-app.use("/api/users", userRouter);
+app.use("/api", userRouter);
+app.use("/api/users", userGroupsRouter);
+app.use("/api/user-profile/users", userProfileRouter);
 app.use("/api/groups", groupRouter);
+app.use("/api/search", searchRouter);
 
 app.use(errorController);
 

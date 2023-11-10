@@ -1,14 +1,13 @@
 import express from "express";
 const userRouter = express.Router();
-import * as usersController from "../controllers/usersController";
-import { authenticate } from "../__middleware__/authenticate";
+import {
+  validateLogin,
+  validateRegistration,
+} from "../validators/userValidator";
+import * as userController from "../controllers/userController";
 
-userRouter.get("/:userId", authenticate, usersController.fetchGroups);
+userRouter.post("/register", validateRegistration, userController.register);
 
-userRouter.get("/", authenticate, usersController.findUsers);
-
-userRouter.put("/:userId/profile/bio", authenticate, usersController.updateUserBio);
-userRouter.patch("/:userId/profile/name", authenticate, usersController.updateUsersFullName);
-
+userRouter.post("/login", validateLogin, userController.login);
 
 export default userRouter;

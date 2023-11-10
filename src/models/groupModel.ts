@@ -15,7 +15,7 @@ const groupSchema = new Schema({
     required: true,
   },
   bio: {
-    type: Schema.Types.String
+    type: String
   },
   owners: [
     {
@@ -39,31 +39,4 @@ const groupSchema = new Schema({
 
 const GroupModel = model<IGroup>("Group", groupSchema);
 
-class Group {
-  public group: IGroup;
-
-  constructor(group: IGroup) {
-    this.group = group;
-  }
-
-  public async setBio(bio: string) {
-    console.log("Group Bio: ", bio);
-    this.group.bio = bio;
-    await this.group.save();
-  }
-
-  public getBio(): string {
-    return this.group.bio;
-  }
-
-  public async setName(name: string) {
-    this.group.name = name;
-    await this.group.save();
-  }
-
-  public getName(): string {
-    return this.group.name;
-  }
-}
-
-export { GroupModel, IGroup, Group };
+export { GroupModel, IGroup };
