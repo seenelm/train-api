@@ -2,7 +2,7 @@ import * as Errors from "../utils/errors";
 import { NextFunction, Request, Response } from "express";
 
 function handleInternalServerError(error: any, res: Response) {
-  res.status(error.statusCode);
+  res.status(error.statusCode).json(error.message);
 }
 
 function handleConflictError(error: any, res: Response) {

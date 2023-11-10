@@ -1,87 +1,98 @@
 import UserDAO from "../dataAccess/UserDAO";
 import * as Errors from "../utils/errors";
-import { UserModel, User } from "../models/userModel";
-import { Types } from "mongoose";
+import JWTUtil from "../utils/JWTUtil";
+import BcryptUtil from "../utils/BcryptUtil";
+import { UserModel } from "../models/userModel";
+import UserProfileDAO from "../dataAccess/UserProfileDAO";
+import { UserProfileModel } from "../models/userProfile";
+import UserGroupsDAO from "../dataAccess/UserGroupsDAO";
+import { UserGroupsModel } from "../models/userGroups";
 
 class UserService {
   private userDAO: UserDAO;
-  private userInstance: User;
+  private userProfileDAO: UserProfileDAO;
+  private userGroupsDAO: UserGroupsDAO;
 
   constructor() {
     this.userDAO = new UserDAO(UserModel);
-    this.userInstance = new User(null);
+    this.userProfileDAO = new UserProfileDAO(UserProfileModel);
+    this.userGroupsDAO = new UserGroupsDAO(UserGroupsModel);
   }
 
-  public async fetchGroups(userId: Types.ObjectId | string) {
-    const user = await this.userDAO.findUserById(userId, "groups");
+  public async registerUser(username: string, password: string, name: string) {
+    // Refactor
+    const existingUser = await this.userDAO.findOne({ username: username });
+    if (existingUser) {
+      let errors = { username: "username already taken" };
+      throw new Errors.ConflictError("Conflict Error", errors);
+    } else {
+      const hash = await BcryptUtil.hashPassword(password).catch((error) => {
+        console.error(error);
+      });
 
-    if (!user) {
-      throw new Errors.ResourceNotFoundError("User not found");
+      const newUser = await this.userDAO
+        .create({ username, password: hash, isActive: true })
+        .catch((error) => {
+          // Log Error.
+          throw error;
+        });
+
+      const newUserProfile = await this.userProfileDAO.create({ 
+        userId: newUser._id,
+        name 
+      });
+
+      await this.userGroupsDAO.create({ userId: newUser._id });
+
+      const payload = {
+        name: newUserProfile.name,
+        userId: newUser._id,
+      };
+
+      const token = await JWTUtil.sign(payload, process.env.SECRET_CODE).catch((error) => {
+        console.error(error);
+      });
+
+      return { userId: newUser._id, token, username };
     }
+  }
+
+  public async loginUser(username: string, password: string) {
+    let errors = {};
     
-    const userGroups = user.groups.map((group) => ({
-      id: group._id,
-      name: group.name
-    }));
+    // Refactor
+    const user = await this.userDAO.findOne({ username });
+    if (user) {
+      const validPassword = await BcryptUtil.comparePassword(password, user.password).catch((error) => {
+        console.error(error);
+      });
 
-    return { userGroups };
+      if (validPassword) {
+        const userProfile = await this.userProfileDAO.findOne({ userId: user._id });
+
+        const payload = {
+          name: userProfile.name,
+          id: user._id,
+        };
+        
+        const token = await JWTUtil.sign(payload, process.env.SECRET_CODE).catch((error) => {
+          console.error(error);
+        });
+       
+        return {
+          userId: user._id,
+          token: token,
+          username: username,
+        };
+      } else {
+        errors = { message: "Incorrect Username or Password" };
+        throw new Errors.CustomError(errors, 400);
+      }
+    } else {
+      errors = { message: "Incorrect Username or Password" };
+      throw new Errors.CustomError(errors, 400);
+    }
   }
-
-  public async findUsers(query: string | object) {
-    if (typeof query === 'string' && (!query || query.trim() === "")) {
-      throw new Errors.BadRequestError("Invalid query string");
-    }
-
-    if (typeof query === "object" && (!query || Object.keys(query).length === 0)) {
-      throw new Errors.BadRequestError("Invalid query object");
-    }
-
-    const users = await this.userDAO.searchUsers(query);
-    if (!users) {
-      throw new Errors.ResourceNotFoundError("User does not exist");
-    }
-
-    const usersList = users.map((user) => ({
-      username: user.username,
-      name: user.name,
-    }));
-
-    return { usersList };
-    
-  }
-
-  public async updateUserBio(userId: Types.ObjectId | string, userBio: string | null): Promise<void> {
-    
-    if (!userBio) {
-      throw new Errors.BadRequestError("Users Bio is Undefined");
-    }
-
-    const user = await this.userDAO.findById(userId);
-
-    if (!user) {
-      throw new Errors.ResourceNotFoundError("User does not exist");
-    }
-
-    this.userInstance.user = user;
-    await this.userInstance.setBio(userBio);
-  }
-
-  public async updateUsersFullName(userId: Types.ObjectId | string, name: string | null): Promise<void> {
-    
-    if (!name) {
-      throw new Errors.BadRequestError("Users Name is Undefined");
-    }
-
-    const user = await this.userDAO.findById(userId);
-
-    if (!user) {
-      throw new Errors.ResourceNotFoundError("User does not exist");
-    }
-
-    this.userInstance.user = user;
-    await this.userInstance.setName(name);
-  }
-
 }
 
 export default UserService;

@@ -1,7 +1,7 @@
 import { IUser } from "../models/userModel";
 import BaseDAO from "./BaseDAO";
 import { Model, Types } from "mongoose";
-import Group from "../models/interfaces/Group";
+import { IGroup } from "../models/groupModel";
 
 class UserDAO extends BaseDAO<IUser> {
 
@@ -14,7 +14,7 @@ class UserDAO extends BaseDAO<IUser> {
 
   public async findUserById(id: Types.ObjectId | string, path: string): Promise<IUser | null> {
     return await this.userModel.findById(id)
-    .populate<{group: Group}>({path: path})
+    .populate<{group: IGroup}>({path: path})
     .exec();
   }
 

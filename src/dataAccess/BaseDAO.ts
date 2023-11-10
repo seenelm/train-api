@@ -22,4 +22,8 @@ export default abstract class BaseDAO<T extends Document> {
     public async findOne(query: FilterQuery<T>): Promise<T | null> {
         return await this.model.findOne(query).exec();
     }
+
+    public async findOneAndUpdate(filter: object, update: object, options: object): Promise<T | null> {
+        return await this.model.findOneAndUpdate(filter, update, options).exec();
+    }
 }
