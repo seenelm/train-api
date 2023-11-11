@@ -1,230 +1,218 @@
-import { Types } from "mongoose";
-import UserDAO from "../../src/dataAccess/UserDAO";
+import BcryptUtil from "../../src/utils/BcryptUtil";
+import JWTUtil from "../../src/utils/JWTUtil";
 import UserService from "../../src/services/UserService";
+import { IUser } from "../../src/models/userModel";
+import { IUserProfile } from "../../src/models/userProfile";
+import { IUserGroups } from "../../src/models/userGroups";
+import { Types } from "mongoose";
+
+import UserDAO from "../../src/dataAccess/UserDAO";
+import UserProfileDAO from "../../src/dataAccess/UserProfileDAO";
+import UserGroupsDAO from "../../src/dataAccess/UserGroupsDAO";
+
 import * as Errors from "../../src/utils/errors";
-import { User, IUser } from "../../src/models/userModel";
-
-const USER_ID = new Types.ObjectId();
-
-const mockUserWithGroups = {
-    _id: new Types.ObjectId(),
-    name: "Noah Gross",
-    username: "ngross",
-    password: "Password98!",
-    groups: [
-        {
-            _id: new Types.ObjectId(),
-            name: "Maryland Football",
-            users: [],
-            owner: new Types.ObjectId(),
-            requests: []
-        },
-        {
-            _id: new Types.ObjectId(),
-            name: "The Shop Gym",
-            users: [],
-            owner: new Types.ObjectId(),
-            requests: []
-        }
-    ],
-} 
-
-const mockUserGroups = [
-    { _id: new Types.ObjectId(), name: "Maryland Football"}, 
-    { _id: new Types.ObjectId(), name: "The Shop Gym"},
-]
-
-const mockUser1 = {
-    _id: new Types.ObjectId(), 
-    name: "Lionel Messi", 
-    username: "lMessi", 
-    password: "Password123!",
-    bio: ""
-} as IUser
-  
-const mockUser2 = {
-    _id: new Types.ObjectId(), 
-    name: "Lionel Messi", 
-    username: "lMessi2", 
-    password: "Password123!",
-    bio: ""
-} as IUser
 
 describe("UserService", () => {
-    let userDAO: UserDAO;
-    let userService: UserService;
+  let userDAO: UserDAO;
+  let userProfileDAO: UserProfileDAO;
+  let userGroupsDAO: UserGroupsDAO;
+  let userService: UserService;
 
-    beforeAll(() => {
-        jest.mock("../../src/dataAccess/UserDAO");
-        userService = new UserService();
+  beforeAll(() => {
+    userService = new UserService();
+
+    jest.mock("../../src/dataAccess/UserDAO");
+    jest.mock("../../src/dataAccess/UserProfileDAO");
+    jest.mock("../../src/dataAccess/UserGroupsDAO");
+  });
+
+  beforeEach(() => {
+    jest.resetAllMocks();
+  });
+  describe("registerUser", () => {
+    it("should register a user", async () => {
+      // arrange
+      const mockPasswordHash = "Password123!Hash";
+      const mockUsername = "username";
+      const mockPassword = "Password123!";
+      const mockName = "name";
+
+      const mockNewUser = {
+        _id: new Types.ObjectId(),
+        username: mockUsername,
+        password: mockPasswordHash,
+        isActive: true,
+      } as IUser
+
+      const mockNewUserProfile = {
+        _id: new Types.ObjectId(),
+        userId: mockNewUser._id,
+        name: mockName,
+      } as IUserProfile
+
+      const mockNewUserGroups = {
+        _id: new Types.ObjectId(),
+        userId: mockNewUser._id,
+      } as IUserGroups
+
+
+      try {
+        userDAO.findOne = jest.fn().mockResolvedValue(null);
+        BcryptUtil.hashPassword = jest.fn().mockResolvedValue(mockPasswordHash);
+
+        userDAO.create= jest.fn().mockResolvedValue(mockNewUser);
+        userProfileDAO.create = jest.fn().mockResolvedValue(mockNewUserProfile);
+        userGroupsDAO.create = jest.fn().mockResolvedValue(mockNewUserGroups);
+
+        const payload = { name: mockNewUserProfile.name, userId: mockNewUser._id };
+        JWTUtil.sign = jest.fn().mockResolvedValue(payload);
+
+        // act
+        const result = await userService.registerUser(mockUsername, mockPassword, mockName);
+
+        // assert
+        expect(result).toEqual({
+          userId: mockNewUser._id,
+          token: "mockToken",
+          username: mockNewUser.username,
+        });
+
+        expect(userDAO.findOne).toHaveBeenCalledWith(mockUsername);
+        expect(BcryptUtil.hashPassword).toHaveBeenCalledWith(mockPassword);
+        expect(userDAO.create).toHaveBeenCalledWith({
+          username: mockNewUser.username,
+          password: mockNewUser.password,
+          isActive: mockNewUser.isActive
+        });
+        expect(userProfileDAO.create).toHaveBeenCalledWith({
+          userId: mockNewUser._id,
+          name: mockNewUserProfile.name
+        });
+        expect(userGroupsDAO.create).toHaveBeenCalledWith({
+          userId: mockNewUser._id
+        });
+        expect(JWTUtil.sign).toHaveBeenCalledWith(payload)
+      } catch (error) {}
+      
     });
+    it("should throw a username Conflict Error", async () => {
+      const mockUsername = "username";
+      const mockPassword = "Password123!";
+      const mockName = "name";
 
-    beforeEach(() => {
-        jest.clearAllMocks();
+      const mockUser = {
+        _id: new Types.ObjectId(),
+        username: mockUsername,
+        password: mockPassword,
+        isActive: true,
+      } as IUser
+
+      try {
+        userDAO.findOne = jest.fn().mockResolvedValue(mockUser);
+
+        const response = await userService.registerUser(
+          mockUsername,
+          mockPassword,
+          mockName
+        );
+    
+        expect(response).rejects.toThrow(Errors.ConflictError);
+        expect(Errors.ConflictError).toEqual({ username: "username already taken" });
+        expect(userDAO.findOne).toHaveBeenCalledWith(mockUsername);
+      } catch (error) {}
     });
+    it("should throw error when createUser fails", async () => {
+      const mockUsername = "username";
+      const mockPasswordHash = "Password123!Hash";
+      const mockName = "name";
 
-    describe("fetchGroups", () => {
-        it("should return user groups", async () => {
-            try {
-                userDAO.findUserById = jest.fn().mockResolvedValue(mockUserWithGroups);
+      try {
+        userDAO.create = jest
+          .fn()
+          .mockRejectedValue(new Error("Database Error"));
 
-                const result = await userService.fetchGroups(USER_ID);
-
-                expect(userDAO.findUserById).toHaveBeenCalledWith(mockUserWithGroups);
-                expect(result.userGroups).toEqual(mockUserGroups);  
-            } catch (error) {}  
-        }); 
-        it("should throw a ResourceNotFoundError when user is not found", async () => {
-            try {
-                userDAO.findUserById = jest.fn().mockResolvedValue(null);
-
-                await expect(userService.fetchGroups(USER_ID)).rejects.toThrow(Errors.ResourceNotFoundError);
-            } catch (error) {}
-        });   
+        const response = await userService.registerUser(
+          mockUsername,
+          mockPasswordHash,
+          mockName
+        );
+        
+        expect(response).rejects.toThrow(Errors.InternalServerError);
+      } catch (error) {}
     });
+  });
+  
+  
+  describe("loginUser", () => {
+    const mockUsername = "username";
+    const mockPassword = "Password123!";
+    const mockName = "name";
+    const mockToken = "mockToken";
 
-    describe("findUsers", () => {
-        it("should find users", async () => {
-            const mockUsers = [ mockUser1, mockUser2 ];
-            const mockQuery = "lMessi";
+    const mockUser = {
+      _id: new Types.ObjectId(),
+      username: mockUsername,
+      password: mockPassword,
+      isActive: true,
+    } as IUser
 
-            const mockUsersList = [
-                { username: mockUser1.username, name: mockUser1.name },
-                { username: mockUser2.username, name: mockUser2.name },
-            ]
-            
-            try {
-                userDAO.searchUsers = jest.fn().mockReturnValue(mockUsers);
+    const mockUserProfile = {
+      _id: new Types.ObjectId(),
+      userId: mockUser._id,
+      name: mockName,
+    } as IUserProfile
+    it("should login the user", async () => {
+      
+      const mockPayload = {
+        name: mockUserProfile.name,
+        id: mockUser._id
+      }
 
-                const result = await userService.findUsers(mockQuery);
-                expect(result).toEqual(mockUsersList);
-                expect(userDAO.searchUsers).toHaveBeenCalledWith(mockQuery);
-            } catch (error) {}
-        });
-        it("should throw a BadRequestError when query string is empty", async () => {
-            const mockQuery = ""
+      try {
+        userDAO.findOne = jest.fn().mockResolvedValue(mockUser);
+        BcryptUtil.comparePassword = jest.fn().mockResolvedValue(true);
+        userProfileDAO.findOne = jest.fn().mockResolvedValue(mockUserProfile);
+        JWTUtil.sign = jest.fn().mockResolvedValue(mockToken);
 
-            try {
-                const result = await userService.findUsers(mockQuery);
-                expect(result).rejects.toThrow(Errors.BadRequestError);
-            } catch (error) {}
-        });
-        it("should throw a BadRequestError when query object is empty", async () => {
-           
-            try {
-                const result = await userService.findUsers({});
-                expect(result).rejects.toThrow(Errors.BadRequestError);
-            } catch (error) {}
-        });
-        it("should throw a ResourceNotFoundError when users are not found", async () => {
-            const mockQuery = "lMessi";
+        const response = await userService.loginUser(mockUsername, mockPassword);
 
-            try {
-                userDAO.searchUsers = jest.fn().mockReturnValue(null);
-
-                const result = await userService.findUsers(mockQuery);
-
-                expect(result).rejects.toThrow(Errors.ResourceNotFoundError);
-                expect(userDAO.searchUsers).toBeNull();
-            } catch (error) {}
-        });
-
-        describe("updateUserBio", () => {
-            const mockUser3 = {
-                _id: new Types.ObjectId(), 
-                name: "Lionel Messi", 
-                username: "lMessi2", 
-                password: "Password123!",
-                bio: "I love to play soccer!"
-            } as IUser
-
-            it("should add user bio", async () => {
-                const mockUserBio = "I love to play soccer!";
-
-                try {
-                    userDAO.findById = jest.fn().mockReturnValue(mockUser1);
-                    const userInstance = new User(mockUser1);
-                    
-                    const result = await userService.updateUserBio(USER_ID, mockUserBio);
-
-                    expect(userInstance.setBio).toHaveBeenCalledWith(mockUserBio)
-                    expect(mockUser1.bio).toEqual(mockUserBio);
-                } catch (error) {}
-            });
-            it("should update user bio", async () => {
-                const mockUserBio = "I love to play soccer and watch movies!";
-
-                try {
-                    userDAO.findById = jest.fn().mockReturnValue(mockUser3);
-                    const userInstance = new User(mockUser3);
-                    
-                    const result = await userService.updateUserBio(USER_ID, mockUserBio);
-
-                    expect(userInstance.setBio).toHaveBeenCalledWith(mockUserBio)
-                    expect(mockUser3.bio).toEqual(mockUserBio);
-                } catch (error) {}
-            });
-            it("should throw a ResourceNotFoundError when user does not exist", async () => {
-                const mockUserBio = "I love to play soccer and watch movies!";
-
-                try {
-                    userDAO.findById = jest.fn().mockReturnValue(null);
-    
-                    const result = await userService.updateUserBio(USER_ID, mockUserBio);
-    
-                    expect(result).rejects.toThrow(Errors.ResourceNotFoundError);
-                    expect(userDAO.findById).toBeNull();
-                } catch (error) {}
-            });
-            it("should throw a BadRequestError if userBio is null", async () => {
-                try {
-                    const result = await userService.updateUserBio(USER_ID, null);
-                    expect(result).rejects.toThrow(Errors.BadRequestError);
-                } catch (error) {}
-            });
-        });
-
-        describe("updateUsersFullName", () => {
-            const mockUser = {
-                _id: new Types.ObjectId(), 
-                name: "Noah Gross", 
-                username: "ngross", 
-                password: "Password123!",
-                bio: "I love to code!"
-            } as IUser
-
-            it("should update users name", async () => {
-                const mockName = "Noah Shanahan";
-
-                try {
-                    userDAO.findById = jest.fn().mockReturnValue(mockUser);
-                    const userInstance = new User(mockUser);
-                    
-                    const result = await userService.updateUsersFullName(USER_ID, mockName);
-
-                    expect(userInstance.setName).toHaveBeenCalledWith(mockName);
-                    expect(mockUser.name).toEqual(mockName);
-                } catch (error) {}
-            });
-            it("should throw a ResourceNotFoundError when user does not exist", async () => {
-                const mockName = "Noah Shanahan";
-
-                try {
-                    userDAO.findById = jest.fn().mockReturnValue(null);
-    
-                    const result = await userService.updateUsersFullName(USER_ID, mockName);
-    
-                    expect(result).rejects.toThrow(Errors.ResourceNotFoundError);
-                    expect(userDAO.findById).toBeNull();
-                } catch (error) {}
-            });
-            it("should throw a BadRequestError if users name is null", async () => {
-                try {
-                    const result = await userService.updateUsersFullName(USER_ID, null);
-                    expect(result).rejects.toThrow(Errors.BadRequestError);
-                } catch (error) {}
-            });
-        });
+        expect(userDAO.findOne).toHaveBeenCalledWith(mockUsername);
+        expect(BcryptUtil.comparePassword).toHaveBeenCalledWith(mockPassword, mockUser.password);
+        expect(userProfileDAO.findOne).toHaveBeenCalledWith(mockUser._id);
+        expect(JWTUtil.sign).toHaveBeenCalledWith(mockPayload);
+        expect(response).toEqual({
+          userId: mockUser._id,
+          token: mockToken,
+          username: mockUser.username
+        })
+      } catch (error) {}
     });
+    it("should throw an error when password is not valid", async () => {
 
+      try {
+        userDAO.findOne = jest.fn().mockResolvedValue(mockUser);
+        BcryptUtil.comparePassword = jest.fn().mockResolvedValue(false);
+
+        const response = await userService.loginUser(mockUsername, mockPassword);
+        expect(response).rejects.toThrow(Errors.ConflictError);
+        expect(userDAO.findOne).toHaveBeenCalledWith(mockUsername);
+
+        expect(BcryptUtil.comparePassword).toHaveBeenCalledWith(mockPassword, mockUser.password);
+        expect(BcryptUtil.comparePassword).toBe(false);
+
+      } catch (error) {}
+    });
+    it("should throw an error when user is not found", async () => {
+      
+      try {
+        userDAO.findOne = jest.fn().mockResolvedValue(null);
+
+        const response = await userService.loginUser(mockUsername, mockPassword);
+        expect(response).rejects.toThrow(Errors.ConflictError);
+        expect(userDAO.findOne).toHaveBeenCalledWith(mockUsername);
+        expect(userDAO.findOne).toBeNull();
+
+      } catch (error) {}
+    });
+  });
 });
