@@ -13,17 +13,6 @@ export const fetchGroups = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
-// Search for user.
-export const findUsers = async (req: Request, res: Response, next: NextFunction) => {
-  const { search } = req.query;
-  try {
-    // const users = await userService.findUsers(search);
-    // return res.status(201).json(users);
-  } catch (error) {
-    next(error);
-  }
-};
-
 
 // Request to follow users private account.
 export const requestUser = async (req: Request, res: Response) => {};

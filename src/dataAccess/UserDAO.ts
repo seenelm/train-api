@@ -17,17 +17,6 @@ class UserDAO extends BaseDAO<IUser> {
     .populate<{group: IGroup}>({path: path})
     .exec();
   }
-
-  public async searchUsers(query: string | object): Promise<IUser[] | null> {
-    return await this.userModel.find({
-      $or: [
-        { username: { $regex: query, $options: "i" } },
-        { name: { $regex: query, $options: "i" } },
-      ],
-    }).exec();
-  }
-  
-  
 }
 
 export default UserDAO;
