@@ -1,8 +1,8 @@
 import GroupDAO from "../dataAccess/GroupDAO";
 import * as Errors from "../utils/errors";
 import { IUser } from "../models/userModel";
-import { Types } from "mongoose";
-import { GroupModel } from "../models/groupModel";
+import { Types, startSession } from "mongoose";
+import { GroupModel, IGroup } from "../models/groupModel";
 import UserGroupsDAO from "../dataAccess/UserGroupsDAO";
 import { UserGroupsModel } from "../models/userGroups";
 
@@ -17,7 +17,11 @@ class GroupService {
     }
 
     public async addGroup(name: string, userId: Types.ObjectId | string) {
+        // const session = await startSession();
+
+        // try {
         const user = await this.userGroupsDAO.findOne({ userId });
+        console.log("User: ", user);
         
         if (!user) {
             throw new Errors.ResourceNotFoundError("User not found");
@@ -38,6 +42,12 @@ class GroupService {
         };
 
         return { newGroup };
+        // catch (error) {
+        //     await session.abortTransaction();
+        //     throw error;
+        // } finally {
+        //     session.endSession();
+        // }
     }
 
     public async updateGroupBio(userId: Types.ObjectId | string, groupId: Types.ObjectId | string, groupBio: string | null): Promise<void> {
@@ -54,7 +64,7 @@ class GroupService {
         );
 
         if (!group) {
-          throw new Errors.ResourceNotFoundError("User does not exist");
+          throw new Errors.ResourceNotFoundError("Group does not exist");
         }
 
         const isOwner = group.owners.map((owner: IUser) => {
@@ -80,7 +90,7 @@ class GroupService {
         );
 
         if (!group) {
-          throw new Errors.ResourceNotFoundError("User does not exist");
+          throw new Errors.ResourceNotFoundError("Group does not exist");
         }
 
         // const isOwner = group.owners.map((owner: IUser) => {
@@ -92,9 +102,12 @@ class GroupService {
         })
       
         if (!isOwner) {
-            throw new Errors.ForbiddenError("User doesn't have permission to update group bio");
+            throw new Errors.ForbiddenError("User doesn't have permission to update group name");
         }
     }
+
+    // return group data
+    // public async fetchGroup(groupId: Types.ObjectId): Promise<IGroup[]> | null {}
 }
 
 export default GroupService;
