@@ -13,6 +13,11 @@ class SearchDAO {
         this.groupModel = groupModel;
     }
 
+    /**
+     * 
+     * @param query search term
+     * @returns array of users (userId, username, name) and groups (groupId, group name)
+     */
     public async search(query: string | object): Promise<(IUser & IUserProfile & IGroup)[] | null> {
         const users = await this.userModel.aggregate([
             {

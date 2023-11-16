@@ -1,4 +1,4 @@
-import { IGroup, GroupModel } from "../models/groupModel";
+import { IGroup } from "../models/groupModel";
 import BaseDAO from "./BaseDAO";
 import { Model } from "mongoose";
 
