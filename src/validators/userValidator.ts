@@ -61,6 +61,8 @@ export const validateRegistration = (req: Request, res: Response, next: NextFunc
       errors[err.context.key] = err.message;
     });
 
+    console.log("Errors: ", errors);
+
     return res.status(400).json({ errors });
   } else {
     next();

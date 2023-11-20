@@ -39,14 +39,14 @@ app.use("/api/search", searchRouter);
 
 app.use(errorController);
 
-const server = app.listen(port, () => {
-  console.log(`APP IS LISTENING ON PORT ${port}`);
-});
+// const server = app.listen(port, () => {
+//   console.log(`APP IS LISTENING ON PORT ${port}`);
+// });
 
-process.on("SIGINT", () => {
-  db.close().then(() => {
-    process.exit(0);
-  });
-});
+// process.on("SIGINT", () => {
+//   db.close().then(() => {
+//     process.exit(0);
+//   });
+// });
 
-export { app, server };
+export { app, db };

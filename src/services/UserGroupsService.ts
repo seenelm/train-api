@@ -10,17 +10,15 @@ class UserGroupsService {
     this.userGroupsDAO = new UserGroupsDAO(UserGroupsModel);
   }
 
-  public async fetchGroups(userId: Types.ObjectId | string) {
+  public async fetchUserGroups(userId: Types.ObjectId | string) {
     const user = await this.userGroupsDAO.findOneUser({ userId }, "groups");
+    const userGroups = user.groups;
 
     if (!user) {
       throw new Errors.ResourceNotFoundError("User not found");
     }
     
-    const userGroups = user.groups.map((group) => ({
-      id: group._id,
-      name: group.name
-    }));
+    // Filter out requests array.
 
     return { userGroups };
   }

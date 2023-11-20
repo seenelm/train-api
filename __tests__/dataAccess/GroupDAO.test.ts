@@ -6,7 +6,6 @@ import { InternalServerError } from "../../src/utils/errors";
 
 import { 
     mockUser,
-    mockUserGroups,
     mockGroup,
 } from "../mocks/groupMocks";
 
@@ -112,4 +111,55 @@ describe("GroupDAO", () => {
             expect(group).toBeNull();
         });
       });
+
+    describe("findOneAndUpdate", () => {
+        it("should update a groups name", async () => {
+            const mockGroupName = "Maryland Terrapins";
+            const mockGroupBio = "We are going to win the SuperBowl this year!!";
+            const mockUserId = mockUser._id;
+            const mockOwnerId = mockUserId;
+            const mockGroupId = mockGroup._id;
+
+            const mockFilter = { _id: mockGroup._id };
+            const mockUpdate = { name: mockGroupName };
+            const mockOptions = { new: true };
+
+            const mockUpdatedGroup = {
+                _id: mockGroupId,
+                name: mockGroupName,
+                bio: mockGroupBio,
+                owners: [mockOwnerId],
+                users: new Types.DocumentArray<IUser>([]),
+                requests: new Types.DocumentArray<IUser>([])
+            } as IGroup
+
+            
+            GroupModel.findOneAndUpdate = jest.fn().mockImplementation(() => ({
+                exec: jest.fn().mockReturnValue(mockUpdatedGroup)
+            }));
+
+            const result = await groupDAO.findOneAndUpdate(mockFilter, mockUpdate, mockOptions);
+            
+            expect(GroupModel.findOneAndUpdate).toHaveBeenCalledWith(mockFilter, mockUpdate, mockOptions);
+            expect(result).toEqual(mockUpdatedGroup);
+            expect(mockUpdatedGroup.name).toEqual(mockGroupName);
+        });
+        it("should return null", async () => {
+            const mockGroupName = "Maryland Terrapins";
+            const mockUserId = mockUser._id;
+
+            const mockFilter = { _id: mockGroup._id };
+            const mockUpdate = { name: mockGroupName };
+            const mockOptions = { new: true };
+            
+            GroupModel.findOneAndUpdate = jest.fn().mockImplementation(() => ({
+                exec: jest.fn().mockReturnValue(null)
+            }));
+
+            const result = await groupDAO.findOneAndUpdate(mockFilter, mockUpdate, mockOptions);
+            
+            expect(GroupModel.findOneAndUpdate).toHaveBeenCalledWith(mockFilter, mockUpdate, mockOptions);
+            expect(result).toBeNull();
+        });
+    });
 });

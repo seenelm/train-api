@@ -2,7 +2,7 @@
   "MongoDB": {
     "dbConfig": {
       "host": "mongodb://127.0.0.1:27017/train",
-      "port": 3001
+      "port": 3002
     }
   }
 }

@@ -24,6 +24,7 @@ export default abstract class BaseDAO<T extends Document> {
     }
 
     public async findOneAndUpdate(filter: object, update: object, options: object): Promise<T | null> {
-        return await this.model.findOneAndUpdate(filter, update, options).exec();
+        const entity = await this.model.findOneAndUpdate(filter, update, options).exec();
+        return entity;
     }
 }

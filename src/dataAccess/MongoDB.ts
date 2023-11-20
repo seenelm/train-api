@@ -11,11 +11,14 @@ class MongoDB {
    * Connect to MongoDB database.
    */
   async connect(): Promise<void> {
+    console.log("Connect");
     await mongoose.connect(this.dbUri).catch((error) => {
       console.error("Error on initial connection: ", error);
     });
     const db = mongoose.connection;
-    db.on("error", console.error.bind(console, "connection error:"));
+    db.on("error", err => {
+      console.log("Error connecting to Database: ", err);
+    });
     db.once("open", () => {
       console.log("Database connected");
     });

@@ -4,9 +4,9 @@ import UserGroupsService from "../services/UserGroupsService";
 const userGroupsService = new UserGroupsService();
 
 // Find user's groups.
-export const fetchGroups = async (req: Request, res: Response, next: NextFunction) => {
+export const fetchUserGroups = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const result = await userGroupsService.fetchGroups(req.params.userId);
+    const result = await userGroupsService.fetchUserGroups(req.params.userId);
     return res.status(201).json(result.userGroups);
   } catch (error) {
     next(error);
