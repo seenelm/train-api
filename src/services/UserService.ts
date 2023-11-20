@@ -2,11 +2,13 @@ import UserDAO from "../dataAccess/UserDAO";
 import * as Errors from "../utils/errors";
 import JWTUtil from "../utils/JWTUtil";
 import BcryptUtil from "../utils/BcryptUtil";
-import { UserModel } from "../models/userModel";
+import { UserModel, IUser } from "../models/userModel";
 import UserProfileDAO from "../dataAccess/UserProfileDAO";
-import { UserProfileModel } from "../models/userProfile";
+import { UserProfileModel, IUserProfile } from "../models/userProfile";
 import UserGroupsDAO from "../dataAccess/UserGroupsDAO";
-import { UserGroupsModel } from "../models/userGroups";
+import { UserGroupsModel, IUserGroups } from "../models/userGroups";
+import logger from "../common/logger";
+import { Types } from "mongoose";
 
 class UserService {
   private userDAO: UserDAO;
@@ -27,13 +29,13 @@ class UserService {
       throw new Errors.ConflictError("Conflict Error", errors);
     } else {
       const hash = await BcryptUtil.hashPassword(password).catch((error) => {
-        console.error(error);
+        logger.error(`Error hashing password for user ${username}: ${error}`);
       });
 
       const newUser = await this.userDAO
         .create({ username, password: hash, isActive: true })
         .catch((error) => {
-          // Log Error.
+          logger.error(`Error creating user ${username}: ${error}`);
           throw error;
         });
 
@@ -50,8 +52,10 @@ class UserService {
       };
 
       const token = await JWTUtil.sign(payload, process.env.SECRET_CODE).catch((error) => {
-        console.error(error);
+        logger.error(`Error signing JWT for user ${username}: ${error}`);
       });
+
+      logger.info(`User ${username} successfully registered with userId: ${newUser._id}`);
 
       return { userId: newUser._id, token, username };
     }
@@ -92,6 +96,26 @@ class UserService {
       errors = { message: "Incorrect Username or Password" };
       throw new Errors.CustomError(errors, 400);
     }
+  }
+
+  public async findUserById(userId: Types.ObjectId): Promise<IUser | null> {
+    const user = await this.userDAO.findUserById(userId, "username isActive");
+    
+    if (!user) {
+      throw new Errors.ResourceNotFoundError("User not found");
+    }
+
+    return user;
+  }
+
+  public async fetchUserData(userId: Types.ObjectId): Promise<(IUser & IUserProfile & IUserGroups)[] | null> {
+    const userData = await this.userDAO.fetchUserData(userId);
+
+    if (!userData) {
+      throw new Errors.ResourceNotFoundError("User not found");
+    }
+
+    return userData;
   }
 }
 

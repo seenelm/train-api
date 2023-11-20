@@ -1,8 +1,8 @@
 import { GroupModel } from "../models/groupModel";
 import { UserModel } from "../models/userModel";
-import mongoose from "mongoose";
 import { Request, Response, NextFunction } from "express";
 import GroupService from "../services/GroupService";
+import { Types } from "mongoose";
 
 const groupService = new GroupService();
 
@@ -16,6 +16,17 @@ export const addGroup = async (req: Request, res: Response, next: NextFunction) 
     next(error);
   }
 };
+
+export const fetchGroup = async (req: Request, res: Response, next: NextFunction) => {
+  const { groupId } = req.params;
+  const id = new Types.ObjectId(groupId);
+  try {
+    const group = await groupService.fetchGroup(id);
+    return res.status(201).json(group);
+  } catch (error) {
+    next(error);
+  }
+}
 
 export const updateGroupBio = async (req: Request, res: Response, next: NextFunction) => {
   const { groupBio } = req.body;
@@ -40,77 +51,77 @@ export const updateGroupName = async (req: Request, res: Response, next: NextFun
 }
 
 // Request to join private group.
-export const requestGroup = async (req: Request, res: Response) => {
-  try {
-    const { groupId } = req.params;
-    // const userId = new mongoose.Types.ObjectId(req.user.id);
+// export const requestGroup = async (req: Request, res: Response) => {
+//   try {
+//     const { groupId } = req.params;
+//     const userId = new mongoose.Types.ObjectId(req.user.id);
 
-    // Check if group exists.
-    const group = await GroupModel.findById(groupId);
-    if (!group) {
-      return res.status(404).json({ error: "Group not found" });
-    }
+//     // Check if group exists.
+//     const group = await GroupModel.findById(groupId);
+//     if (!group) {
+//       return res.status(404).json({ error: "Group not found" });
+//     }
 
-    // Check if user is already member of group.
-    // if (group.users.includes(userId)) {
-    //   return res.status(400).json({ error: "User is already member of group" });
-    // }
+//     Check if user is already member of group.
+//     if (group.users.includes(userId)) {
+//       return res.status(400).json({ error: "User is already member of group" });
+//     }
 
-    // Check if user already sent a request.
-    // const existingRequest = group.requests.some((request) =>
-    //   userId.equals(request._id)
-    // );
+//     Check if user already sent a request.
+//     const existingRequest = group.requests.some((request) =>
+//       userId.equals(request._id)
+//     );
 
-    // if (existingRequest) {
-    //   return res.status(400).json({ error: "Request already sent" });
-    // }
+//     if (existingRequest) {
+//       return res.status(400).json({ error: "Request already sent" });
+//     }
 
-    // group.requests.push(userId);
-    // await group.save();
+//     group.requests.push(userId);
+//     await group.save();
 
-    // return res.status(201).json({ status: "pending" });
+//     return res.status(201).json({ status: "pending" });
 
-    // Check if user already sent a request.
-  } catch (error) {
-    console.log(error);
-    // res.status(503).json(error.message);
-  }
-};
+//     Check if user already sent a request.
+//   } catch (error) {
+//     console.log(error);
+//     res.status(503).json(error.message);
+//   }
+// };
 
 // Owner of private group confirms users request to join group.
-export const confirmGroupRequest = async (req: Request, res: Response) => {
-  // try {
-  //   const { groupId, userId } = req.params;
-  //   const ownerId = new mongoose.Types.ObjectId(req.user.id);
-  //   console.log("Owner Id: ", ownerId);
+// export const confirmGroupRequest = async (req: Request, res: Response) => {
+//   try {
+//     const { groupId, userId } = req.params;
+//     const ownerId = new mongoose.Types.ObjectId(req.user.id);
+//     console.log("Owner Id: ", ownerId);
 
-  //   // Check if group exists
-  //   const group = await GroupModel.findById(groupId);
-  //   if (!group) {
-  //     return res.status(404).json({ error: "Group not found" });
-  //   }
+//     // Check if group exists
+//     const group = await GroupModel.findById(groupId);
+//     if (!group) {
+//       return res.status(404).json({ error: "Group not found" });
+//     }
 
-  //   // Verify owner of the group
-  //   if (!ownerId.equals(group.owner)) {
-  //     return res.status(403).json({ error: "Unauthorized user " });
-  //   }
+//     // Verify owner of the group
+//     if (!ownerId.equals(group.owner)) {
+//       return res.status(403).json({ error: "Unauthorized user " });
+//     }
 
-  //   // add user to group
-  //   group.users.push(userId);
-  //   await group.save();
+//     // add user to group
+//     group.users.push(userId);
+//     await group.save();
 
-  //   // remove user from requests array
-  //   await GroupModel.findOneAndUpdate(
-  //     { _id: groupId },
-  //     { $pull: { requests: { _id: userId } } },
-  //     { new: true }
-  //   );
+//     // remove user from requests array
+//     await GroupModel.findOneAndUpdate(
+//       { _id: groupId },
+//       { $pull: { requests: { _id: userId } } },
+//       { new: true }
+//     );
 
-  //   return res.status(201).json({ success: true });
-  // } catch (error) {
-  //   res.status(503).json({ error: error.message });
-  // }
-};
+//     return res.status(201).json({ success: true });
+//   } catch (error) {
+//     res.status(503).json({ error: error.message });
+//   }
+// };
 
 // Join public group.
 export const joinPublicGroup = async (req: Request, res: Response) => {};

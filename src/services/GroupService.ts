@@ -50,6 +50,16 @@ class GroupService {
         // }
     }
 
+    public async fetchGroup(groupId: Types.ObjectId): Promise<IGroup | null> {
+        const group = await this.groupDAO.findById(groupId);
+
+        if (!group) {
+            throw new Errors.ResourceNotFoundError("Group not found.");
+        }
+
+        return group;
+    }
+
     public async updateGroupBio(userId: Types.ObjectId | string, groupId: Types.ObjectId | string, groupBio: string | null): Promise<void> {
         const ownerId = userId instanceof Types.ObjectId ? userId : new Types.ObjectId(userId);
 

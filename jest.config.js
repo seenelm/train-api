@@ -3,7 +3,7 @@ module.exports = {
   preset: "ts-jest",
   testEnvironment: "node",
   verbose: true,
-  setupFilesAfterEnv: ["./src/database.ts"],
+  // setupFilesAfterEnv: ["./src/database.ts"],
   transform: {
     "^.+\\.tsx?$": "ts-jest",
   },

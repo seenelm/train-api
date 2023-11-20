@@ -28,26 +28,32 @@ class UserProfileService {
         }
       }
     
-      public async updateUsersFullName(userId: Types.ObjectId | string, name: string | null): Promise<void> {
-        
-        if (!name) {
-          throw new Errors.BadRequestError("Users Name is Undefined");
-        }
-    
-        const user = await this.userProfileDAO.findOneAndUpdate(
-          {userId: userId}, 
-          { name }, 
-          { new: true }
-        );
-    
-        if (!user) {
-          throw new Errors.ResourceNotFoundError("User does not exist");
-        }
+    public async updateUsersFullName(userId: Types.ObjectId | string, name: string | null): Promise<void> {
+      
+      if (!name) {
+        throw new Errors.BadRequestError("Users Name is Undefined");
+      }
+  
+      const user = await this.userProfileDAO.findOneAndUpdate(
+        {userId: userId}, 
+        { name }, 
+        { new: true }
+      );
+  
+      if (!user) {
+        throw new Errors.ResourceNotFoundError("User does not exist");
+      }
+    }
+
+    public async fetchUserProfile(userId: Types.ObjectId): Promise<IUserProfile | null> {
+      const userProfile = await this.userProfileDAO.findOne({ userId: userId });
+
+      if (!userProfile) {
+        throw new Errors.ResourceNotFoundError("User not found");
       }
 
-      // Join userprofiles and usergroups collections
-      // return userprofile and usergroups data
-      // public async fetchUserProfile(userId: Types.ObjectId): Promise<IUserProfile & IUserGroups>[] | null> {}
+      return userProfile;
+    }
     
 }
 
