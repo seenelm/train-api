@@ -4,9 +4,9 @@ import { IUser } from "./userModel";
 interface IGroup extends Document {
   name: string;
   bio: string;
-  owners: Types.DocumentArray<IUser>;
-  users: Types.DocumentArray<IUser>;
-  requests: Types.DocumentArray<IUser>;
+  owners: Types.ObjectId[];
+  users: Types.ObjectId[];
+  requests: Types.ObjectId[];
 }
 
 const groupSchema = new Schema({

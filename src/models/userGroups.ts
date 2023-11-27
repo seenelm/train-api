@@ -1,9 +1,8 @@
 import { Schema, model, Types, Document } from "mongoose";
-import { IGroup } from "./groupModel";
 
 interface IUserGroups extends Document {
     userId: Types.ObjectId;
-    groups: Types.DocumentArray<IGroup>;
+    groups: Types.ObjectId[];
 }
 
 const userGroupsSchema = new Schema({

@@ -10,7 +10,13 @@ interface IUserProfile extends Document {
 const userProfileSchema = new Schema({
     userId: {
         type: Schema.Types.ObjectId,
-        ref: "User"
+        ref: "User",
+        required: true
+    },
+    username: {
+        type: String,
+        required: true,
+        unique: true,
     },
     name: {
         type: String,

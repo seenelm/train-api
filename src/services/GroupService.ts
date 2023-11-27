@@ -5,7 +5,7 @@ import { Types, startSession } from "mongoose";
 import { GroupModel, IGroup } from "../models/groupModel";
 import UserGroupsDAO from "../dataAccess/UserGroupsDAO";
 import { UserGroupsModel } from "../models/userGroups";
-
+import logger from "../common/logger";
 
 class GroupService {
     private groupDAO: GroupDAO;
@@ -21,7 +21,6 @@ class GroupService {
 
         // try {
         const user = await this.userGroupsDAO.findOne({ userId });
-        console.log("User: ", user);
         
         if (!user) {
             throw new Errors.ResourceNotFoundError("User not found");
@@ -35,6 +34,8 @@ class GroupService {
     
         await user.save();
         await group.save();
+
+        logger.info(`Owner "${ownerId}" added Group: `, group);
     
         const newGroup = {
             id: group._id,
@@ -57,67 +58,77 @@ class GroupService {
             throw new Errors.ResourceNotFoundError("Group not found.");
         }
 
+        logger.info(`Fetch Group "${groupId}": `, group);
+
         return group;
     }
 
-    public async updateGroupBio(userId: Types.ObjectId | string, groupId: Types.ObjectId | string, groupBio: string | null): Promise<void> {
-        const ownerId = userId instanceof Types.ObjectId ? userId : new Types.ObjectId(userId);
+    public async updateGroupBio(userId: Types.ObjectId, groupId: Types.ObjectId, groupBio: string | null): Promise<void> {
+        const ownerId = userId;
 
         if (!groupBio) {
-          throw new Errors.BadRequestError("Group Bio is Undefined");
+            logger.error("Group Bio is Undefined");
+            throw new Errors.BadRequestError("Group Bio is Undefined");
         }
 
-        const group = await this.groupDAO.findOneAndUpdate(
-            { _id: groupId},
+        const group = await this.groupDAO.findOne({ _id: groupId });
+
+        if (!group) {
+            throw new Errors.ResourceNotFoundError("Group does not exist");
+        }
+
+        const isOwner = group.owners.some((owner: Types.ObjectId ) => owner._id.equals(ownerId));
+
+        if (!isOwner) {
+            logger.error("User doesn't have permission to update group bio");
+            throw new Errors.ForbiddenError("User doesn't have permission to update group bio");
+        }
+
+        const updatedGroup = await this.groupDAO.findOneAndUpdate(
+            { _id: groupId },
             { bio: groupBio },
             { new: true }
         );
 
-        if (!group) {
-          throw new Errors.ResourceNotFoundError("Group does not exist");
+        if (!updatedGroup) {
+            throw new Errors.ResourceNotFoundError("Group does not exist");
         }
 
-        const isOwner = group.owners.map((owner: IUser) => {
-            return owner._id === ownerId
-        });
-      
-        if (!isOwner) {
-            throw new Errors.ForbiddenError("User doesn't have permission to update group bio");
-        }
+        logger.info(`Owner "${ownerId}" updated Group Bio: `, updatedGroup);
     }
 
-    public async updateGroupName(userId: Types.ObjectId | string, groupId: Types.ObjectId | string, groupName: string | null): Promise<void> {
-        const ownerId = userId instanceof Types.ObjectId ? userId : new Types.ObjectId(userId);
+    public async updateGroupName(userId: Types.ObjectId, groupId: Types.ObjectId, groupName: string | null): Promise<void> {
+        const ownerId = userId;
 
         if (!groupName || groupName.trim() === "") {
             throw new Errors.BadRequestError("Invalid Group Name");
         }
 
-        const group = await this.groupDAO.findOneAndUpdate(
+        const group = await this.groupDAO.findOne({ _id: groupId });
+
+        if (!group) {
+            throw new Errors.ResourceNotFoundError("Group does not exist");
+        }
+
+        const isOwner = group.owners.some((owner: Types.ObjectId ) => owner._id.equals(ownerId));
+
+        if (!isOwner) {
+            logger.error("User doesn't have permission to update group name");
+            throw new Errors.ForbiddenError("User doesn't have permission to update group name");
+        }
+
+        const updatedGroup = await this.groupDAO.findOneAndUpdate(
             { _id: groupId},
             { name: groupName },
             { new: true }
         );
 
-        if (!group) {
-          throw new Errors.ResourceNotFoundError("Group does not exist");
+        if (!updatedGroup) {
+            throw new Errors.ResourceNotFoundError("Group does not exist");
         }
 
-        // const isOwner = group.owners.map((owner: IUser) => {
-        //     return owner._id === ownerId
-        // });
-
-        const isOwner = group.owners.some((owner: IUser) => {
-            return owner._id === ownerId;
-        })
-      
-        if (!isOwner) {
-            throw new Errors.ForbiddenError("User doesn't have permission to update group name");
-        }
+        logger.info(`Owner "${ownerId}" updated Group Name: `, updatedGroup);
     }
-
-    // return group data
-    // public async fetchGroup(groupId: Types.ObjectId): Promise<IGroup[]> | null {}
 }
 
 export default GroupService;

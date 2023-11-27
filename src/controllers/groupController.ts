@@ -1,5 +1,3 @@
-import { GroupModel } from "../models/groupModel";
-import { UserModel } from "../models/userModel";
 import { Request, Response, NextFunction } from "express";
 import GroupService from "../services/GroupService";
 import { Types } from "mongoose";
@@ -19,7 +17,7 @@ export const addGroup = async (req: Request, res: Response, next: NextFunction) 
 
 export const fetchGroup = async (req: Request, res: Response, next: NextFunction) => {
   const { groupId } = req.params;
-  const id = new Types.ObjectId(groupId);
+  let id = new Types.ObjectId(groupId);
   try {
     const group = await groupService.fetchGroup(id);
     return res.status(201).json(group);
@@ -31,8 +29,11 @@ export const fetchGroup = async (req: Request, res: Response, next: NextFunction
 export const updateGroupBio = async (req: Request, res: Response, next: NextFunction) => {
   const { groupBio } = req.body;
   const { userId, groupId } = req.params;
+
+  const userID = new Types.ObjectId(userId);
+  const groupID = new Types.ObjectId(groupId);
   try {
-    await groupService.updateGroupBio(userId, groupId, groupBio);
+    await groupService.updateGroupBio(userID, groupID, groupBio);
     return res.status(201).json({ success: true });
   } catch (error) {
     next(error);
@@ -42,8 +43,11 @@ export const updateGroupBio = async (req: Request, res: Response, next: NextFunc
 export const updateGroupName = async (req: Request, res: Response, next: NextFunction) => {
   const { groupName } = req.body;
   const { userId, groupId } = req.params;
+
+  const userID = new Types.ObjectId(userId);
+  const groupID = new Types.ObjectId(groupId);
   try {
-    await groupService.updateGroupName(userId, groupId, groupName);
+    await groupService.updateGroupName(userID, groupID, groupName);
     return res.status(201).json({ success: true });
   } catch (error) {
     next(error);

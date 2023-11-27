@@ -25,6 +25,10 @@ function handleForbiddenError(error: any, res: Response) {
   res.status(error.statusCode).json(error.message);
 }
 
+function handleUnauthorizedError(error: any, res: Response) {
+  res.status(error.statusCode).json(error.message);
+}
+
 export const errorController = (error: any, req: Request, res: Response, next: NextFunction) => {
   if (error instanceof Errors.ConflictError) {
     error = handleConflictError(error, res);
@@ -43,5 +47,8 @@ export const errorController = (error: any, req: Request, res: Response, next: N
   }
   if (error instanceof Errors.ForbiddenError) {
     error = handleForbiddenError(error, res);
+  }
+  if (error instanceof Errors.UnauthorizedError) {
+    error = handleUnauthorizedError(error, res);
   }
 };
