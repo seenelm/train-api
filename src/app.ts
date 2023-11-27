@@ -22,6 +22,11 @@ const db = new MongoDB(dbUri);
 
 app.use(async (req, res, next) => {
   if (!mongoose.connection.readyState) {
+    // mongoose.set("debug", (coll, method, query, doc) => {
+    //   console.log(`Mongoose debug: ${coll}.${method}`, query);
+    //   console.trace();
+    // });
+    mongoose.set("debug", true);
     await db.connect();
   }
   next();
@@ -35,7 +40,7 @@ app.use("/api", userRouter);
 app.use("/api/users", userGroupsRouter);
 app.use("/api/user-profile/users", userProfileRouter);
 app.use("/api/groups", groupRouter);
-app.use("/api/search", searchRouter);
+app.use("/api", searchRouter);
 
 app.use(errorController);
 

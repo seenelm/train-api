@@ -2,21 +2,34 @@ import { Schema, model, Types, Document } from "mongoose";
 import { IUser } from "./userModel";
 
 interface IFollow extends Document {
-    following: Types.DocumentArray<IUser>;
-    followers: Types.DocumentArray<IUser>;
+    userId: Types.ObjectId;
+    following: Types.ObjectId[];
+    followers: Types.ObjectId[];
+    requests: Types.ObjectId[];
 }
 
 const followSchema = new Schema({
+    userId: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
     following: [
         {
           type: Schema.Types.ObjectId,
-          ref: "User",
+          ref: "UserProfile",
         },
     ],
     followers: [
         {
             type: Schema.Types.ObjectId,
-            ref: "User",
+            ref: "UserProfile",
+        },
+    ],
+    requests: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: "UserProfile",
         },
     ],
 });

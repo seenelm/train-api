@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from "express";
 import UserService from "../services/UserService";
-import logger from "../common/logger";
 import { Types } from "mongoose";
 
 const userService = new UserService();
@@ -53,6 +52,18 @@ export const fetchUserData = async (req: Request, res: Response, next: NextFunct
     let id = new Types.ObjectId(userId);
     const userData = await userService.fetchUserData(id);
     return res.status(201).json(userData);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export const deleteUserAccount = async (req: Request, res: Response, next: NextFunction) => {
+  const { userId } = req.params;
+  let userID = new Types.ObjectId(userId);
+
+  try {
+    await userService.deleteUserAccount(userID);
+    return res.status(201).json({success: true});
   } catch (error) {
     next(error);
   }

@@ -15,7 +15,7 @@ export default abstract class BaseDAO<T extends Document> {
         return entity;
     }
 
-    public async findById(id: Types.ObjectId | string): Promise<T | null> {
+    public async findById(id: Types.ObjectId): Promise<T | null> {
         return await this.model.findById(id).exec();
     }
 
@@ -26,5 +26,9 @@ export default abstract class BaseDAO<T extends Document> {
     public async findOneAndUpdate(filter: object, update: object, options: object): Promise<T | null> {
         const entity = await this.model.findOneAndUpdate(filter, update, options).exec();
         return entity;
+    }
+
+    public async updateOne(filter: object, update: object, options: object): Promise<void> {
+        await this.model.updateOne(filter, update, options).exec();
     }
 }

@@ -36,3 +36,41 @@ export const fetchUserProfile = async (req: Request, res: Response, next: NextFu
         next(error);
     }
 }
+
+export const followUser = async (req: Request, res: Response, next: NextFunction) => {
+    const { followeeId } = req.body;
+
+    const followeeID = new Types.ObjectId(followeeId);
+    const followerId = req.user._id;
+
+    try {
+        await userProfileService.followUser(followerId, followeeID);
+        return res.status(201).json({success: true});
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const getFollowers = async (req: Request, res: Response, next: NextFunction) => {
+    const { userId } = req.params;
+    const userID = new Types.ObjectId(userId);
+
+    try {
+        const followers = await userProfileService.getFollowers(userID);
+        return res.status(201).json(followers);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const getFollowing = async (req: Request, res: Response, next: NextFunction) => {
+    const { userId } = req.params;
+    const userID = new Types.ObjectId(userId);
+
+    try {
+        const following = await userProfileService.getFollowing(userID);
+        return res.status(201).json(following);
+    } catch (error) {
+        next(error);
+    }
+}

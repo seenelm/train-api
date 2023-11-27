@@ -12,5 +12,8 @@ userRouter.post("/register", validateRegistration, userController.register);
 userRouter.post("/login", validateLogin, userController.login);
 
 userRouter.get("/:userId", authenticate, userController.findUserById);
+userRouter.get("/:userId/profile-data", authenticate, userController.fetchUserData);
+
+userRouter.delete("/:userId", authenticate, userController.deleteUserAccount);
 
 export default userRouter;

@@ -14,7 +14,7 @@ class UserGroupsDAO extends BaseDAO<IUserGroups> {
 
     public async findOneUser(query: FilterQuery<IUserGroups>, path: string): Promise<IUserGroups | null> {
         return await this.userGroups.findOne(query)
-        .populate<{user: IUser}>({path: path})
+        .populate({path: path})
         .exec();
     }
 }

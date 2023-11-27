@@ -1,12 +1,18 @@
-import pino from "pino";
+import { configure, getLogger } from "log4js";
 
-const fileTransport = pino.transport({
-    target: "pino/file",
-    options: { destination: "./logs/app.log" }
+configure({
+    appenders: {
+        file: {
+            type: "file",
+            filename: "./logs/app.log",
+            maxLogSize: 20480,
+            compress: true,
+        },
+    },
+    categories: {
+        default: { appenders: ["file"], level: "all"}
+    }
 });
 
-const logger = pino({
-    level: "info"
-}, fileTransport);
-
+const logger = getLogger();
 export default logger;

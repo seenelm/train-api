@@ -7,18 +7,27 @@ import UserProfileDAO from "../dataAccess/UserProfileDAO";
 import { UserProfileModel, IUserProfile } from "../models/userProfile";
 import UserGroupsDAO from "../dataAccess/UserGroupsDAO";
 import { UserGroupsModel, IUserGroups } from "../models/userGroups";
+import FollowDAO from "../dataAccess/FollowDAO";
+import { FollowModel } from "../models/followModel";
 import logger from "../common/logger";
 import { Types } from "mongoose";
+
+export interface TokenPayload {
+  name: string;
+  userId: Types.ObjectId;
+}
 
 class UserService {
   private userDAO: UserDAO;
   private userProfileDAO: UserProfileDAO;
   private userGroupsDAO: UserGroupsDAO;
+  private followDAO: FollowDAO;
 
   constructor() {
     this.userDAO = new UserDAO(UserModel);
     this.userProfileDAO = new UserProfileDAO(UserProfileModel);
     this.userGroupsDAO = new UserGroupsDAO(UserGroupsModel);
+    this.followDAO = new FollowDAO(FollowModel);
   }
 
   public async registerUser(username: string, password: string, name: string) {
@@ -39,14 +48,22 @@ class UserService {
           throw error;
         });
 
+      logger.info(`User ${username} was added to database: `, newUser);
+
       const newUserProfile = await this.userProfileDAO.create({ 
         userId: newUser._id,
-        name 
+        name,
+        username
       });
+      logger.info(`User "${username}" profile was created: `, newUserProfile);
 
-      await this.userGroupsDAO.create({ userId: newUser._id });
+      const userGroups = await this.userGroupsDAO.create({ userId: newUser._id });
+      logger.info(`User "${username}" group document was created: `, userGroups);
 
-      const payload = {
+      const follow = await this.followDAO.create({ userId: newUser._id });
+      logger.info(`User "${username}" follow document was created`, follow);
+
+      const payload: TokenPayload = {
         name: newUserProfile.name,
         userId: newUser._id,
       };
@@ -54,8 +71,6 @@ class UserService {
       const token = await JWTUtil.sign(payload, process.env.SECRET_CODE).catch((error) => {
         logger.error(`Error signing JWT for user ${username}: ${error}`);
       });
-
-      logger.info(`User ${username} successfully registered with userId: ${newUser._id}`);
 
       return { userId: newUser._id, token, username };
     }
@@ -74,9 +89,9 @@ class UserService {
       if (validPassword) {
         const userProfile = await this.userProfileDAO.findOne({ userId: user._id });
 
-        const payload = {
+        const payload: TokenPayload = {
           name: userProfile.name,
-          id: user._id,
+          userId: user._id,
         };
         
         const token = await JWTUtil.sign(payload, process.env.SECRET_CODE).catch((error) => {
@@ -116,6 +131,14 @@ class UserService {
     }
 
     return userData;
+  }
+
+  public async deleteUserAccount(userId: Types.ObjectId): Promise<void> {
+    try {
+      await this.userDAO.deleteUserAccount(userId);
+    } catch (error) {
+      logger.error(`Error deleting user account ${userId}`);
+    }
   }
 }
 
