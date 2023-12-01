@@ -1,8 +1,8 @@
 import BaseDAO from "./BaseDAO";
 import { IFollow } from "../models/followModel";
 import { Model, FilterQuery, Types } from "mongoose";
-import { IUser } from "../models/userModel";
 import { IUserProfile } from "../models/userProfile";
+import { InternalServerError } from "../utils/errors";
 
 class FollowDAO extends BaseDAO<IFollow> {
     private follow: Model<IFollow>;
@@ -19,28 +19,73 @@ class FollowDAO extends BaseDAO<IFollow> {
     }
 
     public async getFollowing(userId: Types.ObjectId): Promise<IUserProfile[]> | null {
-        const following = await this.follow.aggregate([
-            {
-                $match: {
-                    userId: userId
+        try {
+            const following = await this.follow.aggregate([
+                {
+                    $match: {
+                        userId: userId
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "userprofiles",
+                        localField: "following",
+                        foreignField: "userId",
+                        as: "userFollowing"
+                    }
+                },
+                {
+                    $unwind: "$userFollowing"
+                },
+                {
+                    $replaceRoot: { newRoot: "$userFollowing" }
+                },
+                {
+                    $project: {
+                        _v: 0
+                    }
                 }
-            },
-            {
-                $lookup: {
-                    from: "userprofiles",
-                    localField: "following",
-                    foreignField: "userId",
-                    as: "userFollowing"
-                }
-            },
-            {
-                $project: {
-                    userFollowing: 1,
-                }
-            }
-        ]);
+            ]);
+            return following;
+        } catch (error) {
+            throw new InternalServerError(error.toString());
+        }
 
-        return following;
+    }
+
+    public async getFollowers(userId: Types.ObjectId): Promise<IUserProfile[]> | null {
+        try {
+            const followers = await this.follow.aggregate([
+                {
+                    $match: {
+                        userId: userId
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "userprofiles",
+                        localField: "followers",
+                        foreignField: "userId",
+                        as: "userFollowers"
+                    }
+                },
+                {
+                    $unwind: "$userFollowers"
+                },
+                {
+                    $replaceRoot: { newRoot: "$userFollowers" }
+                },
+                {
+                    $project: {
+                        _v: 0
+                    }
+                }
+            ]);
+
+            return followers;
+        } catch (error) {
+            throw new InternalServerError(error.toString());
+        }
     }
 
 }

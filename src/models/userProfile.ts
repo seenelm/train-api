@@ -1,10 +1,13 @@
 import { Schema, model, Types, Document } from "mongoose";
 import { ProfileAccess } from "../common/constants";
+import { number } from "joi";
 
 interface IUserProfile extends Document {
     userId: Types.ObjectId;
+    username: string;
     name: string;
     bio: string;
+    accountType: number;
 }
 
 const userProfileSchema = new Schema({
@@ -26,7 +29,7 @@ const userProfileSchema = new Schema({
         type: String
     },
     accountType: {
-        type: String,
+        type: number,
         enum: [ProfileAccess.Public, ProfileAccess.Private],
         default: ProfileAccess.Public
     }

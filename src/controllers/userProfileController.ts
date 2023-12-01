@@ -1,8 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import UserProfileService from "../services/UserProfileService";
+import UserProfileDAO from "../dataAccess/UserProfileDAO";
+import { UserProfileModel } from "../models/userProfile";
+import FollowDAO from "../dataAccess/FollowDAO";
+import { FollowModel } from "../models/followModel";
 import { Types } from "mongoose";
 
-const userProfileService = new UserProfileService();
+const userProfileService = new UserProfileService(new UserProfileDAO(UserProfileModel), new FollowDAO(FollowModel));
 
 export const updateUserBio = async (req: Request, res: Response, next: NextFunction) => {
     const { userBio } = req.body;
@@ -74,3 +78,16 @@ export const getFollowing = async (req: Request, res: Response, next: NextFuncti
         next(error);
     }
 }
+
+export const updateAccountType = async (req: Request, res: Response, next: NextFunction) => {
+    const { accountType } = req.body;
+    const { userId } = req.params;
+    const userID = new Types.ObjectId(userId);
+
+    try {
+        await userProfileService.updateAccountType(userID, accountType);
+        return res.status(201).json({ success: true });
+    } catch (error) {
+        next(error);
+    }
+};

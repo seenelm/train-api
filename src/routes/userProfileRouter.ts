@@ -11,5 +11,6 @@ userProfileRouter.post("/", authenticate, userProfileController.followUser);
 
 userProfileRouter.put("/:userId/bio", authenticate, userProfileController.updateUserBio);
 userProfileRouter.patch("/:userId/name", authenticate, userProfileController.updateUsersFullName);
+userProfileRouter.patch("/:userId/accountType", authenticate, userProfileController.updateAccountType);
 
 export default userProfileRouter;
