@@ -3,17 +3,19 @@ import { IUserProfile, UserProfileModel } from "../models/userProfile";
 import { IFollow, FollowModel } from "../models/followModel";
 import FollowDAO from "../dataAccess/FollowDAO";
 import * as Errors from "../utils/errors";
-import { Types, HydratedDocument } from "mongoose";
-import { IUser } from "../models/userModel";
+import { Types } from "mongoose";
 import logger from "../common/logger";
+import { ProfileAccess } from "../common/constants";
 
 class UserProfileService {
     private userProfileDAO: UserProfileDAO;
     private followDAO: FollowDAO;
 
-    constructor() {
-      this.userProfileDAO = new UserProfileDAO(UserProfileModel);
-      this.followDAO = new FollowDAO(FollowModel);
+    constructor(userProfileDAO: UserProfileDAO, followDAO: FollowDAO) {
+      // this.userProfileDAO = new UserProfileDAO(UserProfileModel);
+      // this.followDAO = new FollowDAO(FollowModel);
+      this.userProfileDAO = userProfileDAO;
+      this.followDAO = followDAO;
     }
 
     public async updateUserBio(userId: Types.ObjectId | string, userBio: string | null): Promise<void> {
@@ -52,6 +54,25 @@ class UserProfileService {
       if (!user) {
         throw new Errors.ResourceNotFoundError("User does not exist");
       }
+    }
+
+    public async updateAccountType(userId: Types.ObjectId, accountType: number | null): Promise<void> {
+        
+        if (!accountType) {
+          throw new Errors.BadRequestError("Account Type is Undefined");
+        }
+    
+        const user = await this.userProfileDAO.findOneAndUpdate(
+          {userId: userId}, 
+          { accountType }, 
+          { new: true }
+        );
+  
+        logger.info(`User ${userId} updated account type: `, user);
+    
+        if (!user) {
+          throw new Errors.ResourceNotFoundError("User does not exist");
+        }
     }
 
     public async fetchUserProfile(userId: Types.ObjectId): Promise<IUserProfile | null> {
@@ -113,28 +134,57 @@ class UserProfileService {
     }
 
     public async getFollowers(userId: Types.ObjectId) {
-      const user = await this.followDAO.findOneAndPopulate({ userId }, "followers");
-      const followers = user.followers;
+      if (!userId || !(userId instanceof Types.ObjectId)) {
+        throw new Errors.BadRequestError("Invalid user id");
+      }
 
-      console.log("Followers 1: ", followers);
+      const followers = await this.followDAO.getFollowers(userId);
 
-      if (!user) {
+      if (!followers) {
         throw new Errors.ResourceNotFoundError("User not found");
       }
+
       return followers;
     }
 
     public async getFollowing(userId: Types.ObjectId) {
+      if (!userId || !(userId instanceof Types.ObjectId)) {
+        throw new Errors.BadRequestError("Invalid user id");
+      }
+
       const following = await this.followDAO.getFollowing(userId);
      
-      // if (!user) {
-      //   throw new Errors.ResourceNotFoundError("User not found");
-      // }
-      
-      console.log("Following 1: ", following[0]);
+      if (!following) {
+        throw new Errors.ResourceNotFoundError("User not found");
+      }
     
       return following;
     }
+
+    /**
+     * Request to follow a users private account
+     * @param followerId follower id of the user requesting to follow another user
+     * @param followeeId followee id of the user being requested to follow
+     */
+    public async requestToFollowUser(followerId: Types.ObjectId, followeeId: Types.ObjectId): Promise<void> {
+      // Check if the followeeId exists in the database
+      const followee = await this.userProfileDAO.findById(followeeId);
+      if (!followee) {
+          throw new Errors.ResourceNotFoundError("User not found");
+      }
+  
+      // Check if the followee's account is private
+      if (followee.accountType !== ProfileAccess.Private) {
+          throw new Errors.BadRequestError("User's account is not private");
+      }
+  
+      // Add the followerId to the followee's requests array
+      await this.followDAO.updateOne(
+          { userId: followeeId },
+          { $addToSet: { requests: followerId } },
+          { new: true},
+      );
+  }
     
 }
 
