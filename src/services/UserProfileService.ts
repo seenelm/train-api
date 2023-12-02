@@ -169,13 +169,36 @@ class UserProfileService {
     public async requestToFollowUser(followerId: Types.ObjectId, followeeId: Types.ObjectId): Promise<void> {
       // Check if the followeeId exists in the database
       const followee = await this.userProfileDAO.findById(followeeId);
+      const follower = await this.userProfileDAO.findById(followerId);
+
       if (!followee) {
-          throw new Errors.ResourceNotFoundError("User not found");
+        throw new Errors.ResourceNotFoundError(`User ${followeeId} not found`);
       }
-  
-      // Check if the followee's account is private
-      if (followee.accountType !== ProfileAccess.Private) {
-          throw new Errors.BadRequestError("User's account is not private");
+
+      if (!follower) {
+        throw new Errors.ResourceNotFoundError(`User ${followerId} not found`);
+      }
+
+       // Check if the followee's account is private
+       if (followee.accountType !== ProfileAccess.Private) {
+        throw new Errors.BadRequestError(`User ${followee.username}'s account is not private`);
+      }
+
+      // Fetch the follow document for the followee
+      const followeeFollowDoc = await this.followDAO.findOne({ userId: followeeId });
+
+      if (!followeeFollowDoc) {
+        throw new Errors.ResourceNotFoundError(`Follow document for user ${followee.username} not found`);
+      }
+
+      // Check if the follower has already requested to follow the followee
+      if (followeeFollowDoc.requests.includes(followerId)) {
+        throw new Errors.BadRequestError(`User ${follower.username} has already requested to follow ${followee.username}`);
+      }
+
+      // Check if the follower is already following the followee
+      if (followeeFollowDoc.followers.includes(followerId)) {
+        throw new Errors.ConflictError(`User ${follower.username} is already following ${followee.username}`, null);
       }
   
       // Add the followerId to the followee's requests array
@@ -184,6 +207,98 @@ class UserProfileService {
           { $addToSet: { requests: followerId } },
           { new: true},
       );
+  }
+
+  /**
+   * Accept a follow request
+   * @param followerId follower id of the user who sent the follow request
+   * @param followeeId followee id of the user who accepted the follow request
+   */
+  public async acceptFollowRequest(followerId: Types.ObjectId, followeeId: Types.ObjectId): Promise<void> {
+    // Check if the followeeId exists in the database
+    const followee = await this.userProfileDAO.findById(followeeId);
+    const follower = await this.userProfileDAO.findById(followerId);
+
+    if (!followee) {
+      throw new Errors.ResourceNotFoundError(`User ${followeeId} not found`);
+    }
+
+    if (!follower) {
+      throw new Errors.ResourceNotFoundError(`User ${followerId} not found`);
+    }
+
+    // Check if the followee's account is private
+    if (followee.accountType !== ProfileAccess.Private) {
+      throw new Errors.BadRequestError(`User ${followee.username}'s account is not private`);
+    }
+
+    // Fetch the follow document for the followee
+    const followeeFollowDoc = await this.followDAO.findOne({ userId: followeeId });
+
+    if (!followeeFollowDoc) {
+      throw new Errors.ResourceNotFoundError(`Follow document for user ${followee.username} not found`);
+    }
+
+    // Check if the follower has requested to follow the followee
+    if (!followeeFollowDoc.requests.includes(followerId)) {
+      throw new Errors.BadRequestError(`User ${follower.username} has not requested to follow ${followee.username}`);
+    }
+
+    // Add the followerId to the followee's followers array
+    // Remove the followerId from the followee's requests array
+    await this.followDAO.updateOne(
+        { userId: followeeId },
+        { 
+          $addToSet: { followers: followerId },
+          $pull: { requests: followerId }
+        },
+        { new: true},
+    );
+
+    // Add the followeeId to the follower's following array
+    await this.followDAO.updateOne(
+      { userId: followerId },
+      { $addToSet: { following: followeeId } },
+      { new: true},
+    );
+  }
+
+  public async rejectFollowRequest(followerId: Types.ObjectId, followeeId: Types.ObjectId): Promise<void> {
+    // Check if the followeeId exists in the database
+    const followee = await this.userProfileDAO.findById(followeeId);
+    const follower = await this.userProfileDAO.findById(followerId);
+
+    if (!followee) {
+      throw new Errors.ResourceNotFoundError(`User ${followeeId} not found`);
+    }
+
+    if (!follower) {
+      throw new Errors.ResourceNotFoundError(`User ${followerId} not found`);
+    }
+
+    // Check if the followee's account is private
+    if (followee.accountType !== ProfileAccess.Private) {
+      throw new Errors.BadRequestError(`User ${followee.username}'s account is not private`);
+    }
+
+    // Fetch the follow document for the followee
+    const followeeFollowDoc = await this.followDAO.findOne({ userId: followeeId });
+
+    if (!followeeFollowDoc) {
+      throw new Errors.ResourceNotFoundError(`Follow document for user ${followee.username} not found`);
+    }
+
+    // Check if the follower has requested to follow the followee
+    if (!followeeFollowDoc.requests.includes(followerId)) {
+      throw new Errors.BadRequestError(`User ${follower.username} has not requested to follow ${followee.username}`);
+    }
+
+    // Remove the followerId from the followee's requests array
+    await this.followDAO.updateOne(
+        { userId: followeeId },
+        { $pull: { requests: followerId } },
+        { new: true},
+    );
   }
     
 }

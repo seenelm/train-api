@@ -398,14 +398,31 @@ describe("UserProfileService", () => {
             const followerId = new Types.ObjectId();
             const followeeId = new Types.ObjectId();
 
-            const mockUserProfile = {
+            const mockFollowerUserProfile = {
                 _id: new Types.ObjectId(),
-                userId: followeeId,
+                userId: followerId,
                 username: "username1",
                 bio: "I love codeing!!",
-                name: "Ryan Reynolds",
+                name: "name1",
                 accountType: ProfileAccess.Private
             } as Partial<IUserProfile>
+
+            const mockFolloweeUserProfile = {
+                _id: new Types.ObjectId(),
+                userId: followeeId,
+                username: "username2",
+                bio: "I love codeing!!",
+                name: "name2",
+                accountType: ProfileAccess.Private
+            } as Partial<IUserProfile>
+
+            const mockFolloweeFollowDocument = {
+                _id: new Types.ObjectId(),
+                userId: followeeId,
+                followers: [],
+                following: [],
+                requests: []
+            } as Partial<IFollow>
 
             const mockFollow = {
                 _id: new Types.ObjectId(),
@@ -419,15 +436,26 @@ describe("UserProfileService", () => {
             const mockUpdate = { $addToSet: { requests: followerId } };
             const mockOptions = { new: true };
 
-            userProfileDAO.findById = jest.fn().mockResolvedValue(mockUserProfile);
+            userProfileDAO.findById = jest.fn().mockImplementation((id) => {
+                if (id.equals(followerId)) {
+                    return mockFollowerUserProfile;
+                } else if (id.equals(followeeId)) {
+                    return mockFolloweeUserProfile;
+                }
+            });
+
+            followDAO.findOne = jest.fn().mockResolvedValue(mockFolloweeFollowDocument);
             followDAO.updateOne = jest.fn().mockResolvedValue(mockFollow);
 
             await userProfileService.requestToFollowUser(followerId, followeeId);
 
+            expect(userProfileDAO.findById).toHaveBeenCalledWith(followerId);
+            expect(userProfileDAO.findById).toHaveBeenCalledWith(followeeId);
+            expect(followDAO.findOne).toHaveBeenCalledWith({ userId: followeeId });
             expect(followDAO.updateOne).toHaveBeenCalledWith(mockFilter, mockUpdate, mockOptions);
         });
 
-        it("should throw a ResourceNotFoundError when user does not exist", async () => {
+        it("should throw a ResourceNotFoundError when followee does not exist", async () => {
             const followerId = new Types.ObjectId();
             const followeeId = new Types.ObjectId();
 
@@ -435,11 +463,41 @@ describe("UserProfileService", () => {
 
             try {
                 await userProfileService.requestToFollowUser(followerId, followeeId);
+                expect(userProfileDAO.findById).toHaveBeenCalledWith(followeeId);
             } catch (error) {
                 const err = error as ResourceNotFoundError;
                 expect(err).toBeInstanceOf(ResourceNotFoundError);
                 expect(err.statusCode).toEqual(404);
-                expect(err.message).toEqual("User not found");
+                expect(err.message).toEqual(`User ${followeeId} not found`);
+            }
+        });
+
+        it("should throw a ResourceNotFoundError when follower does not exist", async () => {
+            const followerId = new Types.ObjectId();
+            const followeeId = new Types.ObjectId();
+
+            userProfileDAO.findById = jest.fn().mockImplementation((id) => {
+                if (id.equals(followeeId)) {
+                    return {
+                        _id: followeeId,
+                        username: "followee",
+                        bio: "I love coding!",
+                        name: "Followee User",
+                        accountType: ProfileAccess.Private
+                    };
+                } else {
+                    return null;
+                }
+            });
+            
+            try {
+                await userProfileService.requestToFollowUser(followerId, followeeId);
+                expect(userProfileDAO.findById).toHaveBeenCalledWith(followerId);
+            } catch (error) {
+                const err = error as ResourceNotFoundError;
+                expect(err).toBeInstanceOf(ResourceNotFoundError);
+                expect(err.statusCode).toEqual(404);
+                expect(err.message).toEqual(`User ${followerId} not found`);
             }
         });
 
@@ -447,7 +505,7 @@ describe("UserProfileService", () => {
             const followerId = new Types.ObjectId();
             const followeeId = new Types.ObjectId();
 
-            const mockUserProfile = {
+            const mockFolloweeUserProfile = {
                 _id: new Types.ObjectId(),
                 userId: followeeId,
                 username: "username1",
@@ -456,15 +514,621 @@ describe("UserProfileService", () => {
                 accountType: ProfileAccess.Public
             } as Partial<IUserProfile>
 
-            userProfileDAO.findById = jest.fn().mockResolvedValue(mockUserProfile);
+            const mockFollowerUserProfile = {
+                _id: new Types.ObjectId(),
+                userId: followerId,
+                username: "username2",
+                bio: "I love codeing!!",
+                name: "name2",
+                accountType: ProfileAccess.Private
+            } as Partial<IUserProfile>
+
+            userProfileDAO.findById = jest.fn().mockImplementation((id) => {
+                if (id.equals(followerId)) {
+                    return mockFollowerUserProfile;
+                } else if (id.equals(followeeId)) {
+                    return mockFolloweeUserProfile;
+                }
+            });
 
             try {
                 await userProfileService.requestToFollowUser(followerId, followeeId);
+
+                expect(userProfileDAO.findById).toHaveBeenCalledWith(followeeId);
+                expect(userProfileDAO.findById).toHaveBeenCalledWith(followerId);
             } catch (error) {
                 const err = error as BadRequestError;
                 expect(err).toBeInstanceOf(BadRequestError);
                 expect(err.statusCode).toEqual(400);
-                expect(err.message).toEqual("User's account is not private");
+                expect(err.message).toEqual(`User ${mockFolloweeUserProfile.username}'s account is not private`);
+            }
+        });
+
+        it("should throw a ResourceNotFoundError when followee follow document does not exist", async () => {
+            const followerId = new Types.ObjectId();
+            const followeeId = new Types.ObjectId();
+
+            const mockFolloweeUserProfile = {
+                _id: new Types.ObjectId(),
+                userId: followeeId,
+                username: "username1",
+                bio: "I love codeing!!",
+                name: "Ryan Reynolds",
+                accountType: ProfileAccess.Private
+            } as Partial<IUserProfile>
+
+            userProfileDAO.findById = jest.fn().mockResolvedValue(mockFolloweeUserProfile);
+            followDAO.findOne = jest.fn().mockReturnValue(null);
+
+            try {
+                await userProfileService.requestToFollowUser(followerId, followeeId);
+
+                expect(userProfileDAO.findById).toHaveBeenCalledWith(followeeId);
+                expect(followDAO.findOne).toHaveBeenCalledWith({ userId: followeeId });
+            } catch (error) {
+                const err = error as ResourceNotFoundError;
+                expect(err).toBeInstanceOf(ResourceNotFoundError);
+                expect(err.statusCode).toEqual(404);
+                expect(err.message).toEqual(`Follow document for user ${mockFolloweeUserProfile.username} not found`);
+            }
+        });
+
+        it("should throw a BadRequestError when user already requested to follow followee", async () => {
+            const followerId = new Types.ObjectId();
+            const followeeId = new Types.ObjectId();
+
+            const mockFollowerUserProfile = {
+                _id: new Types.ObjectId(),
+                userId: followerId,
+                username: "username1",
+                bio: "I love codeing!!",
+                name: "name1",
+                accountType: ProfileAccess.Private
+            } as Partial<IUserProfile>
+
+            const mockFolloweeUserProfile = {
+                _id: new Types.ObjectId(),
+                userId: followeeId,
+                username: "username2",
+                bio: "I love codeing!!",
+                name: "name2",
+                accountType: ProfileAccess.Private
+            } as Partial<IUserProfile>
+
+            const mockFollow = {
+                _id: new Types.ObjectId(),
+                userId: followeeId,
+                followers: [],
+                following: [],
+                requests: [followerId]
+            } as Partial<IFollow>
+
+            userProfileDAO.findById = jest.fn().mockImplementation((id) => {
+                if (id.equals(followerId)) {
+                    return mockFollowerUserProfile;
+                } else if (id.equals(followeeId)) {
+                    return mockFolloweeUserProfile;
+                }
+            });
+
+            followDAO.findOne = jest.fn().mockResolvedValue(mockFollow);
+
+            try {
+                await userProfileService.requestToFollowUser(followerId, followeeId);
+
+                expect(userProfileDAO.findById).toHaveBeenCalledWith(followeeId);
+                expect(userProfileDAO.findById).toHaveBeenCalledWith(followerId);
+                expect(followDAO.findOne).toHaveBeenCalledWith({ userId: followeeId });
+            } catch (error) {
+                const err = error as BadRequestError;
+                expect(err).toBeInstanceOf(BadRequestError);
+                expect(err.statusCode).toEqual(400);
+                expect(err.message).toEqual(`User ${mockFollowerUserProfile.username} has already requested to follow ${mockFolloweeUserProfile.username}`);
+            }
+        });
+    });
+
+    describe("acceptFollowRequest", () => {
+        it("should accept a follow request", async () => {
+            const followerId = new Types.ObjectId();
+            const followeeId = new Types.ObjectId();
+
+            const mockFollowerUserProfile = {
+                _id: new Types.ObjectId(),
+                userId: followerId,
+                username: "username1",
+                bio: "I love codeing!!",
+                name: "name1",
+                accountType: ProfileAccess.Private
+            } as Partial<IUserProfile>
+
+            const mockFolloweeUserProfile = {
+                _id: new Types.ObjectId(),
+                userId: followeeId,
+                username: "username2",
+                bio: "I love codeing!!",
+                name: "name2",
+                accountType: ProfileAccess.Private
+            } as Partial<IUserProfile>
+
+            const mockFolloweeFollowDocument = {
+                _id: new Types.ObjectId(),
+                userId: followeeId,
+                followers: [],
+                following: [],
+                requests: [followerId]
+            } as Partial<IFollow>
+
+            const mockUpdatedFolloweeFollowDoc = {
+                _id: new Types.ObjectId(),
+                userId: followeeId,
+                followers: [followerId],
+                following: [],
+                requests: []
+            } as Partial<IFollow>
+
+            const mockFollowerFollowDocument = {
+                _id: new Types.ObjectId(),
+                userId: followerId,
+                followers: [],
+                following: [followeeId],
+                requests: []
+            } as Partial<IFollow>
+
+            const mockFilter = { userId: followeeId };
+            const mockUpdate = { $addToSet: { followers: followerId }, $pull: { requests: followerId } };
+            const mockOptions = { new: true };
+
+            userProfileDAO.findById = jest.fn().mockImplementation((id) => {
+                if (id.equals(followerId)) {
+                    return mockFollowerUserProfile;
+                } else if (id.equals(followeeId)) {
+                    return mockFolloweeUserProfile;
+                }
+            });
+
+            followDAO.findOne = jest.fn().mockResolvedValue(mockFolloweeFollowDocument);
+
+            followDAO.updateOne = jest.fn().mockImplementation((filter, update, options) => {
+                if (filter.userId.equals(followeeId)) {
+                    return mockUpdatedFolloweeFollowDoc;
+                } else if (filter.userId.equals(followerId)) {
+                    return mockFollowerFollowDocument;
+                }
+            });
+
+            await userProfileService.acceptFollowRequest(followerId, followeeId);
+
+            expect(userProfileDAO.findById).toHaveBeenCalledWith(followerId);
+            expect(userProfileDAO.findById).toHaveBeenCalledWith(followeeId);
+            expect(followDAO.findOne).toHaveBeenCalledWith({ userId: followeeId });
+
+            expect(followDAO.updateOne).toHaveBeenCalledWith(mockFilter, mockUpdate, mockOptions);
+            expect(followDAO.updateOne).toHaveBeenCalledWith({ userId: followerId }, { $addToSet: { following: followeeId } }, { new: true });
+        });
+
+        it("should throw a ResourceNotFoundError when followee does not exist", async () => {
+            const followerId = new Types.ObjectId();
+            const followeeId = new Types.ObjectId();
+
+            userProfileDAO.findById = jest.fn().mockReturnValue(null);
+            
+            try {
+                await userProfileService.acceptFollowRequest(followerId, followeeId);
+                expect(userProfileDAO.findById).toHaveBeenCalledWith(followeeId);
+            } catch (error) {
+                const err = error as ResourceNotFoundError;
+                expect(err).toBeInstanceOf(ResourceNotFoundError);
+                expect(err.statusCode).toEqual(404);
+                expect(err.message).toEqual(`User ${followeeId} not found`);
+            }
+        });
+
+        it("should throw a ResourceNotFoundError when follower does not exist", async () => {
+            const followerId = new Types.ObjectId();
+            const followeeId = new Types.ObjectId();
+
+            userProfileDAO.findById = jest.fn().mockImplementation((id) => {
+                if (id.equals(followeeId)) {
+                    return {
+                        _id: followeeId,
+                        username: "followee",
+                        bio: "I love coding!",
+                        name: "Followee User",
+                        accountType: ProfileAccess.Private
+                    };
+                } else {
+                    return null;
+                }
+            });
+            
+            try {
+                await userProfileService.acceptFollowRequest(followerId, followeeId);
+                expect(userProfileDAO.findById).toHaveBeenCalledWith(followerId);
+            } catch (error) {
+                const err = error as ResourceNotFoundError;
+                expect(err).toBeInstanceOf(ResourceNotFoundError);
+                expect(err.statusCode).toEqual(404);
+                expect(err.message).toEqual(`User ${followerId} not found`);
+            }
+        });
+
+        it("should throw a BadRequestError when followee account type is not private", async () => {
+            const followerId = new Types.ObjectId();
+            const followeeId = new Types.ObjectId();
+
+            const mockFolloweeUserProfile = {
+                _id: new Types.ObjectId(),
+                userId: followeeId,
+                username: "username1",
+                bio: "I love codeing!!",
+                name: "Ryan Reynolds",
+                accountType: ProfileAccess.Public
+            } as Partial<IUserProfile>
+
+            const mockFollowerUserProfile = {
+                _id: new Types.ObjectId(),
+                userId: followerId,
+                username: "username2",
+                bio: "I love codeing!!",
+                name: "name2",
+                accountType: ProfileAccess.Private
+            } as Partial<IUserProfile>
+
+            userProfileDAO.findById = jest.fn().mockImplementation((id) => {
+                if (id.equals(followerId)) {
+                    return mockFollowerUserProfile;
+                } else if (id.equals(followeeId)) {
+                    return mockFolloweeUserProfile;
+                }
+            });
+
+            try {
+                await userProfileService.acceptFollowRequest(followerId, followeeId);
+
+                expect(userProfileDAO.findById).toHaveBeenCalledWith(followeeId);
+                expect(userProfileDAO.findById).toHaveBeenCalledWith(followerId);
+            } catch (error) {
+                const err = error as BadRequestError;
+                expect(err).toBeInstanceOf(BadRequestError);
+                expect(err.statusCode).toEqual(400);
+                expect(err.message).toEqual(`User ${mockFolloweeUserProfile.username}'s account is not private`);
+            }
+        });
+
+        it("should throw a ResourceNotFoundError when followee follow document does not exist", async () => {
+            const followerId = new Types.ObjectId();
+            const followeeId = new Types.ObjectId();
+
+            const mockFolloweeUserProfile = {
+                _id: new Types.ObjectId(),
+                userId: followeeId,
+                username: "username1",
+                bio: "I love codeing!!",
+                name: "Ryan Reynolds",
+                accountType: ProfileAccess.Private
+            } as Partial<IUserProfile>
+
+            userProfileDAO.findById = jest.fn().mockResolvedValue(mockFolloweeUserProfile);
+            followDAO.findOne = jest.fn().mockReturnValue(null);
+
+            try {
+                await userProfileService.acceptFollowRequest(followerId, followeeId);
+
+                expect(userProfileDAO.findById).toHaveBeenCalledWith(followeeId);
+                expect(followDAO.findOne).toHaveBeenCalledWith({ userId: followeeId });
+            } catch (error) {
+                const err = error as ResourceNotFoundError;
+                expect(err).toBeInstanceOf(ResourceNotFoundError);
+                expect(err.statusCode).toEqual(404);
+                expect(err.message).toEqual(`Follow document for user ${mockFolloweeUserProfile.username} not found`);
+            }
+        });
+
+        it("should throw a BadRequestError when the follower has not requested to follow the followee", async () => {
+            const followerId = new Types.ObjectId();
+            const followeeId = new Types.ObjectId();
+
+            const mockFollowerUserProfile = {
+                _id: new Types.ObjectId(),
+                userId: followerId,
+                username: "username1",
+                bio: "I love codeing!!",
+                name: "name1",
+                accountType: ProfileAccess.Private
+            } as Partial<IUserProfile>
+
+            const mockFolloweeUserProfile = {
+                _id: new Types.ObjectId(),
+                userId: followeeId,
+                username: "username2",
+                bio: "I love codeing!!",
+                name: "name2",
+                accountType: ProfileAccess.Private
+            } as Partial<IUserProfile>
+
+            const mockFolloweeFollowDocument = {
+                _id: new Types.ObjectId(),
+                userId: followeeId,
+                followers: [],
+                following: [],
+                requests: []
+            } as Partial<IFollow>
+
+            userProfileDAO.findById = jest.fn().mockImplementation((id) => {
+                if (id.equals(followerId)) {
+                    return mockFollowerUserProfile;
+                } else if (id.equals(followeeId)) {
+                    return mockFolloweeUserProfile;
+                }
+            });
+
+            followDAO.findOne = jest.fn().mockResolvedValue(mockFolloweeFollowDocument);
+
+            try {
+                await userProfileService.acceptFollowRequest(followerId, followeeId);
+
+                expect(userProfileDAO.findById).toHaveBeenCalledWith(followeeId);
+                expect(userProfileDAO.findById).toHaveBeenCalledWith(followerId);
+                expect(followDAO.findOne).toHaveBeenCalledWith({ userId: followeeId });
+            } catch (error) {
+                const err = error as BadRequestError;
+                expect(err).toBeInstanceOf(BadRequestError);
+                expect(err.statusCode).toEqual(400);
+                expect(err.message).toEqual(`User ${mockFollowerUserProfile.username} has not requested to follow ${mockFolloweeUserProfile.username}`);
+            }
+        });
+    });
+
+    describe("rejectFollowRequest", () => {
+        it("should reject a follow request", async () => {
+            const followerId = new Types.ObjectId();
+            const followeeId = new Types.ObjectId();
+
+            const mockFollowerUserProfile = {
+                _id: new Types.ObjectId(),
+                userId: followerId,
+                username: "username1",
+                bio: "I love codeing!!",
+                name: "name1",
+                accountType: ProfileAccess.Private
+            } as Partial<IUserProfile>
+
+            const mockFolloweeUserProfile = {
+                _id: new Types.ObjectId(),
+                userId: followeeId,
+                username: "username2",
+                bio: "I love codeing!!",
+                name: "name2",
+                accountType: ProfileAccess.Private
+            } as Partial<IUserProfile>
+
+            const mockFolloweeFollowDocument = {
+                _id: new Types.ObjectId(),
+                userId: followeeId,
+                followers: [],
+                following: [],
+                requests: [followerId]
+            } as Partial<IFollow>
+
+            const mockUpdatedFolloweeFollowDoc = {
+                _id: new Types.ObjectId(),
+                userId: followeeId,
+                followers: [],
+                following: [],
+                requests: []
+            } as Partial<IFollow>
+
+            const mockFilter = { userId: followeeId };
+            const mockUpdate = { $pull: { requests: followerId } };
+            const mockOptions = { new: true };
+
+            userProfileDAO.findById = jest.fn().mockImplementation((id) => {
+                if (id.equals(followerId)) {
+                    return mockFollowerUserProfile;
+                } else if (id.equals(followeeId)) {
+                    return mockFolloweeUserProfile;
+                }
+            });
+
+            followDAO.findOne = jest.fn().mockResolvedValue(mockFolloweeFollowDocument);
+
+            followDAO.updateOne = jest.fn().mockResolvedValue(mockUpdatedFolloweeFollowDoc);
+
+            await userProfileService.rejectFollowRequest(followerId, followeeId);
+
+            expect(userProfileDAO.findById).toHaveBeenCalledWith(followerId);
+            expect(userProfileDAO.findById).toHaveBeenCalledWith(followeeId);
+            expect(followDAO.findOne).toHaveBeenCalledWith({ userId: followeeId });
+            expect(followDAO.updateOne).toHaveBeenCalledWith(mockFilter, mockUpdate, mockOptions);
+        });
+
+        it("should throw a ResourceNotFoundError when followee does not exist", async () => {
+            const followerId = new Types.ObjectId();
+            const followeeId = new Types.ObjectId();
+
+            userProfileDAO.findById = jest.fn().mockReturnValue(null);
+            
+            try {
+                await userProfileService.rejectFollowRequest(followerId, followeeId);
+                expect(userProfileDAO.findById).toHaveBeenCalledWith(followeeId);
+            } catch (error) {
+                const err = error as ResourceNotFoundError;
+                expect(err).toBeInstanceOf(ResourceNotFoundError);
+                expect(err.statusCode).toEqual(404);
+                expect(err.message).toEqual(`User ${followeeId} not found`);
+            }
+        });
+
+        it("should throw a ResourceNotFoundError when follower does not exist", async () => {
+            const followerId = new Types.ObjectId();
+            const followeeId = new Types.ObjectId();
+
+            userProfileDAO.findById = jest.fn().mockImplementation((id) => {
+                if (id.equals(followeeId)) {
+                    return {
+                        _id: followeeId,
+                        username: "followee",
+                        bio: "I love coding!",
+                        name: "Followee User",
+                        accountType: ProfileAccess.Private
+                    };
+                } else {
+                    return null;
+                }
+            });
+            
+            try {
+                await userProfileService.rejectFollowRequest(followerId, followeeId);
+                expect(userProfileDAO.findById).toHaveBeenCalledWith(followerId);
+            } catch (error) {
+                const err = error as ResourceNotFoundError;
+                expect(err).toBeInstanceOf(ResourceNotFoundError);
+                expect(err.statusCode).toEqual(404);
+                expect(err.message).toEqual(`User ${followerId} not found`);
+            }
+        });
+
+        it("should throw a BadRequestError when followee account type is not private", async () => {
+            const followerId = new Types.ObjectId();
+            const followeeId = new Types.ObjectId();
+
+            const mockFolloweeUserProfile = {
+                _id: new Types.ObjectId(),
+                userId: followeeId,
+                username: "username1",
+                bio: "I love codeing!!",
+                name: "Ryan Reynolds",
+                accountType: ProfileAccess.Public
+            } as Partial<IUserProfile>
+
+            const mockFollowerUserProfile = {
+                _id: new Types.ObjectId(),
+                userId: followerId,
+                username: "username2",
+                bio: "I love codeing!!",
+                name: "name2",
+                accountType: ProfileAccess.Private
+            } as Partial<IUserProfile>
+
+            userProfileDAO.findById = jest.fn().mockImplementation((id) => {
+                if (id.equals(followerId)) {
+                    return mockFollowerUserProfile;
+                } else if (id.equals(followeeId)) {
+                    return mockFolloweeUserProfile;
+                }
+            });
+
+            try {
+                await userProfileService.rejectFollowRequest(followerId, followeeId);
+
+                expect(userProfileDAO.findById).toHaveBeenCalledWith(followeeId);
+                expect(userProfileDAO.findById).toHaveBeenCalledWith(followerId);
+            } catch (error) {
+                const err = error as BadRequestError;
+                expect(err).toBeInstanceOf(BadRequestError);
+                expect(err.statusCode).toEqual(400);
+                expect(err.message).toEqual(`User ${mockFolloweeUserProfile.username}'s account is not private`);
+            }
+        });
+
+        it("should throw a ResourceNotFoundError when followee follow document does not exist", async () => {
+            const followerId = new Types.ObjectId();
+            const followeeId = new Types.ObjectId();
+
+            const mockFolloweeUserProfile = {
+                _id: new Types.ObjectId(),
+                userId: followeeId,
+                username: "username1",
+                bio: "I love codeing!!",
+                name: "Ryan Reynolds",
+                accountType: ProfileAccess.Private
+            } as Partial<IUserProfile>
+
+            const mockFollowerUserProfile = {
+                _id: new Types.ObjectId(),
+                userId: followerId,
+                username: "username2",
+                bio: "I love codeing!!",
+                name: "name2",
+                accountType: ProfileAccess.Private
+            } as Partial<IUserProfile>
+
+            userProfileDAO.findById = jest.fn().mockImplementation((id) => {
+                if (id.equals(followerId)) {
+                    return mockFollowerUserProfile;
+                } else if (id.equals(followeeId)) {
+                    return mockFolloweeUserProfile;
+                }
+            });
+
+            followDAO.findOne = jest.fn().mockReturnValue(null);
+
+            try {
+                await userProfileService.rejectFollowRequest(followerId, followeeId);
+
+                expect(userProfileDAO.findById).toHaveBeenCalledWith(followeeId);
+                expect(userProfileDAO.findById).toHaveBeenCalledWith(followerId);
+                expect(followDAO.findOne).toHaveBeenCalledWith({ userId: followeeId });
+            } catch (error) {
+                const err = error as ResourceNotFoundError;
+                expect(err).toBeInstanceOf(ResourceNotFoundError);
+                expect(err.statusCode).toEqual(404);
+                expect(err.message).toEqual(`Follow document for user ${mockFolloweeUserProfile.username} not found`);
+            }
+        });
+
+        it("should throw a BadRequestError when the follower has not requested to follow the followee", async () => {
+            const followerId = new Types.ObjectId();
+            const followeeId = new Types.ObjectId();
+
+            const mockFollowerUserProfile = {
+                _id: new Types.ObjectId(),
+                userId: followerId,
+                username: "username1",
+                bio: "I love codeing!!",
+                name: "name1",
+                accountType: ProfileAccess.Private
+            } as Partial<IUserProfile>
+
+            const mockFolloweeUserProfile = {
+                _id: new Types.ObjectId(),
+                userId: followeeId,
+                username: "username2",
+                bio: "I love codeing!!",
+                name: "name2",
+                accountType: ProfileAccess.Private
+            } as Partial<IUserProfile>
+
+            const mockFolloweeFollowDocument = {
+                _id: new Types.ObjectId(),
+                userId: followeeId,
+                followers: [],
+                following: [],
+                requests: []
+            } as Partial<IFollow>
+
+            userProfileDAO.findById = jest.fn().mockImplementation((id) => {
+                if (id.equals(followerId)) {
+                    return mockFollowerUserProfile;
+                } else if (id.equals(followeeId)) {
+                    return mockFolloweeUserProfile;
+                }
+            });
+
+            followDAO.findOne = jest.fn().mockResolvedValue(mockFolloweeFollowDocument);
+
+            try {
+                await userProfileService.rejectFollowRequest(followerId, followeeId);
+
+                expect(userProfileDAO.findById).toHaveBeenCalledWith(followeeId);
+                expect(userProfileDAO.findById).toHaveBeenCalledWith(followerId);
+                expect(followDAO.findOne).toHaveBeenCalledWith({ userId: followeeId });
+            } catch (error) {
+                const err = error as BadRequestError;
+                expect(err).toBeInstanceOf(BadRequestError);
+                expect(err.statusCode).toEqual(400);
+                expect(err.message).toEqual(`User ${mockFollowerUserProfile.username} has not requested to follow ${mockFolloweeUserProfile.username}`);
             }
         });
     });

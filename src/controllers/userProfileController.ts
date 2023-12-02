@@ -91,3 +91,17 @@ export const updateAccountType = async (req: Request, res: Response, next: NextF
         next(error);
     }
 };
+
+export const requestToFollowUser = async (req: Request, res: Response, next: NextFunction) => {
+    const { followeeId } = req.body;
+
+    const followeeID = new Types.ObjectId(followeeId);
+    const followerId = req.user._id;
+
+    try {
+        await userProfileService.requestToFollowUser(followerId, followeeID);
+        return res.status(201).json({success: true});
+    } catch (error) {
+        next(error);
+    }
+}
