@@ -12,8 +12,6 @@ class UserProfileService {
     private followDAO: FollowDAO;
 
     constructor(userProfileDAO: UserProfileDAO, followDAO: FollowDAO) {
-      // this.userProfileDAO = new UserProfileDAO(UserProfileModel);
-      // this.followDAO = new FollowDAO(FollowModel);
       this.userProfileDAO = userProfileDAO;
       this.followDAO = followDAO;
     }
@@ -299,6 +297,86 @@ class UserProfileService {
         { $pull: { requests: followerId } },
         { new: true},
     );
+  }
+
+  public async removeFollower(followerId: Types.ObjectId, followeeId: Types.ObjectId): Promise<void> {
+    // Check if the followeeId exists in the database
+    const followee = await this.userProfileDAO.findById(followeeId);
+    const follower = await this.userProfileDAO.findById(followerId);
+
+    if (!followee) {
+      throw new Errors.ResourceNotFoundError(`User ${followeeId} not found`);
+    }
+
+    if (!follower) {
+      throw new Errors.ResourceNotFoundError(`User ${followerId} not found`);
+    }
+
+    // Fetch the follow document for the followee
+    const followeeFollowDoc = await this.followDAO.findOne({ userId: followeeId });
+
+    if (!followeeFollowDoc) {
+      throw new Errors.ResourceNotFoundError(`Follow document for user ${followee.username} not found`);
+    }
+
+    // Check if the follower is following the followee
+    if (!followeeFollowDoc.followers.includes(followerId)) {
+      throw new Errors.BadRequestError(`User ${follower.username} is not following ${followee.username}`);
+    }
+
+    // Remove the followerId from the followee's followers array
+    await this.followDAO.updateOne(
+        { userId: followeeId },
+        { $pull: { followers: followerId } },
+        { new: true},
+    );
+
+    // Remove the followeeId from the follower's following array
+    await this.followDAO.updateOne(
+      { userId: followerId },
+      { $pull: { following: followeeId } },
+      { new: true},
+    );
+  }
+
+  public async unfollowUser(followerId: Types.ObjectId, followeeId: Types.ObjectId): Promise<void> {
+    const followee = await this.userProfileDAO.findById(followeeId);
+    const follower = await this.userProfileDAO.findById(followerId);
+
+    if (!followee) {
+      throw new Errors.ResourceNotFoundError(`User ${followeeId} not found`);
+    }
+
+    if (!follower) {
+      throw new Errors.ResourceNotFoundError(`User ${followerId} not found`);
+    }
+
+    // Fetch the follow document for the followee
+    const followerFollowDoc = await this.followDAO.findOne({ userId: followerId });
+
+    if (!followerFollowDoc) {
+      throw new Errors.ResourceNotFoundError(`Follow document for user ${follower.username} not found`);
+    }
+
+    // Check if the follower is following the followee
+    if (!followerFollowDoc.following.includes(followeeId)) {
+      throw new Errors.BadRequestError(`User ${follower.username} is not following ${followee.username}`);
+    }
+
+     // Remove the followeeId from the follower's following array
+     await this.followDAO.updateOne(
+      { userId: followerId },
+      { $pull: { following: followeeId } },
+      { new: true},
+    );
+
+    // Remove the followerId from the followee's followers array
+    await this.followDAO.updateOne(
+      { userId: followeeId },
+      { $pull: { followers: followerId } },
+      { new: true},
+    );
+
   }
     
 }
