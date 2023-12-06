@@ -7,6 +7,13 @@ class MongoDB {
     this.dbUri = dbUri;
   }
 
+  async startSession(): Promise<mongoose.ClientSession> {
+    if (mongoose.connection.readyState) {
+      return await mongoose.startSession();
+    }
+    throw new Error("No active Mongoose Connection.");
+  }
+
   /**
    * Connect to MongoDB database.
    */

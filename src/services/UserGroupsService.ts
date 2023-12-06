@@ -2,13 +2,14 @@ import * as Errors from "../utils/errors";
 import { Types } from "mongoose";
 import UserGroupsDAO from "../dataAccess/UserGroupsDAO";
 import { UserGroupsModel, IUserGroups } from "../models/userGroups";
-import logger from "../common/logger";
+import { logger } from "../common/logger";
 
 class UserGroupsService {
   private userGroupsDAO: UserGroupsDAO;
 
-  constructor() {
-    this.userGroupsDAO = new UserGroupsDAO(UserGroupsModel);
+  constructor(userGroupsDAO: UserGroupsDAO) {
+    // this.userGroupsDAO = new UserGroupsDAO(UserGroupsModel);
+    this.userGroupsDAO = userGroupsDAO;
   }
 
   public async fetchUserGroups(userId: Types.ObjectId) {
@@ -20,12 +21,11 @@ class UserGroupsService {
     if (!user) {
       throw new Errors.ResourceNotFoundError("User not found");
     }
-    
+
     logger.info(`User "${userId}" Groups: `, userGroups);
 
     return { userGroups };
   }
-
 }
 
 export default UserGroupsService;

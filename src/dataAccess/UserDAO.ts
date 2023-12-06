@@ -5,7 +5,7 @@ import { GroupModel } from "../models/groupModel";
 import { IUserProfile, UserProfileModel } from "../models/userProfile";
 import { IUserGroups, UserGroupsModel } from "../models/userGroups";
 import { ResourceNotFoundError } from "../utils/errors";
-import logger from "../common/logger";
+import { logger } from "../common/logger";
 
 class UserDAO extends BaseDAO<IUser> {
 

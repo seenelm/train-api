@@ -1,11 +1,19 @@
 import { Request, Response, NextFunction } from "express";
 import UserGroupsService from "../services/UserGroupsService";
+import UserGroupsDAO from "../dataAccess/UserGroupsDAO";
+import { UserGroupsModel } from "../models/userGroups";
 import { Types } from "mongoose";
 
-const userGroupsService = new UserGroupsService();
+const userGroupsService = new UserGroupsService(
+  new UserGroupsDAO(UserGroupsModel)
+);
 
 // Find user's groups.
-export const fetchUserGroups = async (req: Request, res: Response, next: NextFunction) => {
+export const fetchUserGroups = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { userId } = req.params;
   const userID = new Types.ObjectId(userId);
 
@@ -16,7 +24,6 @@ export const fetchUserGroups = async (req: Request, res: Response, next: NextFun
     next(error);
   }
 };
-
 
 // Request to follow users private account.
 export const requestUser = async (req: Request, res: Response) => {};

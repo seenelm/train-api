@@ -4,12 +4,12 @@ import { UnauthorizedError } from "../utils/errors";
 import { UserModel } from "../models/userModel";
 import { Types } from "mongoose";
 import { TokenPayload } from "../services/UserService";
-import logger from "../common/logger";
+import { logger } from "../common/logger";
 
 declare global {
   namespace Express {
     interface Request {
-      user: any
+      user: any;
     }
   }
 }
@@ -21,14 +21,18 @@ const getAccessToken = (authorization: string): string => {
     token = authorization.split(" ")[1];
   }
 
-  if(!token) {
+  if (!token) {
     throw new UnauthorizedError("Invalid Authorization");
   }
-  
-  return token;
-}
 
-export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
+  return token;
+};
+
+export const authenticate = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   // const testToken = req.headers.authorization;
   // let token: string;
 
@@ -50,7 +54,6 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
 
     const user = await UserModel.findById(new Types.ObjectId(payload.userId));
     logger.info("User Payload ", payload.userId);
-
 
     if (!user) {
       throw new UnauthorizedError("User is not registered");

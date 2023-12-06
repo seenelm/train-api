@@ -1,21 +1,38 @@
 import { Request, Response, NextFunction } from "express";
-import GroupService from "../services/GroupService";
+import { GroupService } from "../services/GroupService";
+import GroupDAO from "../dataAccess/GroupDAO";
+import { GroupModel } from "../models/groupModel";
+import UserGroupsDAO from "../dataAccess/UserGroupsDAO";
+import { UserGroupsModel } from "../models/userGroups";
 import { Types } from "mongoose";
 
-const groupService = new GroupService();
+const groupDAO = new GroupDAO(GroupModel);
+const userGroupsDAO = new UserGroupsDAO(UserGroupsModel);
+
+const groupService = new GroupService(groupDAO, userGroupsDAO);
 
 // Add group to associated Users model.
-export const addGroup = async (req: Request, res: Response, next: NextFunction) => {
+export const addGroup = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { name, userId } = req.body;
-    const result = await groupService.addGroup(name, userId);
-    return res.status(201).json(result.newGroup);
+    const userID = new Types.ObjectId(userId);
+
+    const group = await groupService.addGroup(name, userID);
+    return res.status(201).json(group);
   } catch (error) {
     next(error);
   }
 };
 
-export const fetchGroup = async (req: Request, res: Response, next: NextFunction) => {
+export const fetchGroup = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { groupId } = req.params;
   let id = new Types.ObjectId(groupId);
   try {
@@ -24,9 +41,13 @@ export const fetchGroup = async (req: Request, res: Response, next: NextFunction
   } catch (error) {
     next(error);
   }
-}
+};
 
-export const updateGroupBio = async (req: Request, res: Response, next: NextFunction) => {
+export const updateGroupBio = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { groupBio } = req.body;
   const { userId, groupId } = req.params;
 
@@ -38,9 +59,13 @@ export const updateGroupBio = async (req: Request, res: Response, next: NextFunc
   } catch (error) {
     next(error);
   }
-}
+};
 
-export const updateGroupName = async (req: Request, res: Response, next: NextFunction) => {
+export const updateGroupName = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { groupName } = req.body;
   const { userId, groupId } = req.params;
 
@@ -52,7 +77,7 @@ export const updateGroupName = async (req: Request, res: Response, next: NextFun
   } catch (error) {
     next(error);
   }
-}
+};
 
 // Request to join private group.
 // export const requestGroup = async (req: Request, res: Response) => {
