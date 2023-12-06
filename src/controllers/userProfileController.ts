@@ -8,6 +8,19 @@ import { Types } from "mongoose";
 
 const userProfileService = new UserProfileService(new UserProfileDAO(UserProfileModel), new FollowDAO(FollowModel));
 
+export const updateAccountType = async (req: Request, res: Response, next: NextFunction) => {
+    const { accountType } = req.body;
+    const { userId } = req.params;
+    const userID = new Types.ObjectId(userId);
+
+    try {
+        await userProfileService.updateAccountType(userID, accountType);
+        return res.status(201).json({ success: true });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const updateUserBio = async (req: Request, res: Response, next: NextFunction) => {
     const { userBio } = req.body;
     const { userId } = req.params;
@@ -41,20 +54,6 @@ export const fetchUserProfile = async (req: Request, res: Response, next: NextFu
     }
 }
 
-export const followUser = async (req: Request, res: Response, next: NextFunction) => {
-    const { followeeId } = req.body;
-
-    const followeeID = new Types.ObjectId(followeeId);
-    const followerId = req.user._id;
-
-    try {
-        await userProfileService.followUser(followerId, followeeID);
-        return res.status(201).json({success: true});
-    } catch (error) {
-        next(error);
-    }
-}
-
 export const getFollowers = async (req: Request, res: Response, next: NextFunction) => {
     const { userId } = req.params;
     const userID = new Types.ObjectId(userId);
@@ -79,18 +78,19 @@ export const getFollowing = async (req: Request, res: Response, next: NextFuncti
     }
 }
 
-export const updateAccountType = async (req: Request, res: Response, next: NextFunction) => {
-    const { accountType } = req.body;
-    const { userId } = req.params;
-    const userID = new Types.ObjectId(userId);
+export const followUser = async (req: Request, res: Response, next: NextFunction) => {
+    const { followeeId } = req.body;
+
+    const followeeID = new Types.ObjectId(followeeId);
+    const followerId = req.user._id;
 
     try {
-        await userProfileService.updateAccountType(userID, accountType);
-        return res.status(201).json({ success: true });
+        await userProfileService.followUser(followerId, followeeID);
+        return res.status(201).json({success: true});
     } catch (error) {
         next(error);
     }
-};
+}
 
 export const requestToFollowUser = async (req: Request, res: Response, next: NextFunction) => {
     const { followeeId } = req.body;
@@ -100,6 +100,62 @@ export const requestToFollowUser = async (req: Request, res: Response, next: Nex
 
     try {
         await userProfileService.requestToFollowUser(followerId, followeeID);
+        return res.status(201).json({success: true});
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const acceptFollowRequest = async (req: Request, res: Response, next: NextFunction) => {
+    const { followerId } = req.body;
+
+    const followeeID = req.user._id;
+    const followerID = new Types.ObjectId(followerId);
+
+    try {
+        await userProfileService.acceptFollowRequest(followeeID, followerID);
+        return res.status(201).json({success: true});
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const rejectFollowRequest = async (req: Request, res: Response, next: NextFunction) => {
+    const { followerId } = req.body;
+
+    const followeeID = req.user._id;
+    const followerID = new Types.ObjectId(followerId);
+
+    try {
+        await userProfileService.rejectFollowRequest(followeeID, followerID);
+        return res.status(201).json({success: true});
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const removeFollower = async (req: Request, res: Response, next: NextFunction) => {
+    const { followerId } = req.body;
+
+    const followeeID = req.user._id;
+    const followerID = new Types.ObjectId(followerId);
+
+    try {
+        await userProfileService.removeFollower(followeeID, followerID);
+        return res.status(201).json({success: true});
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const unfollowUser = async (req: Request, res: Response, next: NextFunction) => {
+    const { followeeId } = req.body;
+
+    const followeeID = new Types.ObjectId(followeeId);
+    const followerId = req.user._id;
+
+    try {
+        await userProfileService.unfollowUser(followerId, followeeID);
         return res.status(201).json({success: true});
     } catch (error) {
         next(error);

@@ -6,13 +6,24 @@ configure({
             type: "file",
             filename: "./logs/app.log",
             maxLogSize: 20480,
+            backups: 10,
+            compress: true,
+        },
+        errorFile: {
+            type: "file",
+            filename: "./logs/errors.log",
+            maxLogSize: 20480,
+            backups: 10,
             compress: true,
         },
     },
     categories: {
-        default: { appenders: ["file"], level: "all"}
+        default: { appenders: ["file"], level: "info" },
+        error: { appenders: ["errorFile"], level: "error" }
     }
 });
 
 const logger = getLogger();
-export default logger;
+const errorLogger = getLogger("error");
+
+export { logger, errorLogger };

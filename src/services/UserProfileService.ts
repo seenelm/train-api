@@ -4,7 +4,7 @@ import { IFollow, FollowModel } from "../models/followModel";
 import FollowDAO from "../dataAccess/FollowDAO";
 import * as Errors from "../utils/errors";
 import { Types } from "mongoose";
-import logger from "../common/logger";
+import { logger } from "../common/logger";
 import { ProfileAccess } from "../common/constants";
 
 class UserProfileService {

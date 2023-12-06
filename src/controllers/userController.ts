@@ -1,10 +1,27 @@
 import { NextFunction, Request, Response } from "express";
 import UserService from "../services/UserService";
+import UserDAO from "../dataAccess/UserDAO";
+import UserProfileDAO from "../dataAccess/UserProfileDAO";
+import UserGroupsDAO from "../dataAccess/UserGroupsDAO";
+import FollowDAO from "../dataAccess/FollowDAO";
+import { UserModel } from "../models/userModel";
+import { UserProfileModel } from "../models/userProfile";
+import { UserGroupsModel } from "../models/userGroups";
+import { FollowModel } from "../models/followModel";
 import { Types } from "mongoose";
 
-const userService = new UserService();
+const userService = new UserService(
+  new UserDAO(UserModel),
+  new UserProfileDAO(UserProfileModel),
+  new UserGroupsDAO(UserGroupsModel),
+  new FollowDAO(FollowModel)
+);
 
-export const register = async (req: Request, res: Response, next: NextFunction) => {
+export const register = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { username, password, name } = req.body;
 
@@ -20,7 +37,11 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
   }
 };
 
-export const login = async (req: Request, res: Response, next: NextFunction) => {
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { username, password } = req.body;
 
@@ -35,7 +56,11 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
   }
 };
 
-export const findUserById = async (req: Request, res: Response, next: NextFunction) => {
+export const findUserById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { userId } = req.params;
     let id = new Types.ObjectId(userId);
@@ -44,9 +69,13 @@ export const findUserById = async (req: Request, res: Response, next: NextFuncti
   } catch (error) {
     next(error);
   }
-}
+};
 
-export const fetchUserData = async (req: Request, res: Response, next: NextFunction) => {
+export const fetchUserData = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { userId } = req.params;
     let id = new Types.ObjectId(userId);
@@ -55,16 +84,20 @@ export const fetchUserData = async (req: Request, res: Response, next: NextFunct
   } catch (error) {
     next(error);
   }
-}
+};
 
-export const deleteUserAccount = async (req: Request, res: Response, next: NextFunction) => {
+export const deleteUserAccount = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { userId } = req.params;
   let userID = new Types.ObjectId(userId);
 
   try {
     await userService.deleteUserAccount(userID);
-    return res.status(201).json({success: true});
+    return res.status(201).json({ success: true });
   } catch (error) {
     next(error);
   }
-}
+};

@@ -1,5 +1,5 @@
 import { Schema, model, Types, Document } from "mongoose";
-import { IUser } from "./userModel";
+import { ProfileAccess } from "../common/constants";
 
 interface IGroup extends Document {
   name: string;
@@ -7,6 +7,7 @@ interface IGroup extends Document {
   owners: Types.ObjectId[];
   users: Types.ObjectId[];
   requests: Types.ObjectId[];
+  accountType: number;
 }
 
 const groupSchema = new Schema({
@@ -15,13 +16,13 @@ const groupSchema = new Schema({
     required: true,
   },
   bio: {
-    type: String
+    type: String,
   },
   owners: [
     {
       type: Schema.Types.ObjectId,
       ref: "User",
-    }
+    },
   ],
   users: [
     {
@@ -35,6 +36,11 @@ const groupSchema = new Schema({
       ref: "User",
     },
   ],
+  accountType: {
+    type: Number,
+    enum: [ProfileAccess.Public, ProfileAccess.Private],
+    default: ProfileAccess.Public,
+  },
 });
 
 const GroupModel = model<IGroup>("Group", groupSchema);

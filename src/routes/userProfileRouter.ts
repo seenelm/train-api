@@ -10,7 +10,14 @@ userProfileRouter.get("/:userId/following", authenticate, userProfileController.
 userProfileRouter.post("/", authenticate, userProfileController.followUser);
 
 userProfileRouter.put("/:userId/bio", authenticate, userProfileController.updateUserBio);
+
 userProfileRouter.patch("/:userId/name", authenticate, userProfileController.updateUsersFullName);
 userProfileRouter.patch("/:userId/accountType", authenticate, userProfileController.updateAccountType);
+
+userProfileRouter.patch("/follow/requests/:followeeId", authenticate, userProfileController.requestToFollowUser);
+userProfileRouter.patch("/follow/:followerId/accept", authenticate, userProfileController.acceptFollowRequest);
+userProfileRouter.patch("/follow/:followerId/reject", authenticate, userProfileController.rejectFollowRequest);
+userProfileRouter.patch("/follow/:followerId/remove", authenticate, userProfileController.removeFollower);
+userProfileRouter.patch("/follow/:followeeId/unfollow", authenticate, userProfileController.unfollowUser);
 
 export default userProfileRouter;
