@@ -1,4 +1,11 @@
-import { Document, Model, FilterQuery, Types } from "mongoose";
+import {
+  Document,
+  Model,
+  FilterQuery,
+  Types,
+  Query,
+  UpdateQuery,
+} from "mongoose";
 import * as Errors from "../utils/errors";
 
 export default abstract class BaseDAO<T extends Document> {
@@ -17,6 +24,10 @@ export default abstract class BaseDAO<T extends Document> {
 
   public async findById(id: Types.ObjectId): Promise<T | null> {
     return await this.model.findById(id).exec();
+  }
+
+  public async findByIdAndDelete(id: Types.ObjectId): Promise<T | null> {
+    return await this.model.findByIdAndDelete(id).exec();
   }
 
   public async findOne(query: FilterQuery<T>): Promise<T | null> {
@@ -40,5 +51,16 @@ export default abstract class BaseDAO<T extends Document> {
     options: object
   ): Promise<void> {
     await this.model.updateOne(filter, update, options).exec();
+  }
+
+  public async updateMany(
+    filter: object,
+    update: object,
+    options: object
+  ): Promise<UpdateQuery<T>> {
+    const entities = await this.model
+      .updateMany(filter, update, options)
+      .exec();
+    return entities;
   }
 }

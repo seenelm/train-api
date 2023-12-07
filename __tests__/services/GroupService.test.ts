@@ -3,12 +3,12 @@ import GroupDAO from "../../src/dataAccess/GroupDAO";
 import { Types } from "mongoose";
 import * as Errors from "../../src/utils/errors";
 import { IGroup } from "../../src/models/groupModel";
-import { GroupService } from "../../src/services/GroupService";
+import GroupService from "../../src/services/GroupService";
 import { GroupModel } from "../../src/models/groupModel";
 import { UserGroupsModel } from "../../src/models/userGroups";
-import { mock } from "node:test";
-import { group } from "node:console";
 import { ProfileAccess } from "../../src/common/constants";
+import { IUserGroups } from "../../src/models/userGroups";
+import { mock } from "node:test";
 
 jest.mock("../../src/dataAccess/UserGroupsDAO");
 jest.mock("../../src/dataAccess/GroupDAO");
@@ -356,6 +356,124 @@ describe("GroupService", () => {
     });
   });
 
+  describe("updateAccountType", () => {
+    it("should update groups account type", async () => {
+      const mockGroupBio = "We are going to win the SuperBowl this year!!";
+      const mockGroupName = "Maryland Terrapins";
+      const mockUserId = new Types.ObjectId();
+      const mockOwnerId = mockUserId;
+      const mockGroupId = new Types.ObjectId();
+      const mockAccountType: number = 2;
+
+      const mockGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: mockGroupName,
+        bio: mockGroupBio,
+        owners: [mockOwnerId],
+        users: [],
+        requests: [],
+        accountType: ProfileAccess.Public,
+      };
+
+      const mockUpdatedGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: mockGroupName,
+        bio: mockGroupBio,
+        owners: [mockOwnerId],
+        users: [],
+        requests: [],
+        accountType: ProfileAccess.Private,
+      };
+
+      const mockFilter = { _id: mockGroup._id };
+      const mockUpdate = { accountType: mockAccountType };
+      const mockOptions = { new: true };
+
+      groupDAO.findById = jest.fn().mockReturnValue(mockGroup);
+      groupDAO.findOneAndUpdate = jest.fn().mockReturnValue(mockUpdatedGroup);
+
+      await groupService.updateAccountType(
+        mockOwnerId,
+        mockGroupId,
+        mockAccountType
+      );
+
+      expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+      expect(groupDAO.findOneAndUpdate).toHaveBeenCalledWith(
+        mockFilter,
+        mockUpdate,
+        mockOptions
+      );
+      expect(mockUpdatedGroup.accountType).toEqual(ProfileAccess.Private);
+    });
+
+    it("should throw a ForbiddenError if the user is not the owner", async () => {
+      const mockGroupBio = "We are going to win the SuperBowl this year!!";
+      const mockGroupName = "Maryland Terrapins";
+      const mockUserId = new Types.ObjectId();
+      const mockGroupId = new Types.ObjectId();
+      const mockOwnerId = mockUserId;
+
+      const OWNER_ID = new Types.ObjectId();
+
+      const mockGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: mockGroupName,
+        bio: mockGroupBio,
+        owners: [mockOwnerId],
+        users: [],
+        requests: [],
+        accountType: ProfileAccess.Public,
+      };
+
+      try {
+        groupDAO.findById = jest.fn().mockReturnValue(mockGroup);
+
+        await groupService.updateAccountType(
+          OWNER_ID,
+          mockGroupId,
+          ProfileAccess.Private
+        );
+
+        expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+        expect(groupDAO.findById).toEqual(mockGroup);
+      } catch (error) {
+        const err = error as Errors.ForbiddenError;
+        expect(err).toBeInstanceOf(Errors.ForbiddenError);
+        expect(err.statusCode).toEqual(403);
+        expect(err.message).toEqual(
+          "User doesn't have permission to update account type"
+        );
+      }
+    });
+
+    it("should throw a ResourceNotFoundError when group does not exist", async () => {
+      const mockGroupBio = "We are going to win the SuperBowl this year!!";
+      const mockGroupName = "Maryland Terrapins";
+      const mockUserId = new Types.ObjectId();
+      const mockGroupId = new Types.ObjectId();
+      const mockOwnerId = mockUserId;
+
+      try {
+        groupDAO.findById = jest.fn().mockReturnValue(null);
+
+        await groupService.updateAccountType(
+          mockOwnerId,
+          mockGroupId,
+          ProfileAccess.Private
+        );
+
+        expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+        expect(groupDAO.findById).toBeNull();
+      } catch (error) {
+        const err = error as Errors.ResourceNotFoundError;
+        expect(err).toBeInstanceOf(Errors.ResourceNotFoundError);
+        expect(err.statusCode).toEqual(404);
+        expect(err.message).toEqual("Group does not exist");
+      }
+    });
+  });
+
   describe("joinGroup", () => {
     it("should add user to group", async () => {
       const mockUserId = new Types.ObjectId();
@@ -475,6 +593,928 @@ describe("GroupService", () => {
         expect(err).toBeInstanceOf(Errors.ConflictError);
         expect(err.statusCode).toEqual(409);
         expect(err.message).toEqual("User is already member of group");
+      }
+    });
+  });
+
+  describe("requestToJoinGroup", () => {
+    it("should add user to group requests", async () => {
+      const mockUserId = new Types.ObjectId();
+      const mockGroupId = new Types.ObjectId();
+      const mockOwnerId = mockUserId;
+
+      const mockUserTwoId = new Types.ObjectId();
+
+      const mockGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        bio: "We are going to win the SuperBowl this year!!",
+        owners: [mockOwnerId],
+        users: [],
+        requests: [],
+        accountType: ProfileAccess.Private,
+      };
+
+      const mockUpdatedGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        bio: "We are going to win the SuperBowl this year!!",
+        owners: [mockOwnerId],
+        users: [],
+        requests: [mockUserTwoId],
+        accountType: ProfileAccess.Private,
+      };
+
+      groupDAO.findById = jest.fn().mockReturnValue(mockGroup);
+      groupDAO.findOneAndUpdate = jest.fn().mockResolvedValue(mockUpdatedGroup);
+
+      await groupService.requestToJoinGroup(mockUserTwoId, mockGroupId);
+
+      expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+      expect(groupDAO.findOneAndUpdate).toHaveBeenCalledWith(
+        { _id: mockGroupId },
+        { $addToSet: { requests: mockUserTwoId } },
+        { new: true }
+      );
+    });
+
+    it("should throw ResourceNotFoundError when group does not exist", async () => {
+      const mockUserId = new Types.ObjectId();
+      const mockGroupId = new Types.ObjectId();
+
+      try {
+        groupDAO.findById = jest.fn().mockReturnValue(null);
+
+        await groupService.requestToJoinGroup(mockUserId, mockGroupId);
+
+        expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+        expect(groupDAO.findById).toBeNull();
+      } catch (error) {
+        const err = error as Errors.ResourceNotFoundError;
+        expect(err).toBeInstanceOf(Errors.ResourceNotFoundError);
+        expect(err.statusCode).toEqual(404);
+        expect(err.message).toEqual("Group does not exist");
+      }
+    });
+
+    it("should throw BadRequestError if the group account is not private", async () => {
+      const mockUserId = new Types.ObjectId();
+      const mockGroupId = new Types.ObjectId();
+      const mockOwnerId = mockUserId;
+
+      const mockGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        bio: "We are going to win the SuperBowl this year!!",
+        owners: [mockOwnerId],
+        users: [],
+        requests: [],
+        accountType: ProfileAccess.Public,
+      };
+
+      try {
+        groupDAO.findById = jest.fn().mockReturnValue(mockGroup);
+
+        await groupService.requestToJoinGroup(mockUserId, mockGroupId);
+
+        expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+        expect(groupDAO.findById).toEqual(mockGroup);
+      } catch (error) {
+        const err = error as Errors.BadRequestError;
+        expect(err).toBeInstanceOf(Errors.BadRequestError);
+        expect(err.statusCode).toEqual(400);
+        expect(err.message).toEqual(
+          `Group ${mockGroup.name} account is not private`
+        );
+      }
+    });
+
+    it("should throw ConflictError if the user already sent a request", async () => {
+      const mockUserId = new Types.ObjectId();
+      const mockGroupId = new Types.ObjectId();
+      const mockOwnerId = mockUserId;
+      const mockUserTwoId = new Types.ObjectId();
+
+      const mockGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        bio: "We are going to win the SuperBowl this year!!",
+        owners: [mockOwnerId],
+        users: [],
+        requests: [mockUserTwoId],
+        accountType: ProfileAccess.Private,
+      };
+
+      try {
+        groupDAO.findById = jest.fn().mockReturnValue(mockGroup);
+
+        await groupService.requestToJoinGroup(mockUserTwoId, mockGroupId);
+
+        expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+        expect(groupDAO.findById).toEqual(mockGroup);
+      } catch (error) {
+        const err = error as Errors.ConflictError;
+        expect(err).toBeInstanceOf(Errors.ConflictError);
+        expect(err.statusCode).toEqual(409);
+        expect(err.message).toEqual("User already sent a request");
+      }
+    });
+
+    it("should throw ConflictError if the user is already a member of the group", async () => {
+      const mockUserId = new Types.ObjectId();
+      const mockGroupId = new Types.ObjectId();
+      const mockOwnerId = mockUserId;
+      const mockUserTwoId = new Types.ObjectId();
+
+      const mockGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        bio: "We are going to win the SuperBowl this year!!",
+        owners: [mockOwnerId],
+        users: [mockUserTwoId],
+        requests: [],
+        accountType: ProfileAccess.Private,
+      };
+
+      try {
+        groupDAO.findById = jest.fn().mockReturnValue(mockGroup);
+
+        await groupService.requestToJoinGroup(mockUserTwoId, mockGroupId);
+
+        expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+        expect(groupDAO.findById).toEqual(mockGroup);
+      } catch (error) {
+        const err = error as Errors.ConflictError;
+        expect(err).toBeInstanceOf(Errors.ConflictError);
+        expect(err.statusCode).toEqual(409);
+        expect(err.message).toEqual("User is already member of group");
+      }
+    });
+  });
+
+  describe("acceptGroupRequest", () => {
+    it("should add user to group", async () => {
+      const mockGroupId = new Types.ObjectId();
+      const mockOwnerId = new Types.ObjectId();
+      const mockUserId = new Types.ObjectId();
+
+      const mockGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        bio: "We are going to win the SuperBowl this year!!",
+        owners: [mockOwnerId],
+        users: [],
+        requests: [mockUserId],
+        accountType: ProfileAccess.Private,
+      };
+
+      const mockUpdatedGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        bio: "We are going to win the SuperBowl this year!!",
+        owners: [mockOwnerId],
+        users: [mockUserId],
+        requests: [],
+        accountType: ProfileAccess.Private,
+      };
+
+      groupDAO.findById = jest.fn().mockReturnValue(mockGroup);
+      groupDAO.findOneAndUpdate = jest.fn().mockResolvedValue(mockUpdatedGroup);
+
+      await groupService.acceptGroupRequest(
+        mockUserId,
+        mockOwnerId,
+        mockGroupId
+      );
+
+      expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+      expect(groupDAO.findOneAndUpdate).toHaveBeenCalledWith(
+        { _id: mockGroupId },
+        {
+          $addToSet: { users: mockUserId },
+          $pull: { requests: mockUserId },
+        },
+        { new: true }
+      );
+    });
+
+    it("should throw ResourceNotFoundError when group does not exist", async () => {
+      const mockUserId = new Types.ObjectId();
+      const mockGroupId = new Types.ObjectId();
+      const mockUserTwoId = new Types.ObjectId();
+
+      try {
+        groupDAO.findById = jest.fn().mockReturnValue(null);
+
+        await groupService.acceptGroupRequest(
+          mockUserId,
+          mockUserTwoId,
+          mockGroupId
+        );
+
+        expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+        expect(groupDAO.findById).toBeNull();
+      } catch (error) {
+        const err = error as Errors.ResourceNotFoundError;
+        expect(err).toBeInstanceOf(Errors.ResourceNotFoundError);
+        expect(err.statusCode).toEqual(404);
+        expect(err.message).toEqual("Group does not exist");
+      }
+    });
+
+    it("should throw BadRequestError if the group account is not private", async () => {
+      const mockUserId = new Types.ObjectId();
+      const mockGroupId = new Types.ObjectId();
+      const mockOwnerId = mockUserId;
+      const mockUserTwoId = new Types.ObjectId();
+
+      const mockGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        bio: "We are going to win the SuperBowl this year!!",
+        owners: [mockOwnerId],
+        users: [],
+        requests: [mockUserTwoId],
+        accountType: ProfileAccess.Public,
+      };
+
+      try {
+        groupDAO.findById = jest.fn().mockReturnValue(mockGroup);
+
+        await groupService.acceptGroupRequest(
+          mockUserId,
+          mockUserTwoId,
+          mockGroupId
+        );
+
+        expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+        expect(groupDAO.findById).toEqual(mockGroup);
+      } catch (error) {
+        const err = error as Errors.BadRequestError;
+        expect(err).toBeInstanceOf(Errors.BadRequestError);
+        expect(err.statusCode).toEqual(400);
+        expect(err.message).toEqual(
+          `Group ${mockGroup.name} account is not private`
+        );
+      }
+    });
+
+    it("should throw ForbiddenError if the user is not the owner", async () => {
+      const mockUserId = new Types.ObjectId();
+      const mockGroupId = new Types.ObjectId();
+      const mockOwnerId = new Types.ObjectId();
+
+      const OWNER_ID = new Types.ObjectId();
+
+      const mockGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        bio: "We are going to win the SuperBowl this year!!",
+        owners: [mockOwnerId],
+        users: [],
+        requests: [mockUserId],
+        accountType: ProfileAccess.Private,
+      };
+
+      try {
+        groupDAO.findById = jest.fn().mockReturnValue(mockGroup);
+
+        await groupService.acceptGroupRequest(
+          mockUserId,
+          OWNER_ID,
+          mockGroupId
+        );
+
+        expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+        expect(groupDAO.findById).toEqual(mockGroup);
+      } catch (error) {
+        const err = error as Errors.ForbiddenError;
+        expect(err).toBeInstanceOf(Errors.ForbiddenError);
+        expect(err.statusCode).toEqual(403);
+        expect(err.message).toEqual(
+          "User doesn't have permission to accept group request"
+        );
+      }
+    });
+
+    it("should throw BadRequestError if the user is not in the group requests", async () => {
+      const mockGroupId = new Types.ObjectId();
+      const mockOwnerId = new Types.ObjectId();
+      const mockUserId = new Types.ObjectId();
+
+      const mockGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        bio: "We are going to win the SuperBowl this year!!",
+        users: [],
+        owners: [mockOwnerId],
+        requests: [],
+        accountType: ProfileAccess.Private,
+      };
+
+      try {
+        groupDAO.findById = jest.fn().mockReturnValue(mockGroup);
+
+        await groupService.acceptGroupRequest(
+          mockUserId,
+          mockOwnerId,
+          mockGroupId
+        );
+
+        expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+        expect(groupDAO.findById).toEqual(mockGroup);
+      } catch (error) {
+        const err = error as Errors.BadRequestError;
+        expect(err).toBeInstanceOf(Errors.BadRequestError);
+        expect(err.statusCode).toEqual(400);
+        expect(err.message).toEqual("User did not request to join group");
+      }
+    });
+  });
+
+  describe("rejectGroupRequest", () => {
+    it("should remove user from group requests", async () => {
+      const mockUserId = new Types.ObjectId();
+      const mockGroupId = new Types.ObjectId();
+      const mockOwnerId = new Types.ObjectId();
+
+      const mockGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        bio: "We are going to win the SuperBowl this year!!",
+        users: [],
+        owners: [mockOwnerId],
+        requests: [mockUserId],
+        accountType: ProfileAccess.Private,
+      };
+
+      const mockUpdatedGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        bio: "We are going to win the SuperBowl this year!!",
+        users: [],
+        owners: [mockOwnerId],
+        requests: [],
+        accountType: ProfileAccess.Private,
+      };
+
+      groupDAO.findById = jest.fn().mockReturnValue(mockGroup);
+      groupDAO.findOneAndUpdate = jest.fn().mockResolvedValue(mockUpdatedGroup);
+
+      await groupService.rejectGroupRequest(
+        mockUserId,
+        mockOwnerId,
+        mockGroupId
+      );
+
+      expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+      expect(groupDAO.findOneAndUpdate).toHaveBeenCalledWith(
+        { _id: mockGroupId },
+        { $pull: { requests: mockUserId } },
+        { new: true }
+      );
+    });
+
+    it("should throw ResourceNotFoundError when group does not exist", async () => {
+      const mockOwnerId = new Types.ObjectId();
+      const mockGroupId = new Types.ObjectId();
+      const mockUserId = new Types.ObjectId();
+
+      try {
+        groupDAO.findById = jest.fn().mockReturnValue(null);
+
+        await groupService.rejectGroupRequest(
+          mockUserId,
+          mockOwnerId,
+          mockGroupId
+        );
+
+        expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+        expect(groupDAO.findById).toBeNull();
+      } catch (error) {
+        const err = error as Errors.ResourceNotFoundError;
+        expect(err).toBeInstanceOf(Errors.ResourceNotFoundError);
+        expect(err.statusCode).toEqual(404);
+        expect(err.message).toEqual("Group does not exist");
+      }
+    });
+
+    it("should throw BadRequestError if the group account is not private", async () => {
+      const mockGroupId = new Types.ObjectId();
+      const mockOwnerId = new Types.ObjectId();
+      const mockUserId = new Types.ObjectId();
+
+      const mockGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        bio: "We are going to win the SuperBowl this year!!",
+        users: [],
+        owners: [mockOwnerId],
+        requests: [mockUserId],
+        accountType: ProfileAccess.Public,
+      };
+
+      try {
+        groupDAO.findById = jest.fn().mockReturnValue(mockGroup);
+
+        await groupService.rejectGroupRequest(
+          mockUserId,
+          mockOwnerId,
+          mockGroupId
+        );
+
+        expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+        expect(groupDAO.findById).toEqual(mockGroup);
+      } catch (error) {
+        const err = error as Errors.BadRequestError;
+        expect(err).toBeInstanceOf(Errors.BadRequestError);
+        expect(err.statusCode).toEqual(400);
+        expect(err.message).toEqual(
+          `Group ${mockGroup.name} account is not private`
+        );
+      }
+    });
+
+    it("should throw ForbiddenError if the user is not the owner", async () => {
+      const mockUserId = new Types.ObjectId();
+      const mockGroupId = new Types.ObjectId();
+      const mockOwnerId = new Types.ObjectId();
+
+      const OWNER_ID = new Types.ObjectId();
+
+      const mockGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        bio: "We are going to win the SuperBowl this year!!",
+        users: [],
+        owners: [mockOwnerId],
+        requests: [mockUserId],
+        accountType: ProfileAccess.Private,
+      };
+
+      try {
+        groupDAO.findById = jest.fn().mockReturnValue(mockGroup);
+
+        await groupService.rejectGroupRequest(
+          mockUserId,
+          OWNER_ID,
+          mockGroupId
+        );
+
+        expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+        expect(groupDAO.findById).toEqual(mockGroup);
+      } catch (error) {
+        const err = error as Errors.ForbiddenError;
+        expect(err).toBeInstanceOf(Errors.ForbiddenError);
+        expect(err.statusCode).toEqual(403);
+        expect(err.message).toEqual(
+          "User doesn't have permission to reject group request"
+        );
+      }
+    });
+
+    it("should throw BadRequestError if the user is not in the group requests", async () => {
+      const mockGroupId = new Types.ObjectId();
+      const mockOwnerId = new Types.ObjectId();
+      const mockUserId = new Types.ObjectId();
+
+      const mockGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        bio: "We are going to win the SuperBowl this year!!",
+        users: [],
+        owners: [mockOwnerId],
+        requests: [],
+        accountType: ProfileAccess.Private,
+      };
+
+      try {
+        groupDAO.findById = jest.fn().mockReturnValue(mockGroup);
+
+        await groupService.rejectGroupRequest(
+          mockUserId,
+          mockOwnerId,
+          mockGroupId
+        );
+
+        expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+        expect(groupDAO.findById).toEqual(mockGroup);
+      } catch (error) {
+        const err = error as Errors.BadRequestError;
+        expect(err).toBeInstanceOf(Errors.BadRequestError);
+        expect(err.statusCode).toEqual(400);
+        expect(err.message).toEqual("User did not request to join group");
+      }
+    });
+  });
+
+  describe("leaveGroup", () => {
+    it("should remove user from group", async () => {
+      const mockUserId = new Types.ObjectId();
+      const mockGroupId = new Types.ObjectId();
+      const mockOwnerId = new Types.ObjectId();
+
+      const mockGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        bio: "We are going to win the SuperBowl this year!!",
+        owners: [mockOwnerId],
+        users: [mockUserId],
+        requests: [],
+        accountType: ProfileAccess.Private,
+      };
+
+      const mockUpdatedGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        bio: "We are going to win the SuperBowl this year!!",
+        owners: [mockOwnerId],
+        users: [],
+        requests: [],
+        accountType: ProfileAccess.Private,
+      };
+
+      groupDAO.findById = jest.fn().mockReturnValue(mockGroup);
+      groupDAO.findOneAndUpdate = jest.fn().mockResolvedValue(mockUpdatedGroup);
+
+      await groupService.leaveGroup(mockUserId, mockGroupId);
+
+      expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+      expect(groupDAO.findOneAndUpdate).toHaveBeenCalledWith(
+        { _id: mockGroupId },
+        { $pull: { users: mockUserId } },
+        { new: true }
+      );
+    });
+
+    it("should throw ResourceNotFoundError when group does not exist", async () => {
+      const mockUserId = new Types.ObjectId();
+      const mockGroupId = new Types.ObjectId();
+
+      try {
+        groupDAO.findById = jest.fn().mockReturnValue(null);
+
+        await groupService.leaveGroup(mockUserId, mockGroupId);
+
+        expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+        expect(groupDAO.findById).toBeNull();
+      } catch (error) {
+        const err = error as Errors.ResourceNotFoundError;
+        expect(err).toBeInstanceOf(Errors.ResourceNotFoundError);
+        expect(err.statusCode).toEqual(404);
+        expect(err.message).toEqual("Group does not exist");
+      }
+    });
+
+    it("should throw a BadRequestError if the user is not in the group", async () => {
+      const mockUserId = new Types.ObjectId();
+      const mockGroupId = new Types.ObjectId();
+      const mockOwnerId = new Types.ObjectId();
+
+      const mockGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        owners: [mockOwnerId],
+        users: [],
+        requests: [],
+        accountType: ProfileAccess.Private,
+      };
+
+      try {
+        groupDAO.findById = jest.fn().mockReturnValue(mockGroup);
+
+        await groupService.leaveGroup(mockUserId, mockGroupId);
+
+        expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+        expect(groupDAO.findById).toEqual(mockGroup);
+      } catch (error) {
+        const err = error as Errors.BadRequestError;
+        expect(err).toBeInstanceOf(Errors.BadRequestError);
+        expect(err.statusCode).toEqual(400);
+        expect(err.message).toEqual("User is not a member of the group");
+      }
+    });
+  });
+
+  describe("removeUserFromGroup", () => {
+    it("should remove user from group", async () => {
+      const mockUserId = new Types.ObjectId();
+      const mockGroupId = new Types.ObjectId();
+      const mockOwnerId = new Types.ObjectId();
+
+      const mockGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        owners: [mockOwnerId],
+        users: [mockUserId],
+        requests: [],
+        accountType: ProfileAccess.Private,
+      };
+
+      const mockUpdatedGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        owners: [mockOwnerId],
+        users: [],
+        requests: [],
+        accountType: ProfileAccess.Private,
+      };
+
+      groupDAO.findById = jest.fn().mockReturnValue(mockGroup);
+      groupDAO.findOneAndUpdate = jest.fn().mockResolvedValue(mockUpdatedGroup);
+
+      await groupService.removeUserFromGroup(
+        mockUserId,
+        mockOwnerId,
+        mockGroupId
+      );
+
+      expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+      expect(groupDAO.findOneAndUpdate).toHaveBeenCalledWith(
+        { _id: mockGroupId },
+        { $pull: { users: mockUserId } },
+        { new: true }
+      );
+    });
+
+    it("should throw ResourceNotFoundError when group does not exist", async () => {
+      const mockUserId = new Types.ObjectId();
+      const mockGroupId = new Types.ObjectId();
+      const mockOwnerId = new Types.ObjectId();
+
+      try {
+        groupDAO.findById = jest.fn().mockReturnValue(null);
+
+        await groupService.removeUserFromGroup(
+          mockUserId,
+          mockOwnerId,
+          mockGroupId
+        );
+
+        expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+        expect(groupDAO.findById).toBeNull();
+      } catch (error) {
+        const err = error as Errors.ResourceNotFoundError;
+        expect(err).toBeInstanceOf(Errors.ResourceNotFoundError);
+        expect(err.statusCode).toEqual(404);
+        expect(err.message).toEqual("Group does not exist");
+      }
+    });
+
+    it("should throw ForbiddenError if the user is not the owner", async () => {
+      const mockUserId = new Types.ObjectId();
+      const mockGroupId = new Types.ObjectId();
+      const mockOwnerId = new Types.ObjectId();
+
+      const OWNER_ID = new Types.ObjectId();
+
+      const mockGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        owners: [mockOwnerId],
+        users: [mockUserId],
+        requests: [],
+        accountType: ProfileAccess.Private,
+      };
+
+      try {
+        groupDAO.findById = jest.fn().mockReturnValue(mockGroup);
+
+        await groupService.removeUserFromGroup(
+          mockUserId,
+          OWNER_ID,
+          mockGroupId
+        );
+
+        expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+        expect(groupDAO.findById).toEqual(mockGroup);
+      } catch (error) {
+        const err = error as Errors.ForbiddenError;
+        expect(err).toBeInstanceOf(Errors.ForbiddenError);
+        expect(err.statusCode).toEqual(403);
+        expect(err.message).toEqual(
+          "User doesn't have permission to remove user from group"
+        );
+      }
+    });
+
+    it("should throw a BadRequestError if the user is not in the group", async () => {
+      const mockUserId = new Types.ObjectId();
+      const mockGroupId = new Types.ObjectId();
+      const mockOwnerId = new Types.ObjectId();
+
+      const mockGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        owners: [mockOwnerId],
+        users: [],
+        requests: [],
+        accountType: ProfileAccess.Private,
+      };
+
+      try {
+        groupDAO.findById = jest.fn().mockReturnValue(mockGroup);
+
+        await groupService.removeUserFromGroup(
+          mockUserId,
+          mockOwnerId,
+          mockGroupId
+        );
+
+        expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+        expect(groupDAO.findById).toEqual(mockGroup);
+      } catch (error) {
+        const err = error as Errors.BadRequestError;
+        expect(err).toBeInstanceOf(Errors.BadRequestError);
+        expect(err.statusCode).toEqual(400);
+        expect(err.message).toEqual("User is not a member of the group");
+      }
+    });
+  });
+
+  describe("deleteGroup", () => {
+    it("should delete group", async () => {
+      const mockOwnerId = new Types.ObjectId();
+      const mockGroupId = new Types.ObjectId();
+      const mockUserId = new Types.ObjectId();
+
+      const mockGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        owners: [mockOwnerId],
+        users: [mockUserId],
+        requests: [],
+        accountType: ProfileAccess.Private,
+      };
+
+      const mockOwnerUserGroups: Partial<IUserGroups> = {
+        _id: new Types.ObjectId(),
+        userId: mockOwnerId,
+        groups: [],
+      };
+
+      const mockUserGroups: Partial<IUserGroups> = {
+        _id: new Types.ObjectId(),
+        userId: mockUserId,
+        groups: [],
+      };
+
+      groupDAO.findById = jest.fn().mockResolvedValue(mockGroup);
+      groupDAO.findByIdAndDelete = jest.fn().mockResolvedValue(mockGroup);
+      userGroupsDAO.updateMany = jest.fn().mockResolvedValue({});
+
+      await groupService.deleteGroup(mockOwnerId, mockGroupId);
+
+      expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+      expect(groupDAO.findByIdAndDelete).toHaveBeenCalledWith(mockGroupId);
+      expect(userGroupsDAO.updateMany).toHaveBeenCalledWith(
+        { groups: mockGroupId },
+        { $pull: { groups: mockGroupId } },
+        { isDeleted: true }
+      );
+    });
+
+    it("should throw ResourceNotFoundError when group does not exist", async () => {
+      const mockOwnerId = new Types.ObjectId();
+      const mockGroupId = new Types.ObjectId();
+
+      try {
+        groupDAO.findById = jest.fn().mockResolvedValue(null);
+
+        await groupService.deleteGroup(mockOwnerId, mockGroupId);
+
+        expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+        expect(groupDAO.findById).toBeNull();
+      } catch (error) {
+        const err = error as Errors.ResourceNotFoundError;
+        expect(err).toBeInstanceOf(Errors.ResourceNotFoundError);
+        expect(err.statusCode).toEqual(404);
+        expect(err.message).toEqual("Group does not exist");
+      }
+    });
+
+    it("should throw ForbiddenError if the user is not the owner", async () => {
+      const mockOwnerId = new Types.ObjectId();
+      const mockGroupId = new Types.ObjectId();
+
+      const OWNER_ID = new Types.ObjectId();
+
+      const mockGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        owners: [mockOwnerId],
+        users: [],
+        requests: [],
+        accountType: ProfileAccess.Private,
+      };
+
+      try {
+        groupDAO.findById = jest.fn().mockResolvedValue(mockGroup);
+
+        await groupService.deleteGroup(OWNER_ID, mockGroupId);
+
+        expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+        expect(groupDAO.findById).toEqual(mockGroup);
+      } catch (error) {
+        const err = error as Errors.ForbiddenError;
+        expect(err).toBeInstanceOf(Errors.ForbiddenError);
+        expect(err.statusCode).toEqual(403);
+        expect(err.message).toEqual(
+          "User doesn't have permission to delete group"
+        );
+      }
+    });
+  });
+
+  describe("addOwner", () => {
+    it("should add owner to group", async () => {
+      const mockUserId = new Types.ObjectId();
+      const mockGroupId = new Types.ObjectId();
+      const mockOwnerId = new Types.ObjectId();
+
+      const mockOwnerTwoId = new Types.ObjectId();
+
+      const mockGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        owners: [mockOwnerId],
+        users: [mockUserId],
+        requests: [],
+        accountType: ProfileAccess.Private,
+      };
+
+      const mockUpdatedGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        owners: [mockOwnerId, mockOwnerTwoId],
+        users: [mockUserId],
+        requests: [],
+        accountType: ProfileAccess.Private,
+      };
+
+      groupDAO.findById = jest.fn().mockResolvedValue(mockGroup);
+      groupDAO.findOneAndUpdate = jest.fn().mockResolvedValue(mockUpdatedGroup);
+
+      await groupService.addOwner(mockOwnerTwoId, mockOwnerId, mockGroupId);
+
+      expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+      expect(groupDAO.findOneAndUpdate).toHaveBeenCalledWith(
+        { _id: mockGroupId },
+        { $addToSet: { owners: mockOwnerTwoId } },
+        { new: true }
+      );
+    });
+
+    it("should throw ResourceNotFoundError when group does not exist", async () => {
+      const mockUserId = new Types.ObjectId();
+      const mockGroupId = new Types.ObjectId();
+      const mockOwnerId = new Types.ObjectId();
+
+      try {
+        groupDAO.findById = jest.fn().mockResolvedValue(null);
+
+        await groupService.addOwner(mockUserId, mockOwnerId, mockGroupId);
+
+        expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+        expect(groupDAO.findById).toBeNull();
+      } catch (error) {
+        const err = error as Errors.ResourceNotFoundError;
+        expect(err).toBeInstanceOf(Errors.ResourceNotFoundError);
+        expect(err.statusCode).toEqual(404);
+        expect(err.message).toEqual("Group does not exist");
+      }
+    });
+
+    it("should throw ForbiddenError if the user is not the owner", async () => {
+      const mockUserId = new Types.ObjectId();
+      const mockGroupId = new Types.ObjectId();
+      const mockOwnerId = new Types.ObjectId();
+
+      const OWNER_ID = new Types.ObjectId();
+
+      const mockGroup: Partial<IGroup> = {
+        _id: mockGroupId,
+        name: "Test Group",
+        owners: [mockOwnerId],
+        users: [],
+        requests: [],
+        accountType: ProfileAccess.Private,
+      };
+
+      try {
+        groupDAO.findById = jest.fn().mockResolvedValue(mockGroup);
+
+        await groupService.addOwner(mockUserId, OWNER_ID, mockGroupId);
+
+        expect(groupDAO.findById).toHaveBeenCalledWith(mockGroupId);
+        expect(groupDAO.findById).toEqual(mockGroup);
+      } catch (error) {
+        const err = error as Errors.ForbiddenError;
+        expect(err).toBeInstanceOf(Errors.ForbiddenError);
+        expect(err.statusCode).toEqual(403);
+        expect(err.message).toEqual(
+          "User doesn't have permission to add owner"
+        );
       }
     });
   });

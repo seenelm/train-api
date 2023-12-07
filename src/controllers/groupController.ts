@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { GroupService } from "../services/GroupService";
+import GroupService from "../services/GroupService";
 import GroupDAO from "../dataAccess/GroupDAO";
 import { GroupModel } from "../models/groupModel";
 import UserGroupsDAO from "../dataAccess/UserGroupsDAO";
