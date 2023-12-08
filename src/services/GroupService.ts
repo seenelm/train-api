@@ -7,16 +7,19 @@ import UserGroupsDAO from "../dataAccess/UserGroupsDAO";
 import { UserGroupsModel } from "../models/userGroups";
 import { db } from "../app";
 import mongoose from "mongoose";
-import { logger, errorLogger } from "../common/logger";
+// import { logger, errorLogger } from "../common/logger";
+import CustomLogger from "../common/logger";
 import { ProfileAccess } from "../common/constants";
 
 class GroupService {
   private groupDAO: GroupDAO;
   private userGroupsDAO: UserGroupsDAO;
+  private logger: CustomLogger;
 
   constructor(groupDAO: GroupDAO, userGroupsDAO: UserGroupsDAO) {
     this.groupDAO = groupDAO;
     this.userGroupsDAO = userGroupsDAO;
+    this.logger = new CustomLogger(this.constructor.name);
   }
 
   public async addGroup(name: string, userId: Types.ObjectId): Promise<IGroup> {
@@ -36,12 +39,12 @@ class GroupService {
     );
 
     if (!user) {
-      throw new Errors.ResourceNotFoundError("User not found");
+      throw new Errors.ResourceNotFoundError("User not found", { userId });
     }
     // user.groups.push(group._id);
     // await user.save();
 
-    logger.info(`Owner "${ownerId}" added Group: `, group);
+    this.logger.logInfo("Owner added a Group", { ownerId, group, user });
 
     return group;
     // } catch (error) {
@@ -58,10 +61,10 @@ class GroupService {
     const group = await this.groupDAO.findById(groupId);
 
     if (!group) {
-      throw new Errors.ResourceNotFoundError("Group not found.");
+      throw new Errors.ResourceNotFoundError("Group not found", { groupId });
     }
 
-    logger.info(`Fetch Group "${groupId}": `, group);
+    this.logger.logInfo("Fetched Group", { groupId, group });
 
     return group;
   }
@@ -74,14 +77,18 @@ class GroupService {
     const ownerId = userId;
 
     if (!groupBio) {
-      errorLogger.error("Group Bio is Undefined");
-      throw new Errors.BadRequestError("Group Bio is Undefined");
+      throw new Errors.BadRequestError("Group Bio is Undefined", {
+        groupBio,
+        groupId,
+      });
     }
 
     const group = await this.groupDAO.findOne({ _id: groupId });
 
     if (!group) {
-      throw new Errors.ResourceNotFoundError("Group does not exist");
+      throw new Errors.ResourceNotFoundError("Group does not exist", {
+        groupId,
+      });
     }
 
     const isOwner = group.owners.some((owner: Types.ObjectId) =>
@@ -89,9 +96,9 @@ class GroupService {
     );
 
     if (!isOwner) {
-      logger.error("User doesn't have permission to update group bio");
       throw new Errors.ForbiddenError(
-        "User doesn't have permission to update group bio"
+        "User doesn't have permission to update group bio",
+        { userId, owners: group.owners }
       );
     }
 
@@ -101,11 +108,7 @@ class GroupService {
       { new: true }
     );
 
-    if (!updatedGroup) {
-      throw new Errors.ResourceNotFoundError("Group does not exist");
-    }
-
-    logger.info(`Owner "${ownerId}" updated Group Bio: `, updatedGroup);
+    this.logger.logInfo("Owner updated Group Bio", { ownerId, updatedGroup });
   }
 
   public async updateGroupName(
@@ -116,13 +119,15 @@ class GroupService {
     const ownerId = userId;
 
     if (!groupName || groupName.trim() === "") {
-      throw new Errors.BadRequestError("Invalid Group Name");
+      throw new Errors.BadRequestError("Invalid Group Name", { groupName });
     }
 
     const group = await this.groupDAO.findOne({ _id: groupId });
 
     if (!group) {
-      throw new Errors.ResourceNotFoundError("Group does not exist");
+      throw new Errors.ResourceNotFoundError("Group does not exist", {
+        groupId,
+      });
     }
 
     const isOwner = group.owners.some((owner: Types.ObjectId) =>
@@ -130,9 +135,9 @@ class GroupService {
     );
 
     if (!isOwner) {
-      logger.error("User doesn't have permission to update group name");
       throw new Errors.ForbiddenError(
-        "User doesn't have permission to update group name"
+        "User doesn't have permission to update group name",
+        { userId, owners: group.owners }
       );
     }
 
@@ -142,7 +147,7 @@ class GroupService {
       { new: true }
     );
 
-    logger.info(`Owner "${ownerId}" updated Group Name: `, updatedGroup);
+    this.logger.logInfo("Owner updated Group Name", { ownerId, updatedGroup });
   }
 
   public async updateAccountType(
@@ -151,13 +156,17 @@ class GroupService {
     accountType: number
   ): Promise<void> {
     if (!accountType) {
-      throw new Errors.BadRequestError("Account Type is Undefined");
+      throw new Errors.BadRequestError("Account Type is Undefined", {
+        accountType,
+      });
     }
 
     const group = await this.groupDAO.findById(groupId);
 
     if (!group) {
-      throw new Errors.ResourceNotFoundError("Group does not exist");
+      throw new Errors.ResourceNotFoundError("Group does not exist", {
+        groupId,
+      });
     }
 
     const isOwner = group.owners.some((owner: Types.ObjectId) =>
@@ -165,9 +174,9 @@ class GroupService {
     );
 
     if (!isOwner) {
-      logger.error("User doesn't have permission to update account type");
       throw new Errors.ForbiddenError(
-        "User doesn't have permission to update account type"
+        "User doesn't have permission to update account type",
+        { userId: ownerId, owners: group.owners }
       );
     }
 
@@ -177,7 +186,10 @@ class GroupService {
       { new: true }
     );
 
-    logger.info(`Updated Group Account Type: `, updatedGroup);
+    this.logger.logInfo("Updated Group Account Type", {
+      ownerId,
+      updatedGroup,
+    });
   }
 
   public async joinGroup(
@@ -185,23 +197,26 @@ class GroupService {
     groupId: Types.ObjectId
   ): Promise<void> {
     if (!userId || !(userId instanceof Types.ObjectId)) {
-      throw new Errors.BadRequestError("Invalid user id");
+      throw new Errors.BadRequestError("Invalid user id", { userId });
     }
 
     if (!groupId || !(groupId instanceof Types.ObjectId)) {
-      throw new Errors.BadRequestError("Invalid group id");
+      throw new Errors.BadRequestError("Invalid group id", { groupId });
     }
 
     const group = await this.groupDAO.findById(groupId);
 
     if (!group) {
-      throw new Errors.ResourceNotFoundError("Group does not exist");
+      throw new Errors.ResourceNotFoundError("Group does not exist", {
+        groupId,
+      });
     }
 
     if (group.accountType !== ProfileAccess.Public) {
-      throw new Errors.BadRequestError(
-        `Group ${group.name} account is not public`
-      );
+      throw new Errors.BadRequestError("Group account is not public", {
+        accountType: group.accountType,
+        groupName: group.name,
+      });
     }
 
     const isMember = group.users.some((user: Types.ObjectId) =>
@@ -209,7 +224,10 @@ class GroupService {
     );
 
     if (isMember) {
-      throw new Errors.ConflictError("User is already member of group", null);
+      throw new Errors.ConflictError("User is already member of group", {
+        userId,
+        groupMembers: group.users,
+      });
     }
 
     const updatedGroup = await this.groupDAO.findOneAndUpdate(
@@ -218,7 +236,7 @@ class GroupService {
       { new: true }
     );
 
-    logger.info(`User "${userId}" joined Group: `, updatedGroup);
+    this.logger.logInfo("User joined Group", { userId, updatedGroup });
   }
 
   public async requestToJoinGroup(
@@ -226,23 +244,26 @@ class GroupService {
     groupId: Types.ObjectId
   ): Promise<void> {
     if (!userId || !(userId instanceof Types.ObjectId)) {
-      throw new Errors.BadRequestError("Invalid user id");
+      throw new Errors.BadRequestError("Invalid user id", { userId });
     }
 
     if (!groupId || !(groupId instanceof Types.ObjectId)) {
-      throw new Errors.BadRequestError("Invalid group id");
+      throw new Errors.BadRequestError("Invalid group id", { groupId });
     }
 
     const group = await this.groupDAO.findById(groupId);
 
     if (!group) {
-      throw new Errors.ResourceNotFoundError("Group does not exist");
+      throw new Errors.ResourceNotFoundError("Group does not exist", {
+        groupId,
+      });
     }
 
     if (group.accountType !== ProfileAccess.Private) {
-      throw new Errors.BadRequestError(
-        `Group ${group.name} account is not private`
-      );
+      throw new Errors.BadRequestError("Group account is not private", {
+        accountType: group.accountType,
+        groupName: group.name,
+      });
     }
 
     const isMember = group.users.some((user: Types.ObjectId) =>
@@ -250,7 +271,10 @@ class GroupService {
     );
 
     if (isMember) {
-      throw new Errors.ConflictError("User is already member of group", null);
+      throw new Errors.ConflictError("User is already member of group", {
+        userId,
+        groupMembers: group.users,
+      });
     }
 
     const existingRequest = group.requests.some((request: Types.ObjectId) =>
@@ -258,7 +282,10 @@ class GroupService {
     );
 
     if (existingRequest) {
-      throw new Errors.ConflictError("User already sent a request", null);
+      throw new Errors.ConflictError("User already sent a request", {
+        userId,
+        groupRequests: group.requests,
+      });
     }
 
     const updatedGroup = await this.groupDAO.findOneAndUpdate(
@@ -267,7 +294,10 @@ class GroupService {
       { new: true }
     );
 
-    logger.info(`User "${userId}" requested to join Group: `, updatedGroup);
+    this.logger.logInfo("User requested to join Group", {
+      userId,
+      updatedGroup,
+    });
   }
 
   public async acceptGroupRequest(
@@ -276,27 +306,30 @@ class GroupService {
     groupId: Types.ObjectId
   ): Promise<void> {
     if (!userId || !(userId instanceof Types.ObjectId)) {
-      throw new Errors.BadRequestError("Invalid user id");
+      throw new Errors.BadRequestError("Invalid user id", { userId });
     }
 
     if (!ownerId || !(ownerId instanceof Types.ObjectId)) {
-      throw new Errors.BadRequestError("Invalid owner id");
+      throw new Errors.BadRequestError("Invalid owner id", { ownerId });
     }
 
     if (!groupId || !(groupId instanceof Types.ObjectId)) {
-      throw new Errors.BadRequestError("Invalid group id");
+      throw new Errors.BadRequestError("Invalid group id", { groupId });
     }
 
     const group = await this.groupDAO.findById(groupId);
 
     if (!group) {
-      throw new Errors.ResourceNotFoundError("Group does not exist");
+      throw new Errors.ResourceNotFoundError("Group does not exist", {
+        groupId,
+      });
     }
 
     if (group.accountType !== ProfileAccess.Private) {
-      throw new Errors.BadRequestError(
-        `Group ${group.name} account is not private`
-      );
+      throw new Errors.BadRequestError("Group account is not private", {
+        accountType: group.accountType,
+        groupName: group.name,
+      });
     }
 
     const isOwner = group.owners.some((owner: Types.ObjectId) =>
@@ -305,12 +338,16 @@ class GroupService {
 
     if (!isOwner) {
       throw new Errors.ForbiddenError(
-        "User doesn't have permission to accept group request"
+        "User doesn't have permission to accept group request",
+        { userId, owners: group.owners }
       );
     }
 
     if (!group.requests.includes(userId)) {
-      throw new Errors.BadRequestError("User did not request to join group");
+      throw new Errors.BadRequestError("User did not request to join group", {
+        userId,
+        groupRequests: group.requests,
+      });
     }
 
     const updatedGroup = await this.groupDAO.findOneAndUpdate(
@@ -319,7 +356,10 @@ class GroupService {
       { new: true }
     );
 
-    logger.info(`Owner "${ownerId}" accepted Group Request: `, updatedGroup);
+    this.logger.logInfo("Owner accepted Group Request", {
+      ownerId,
+      updatedGroup,
+    });
   }
 
   public async rejectGroupRequest(
@@ -328,27 +368,30 @@ class GroupService {
     groupId: Types.ObjectId
   ): Promise<void> {
     if (!userId || !(userId instanceof Types.ObjectId)) {
-      throw new Errors.BadRequestError("Invalid user id");
+      throw new Errors.BadRequestError("Invalid user id", { userId });
     }
 
     if (!ownerId || !(ownerId instanceof Types.ObjectId)) {
-      throw new Errors.BadRequestError("Invalid owner id");
+      throw new Errors.BadRequestError("Invalid owner id", { ownerId });
     }
 
     if (!groupId || !(groupId instanceof Types.ObjectId)) {
-      throw new Errors.BadRequestError("Invalid group id");
+      throw new Errors.BadRequestError("Invalid group id", { groupId });
     }
 
     const group = await this.groupDAO.findById(groupId);
 
     if (!group) {
-      throw new Errors.ResourceNotFoundError("Group does not exist");
+      throw new Errors.ResourceNotFoundError("Group does not exist", {
+        groupId,
+      });
     }
 
     if (group.accountType !== ProfileAccess.Private) {
-      throw new Errors.BadRequestError(
-        `Group ${group.name} account is not private`
-      );
+      throw new Errors.BadRequestError("Group account is not private", {
+        accountType: group.accountType,
+        groupName: group.name,
+      });
     }
 
     const isOwner = group.owners.some((owner: Types.ObjectId) =>
@@ -357,12 +400,16 @@ class GroupService {
 
     if (!isOwner) {
       throw new Errors.ForbiddenError(
-        "User doesn't have permission to reject group request"
+        "User doesn't have permission to reject group request",
+        { userId, owners: group.owners }
       );
     }
 
     if (!group.requests.includes(userId)) {
-      throw new Errors.BadRequestError("User did not request to join group");
+      throw new Errors.BadRequestError("User did not request to join group", {
+        userId,
+        groupRequests: group.requests,
+      });
     }
 
     const updatedGroup = await this.groupDAO.findOneAndUpdate(
@@ -371,7 +418,10 @@ class GroupService {
       { new: true }
     );
 
-    logger.info(`Owner "${ownerId}" rejected Group Request: `, updatedGroup);
+    this.logger.logInfo("Owner rejected Group Request", {
+      ownerId,
+      updatedGroup,
+    });
   }
 
   public async leaveGroup(
@@ -379,17 +429,19 @@ class GroupService {
     groupId: Types.ObjectId
   ): Promise<void> {
     if (!userId || !(userId instanceof Types.ObjectId)) {
-      throw new Errors.BadRequestError("Invalid user id");
+      throw new Errors.BadRequestError("Invalid user id", { userId });
     }
 
     if (!groupId || !(groupId instanceof Types.ObjectId)) {
-      throw new Errors.BadRequestError("Invalid group id");
+      throw new Errors.BadRequestError("Invalid group id", { groupId });
     }
 
     const group = await this.groupDAO.findById(groupId);
 
     if (!group) {
-      throw new Errors.ResourceNotFoundError("Group does not exist");
+      throw new Errors.ResourceNotFoundError("Group does not exist", {
+        groupId,
+      });
     }
 
     const isMember = group.users.some((user: Types.ObjectId) =>
@@ -397,7 +449,10 @@ class GroupService {
     );
 
     if (!isMember) {
-      throw new Errors.BadRequestError("User is not a member of the group");
+      throw new Errors.BadRequestError("User is not a member of the group", {
+        userId,
+        groupMembers: group.users,
+      });
     }
 
     const updatedGroup = await this.groupDAO.findOneAndUpdate(
@@ -406,7 +461,7 @@ class GroupService {
       { new: true }
     );
 
-    logger.info(`User "${userId}" left Group: `, updatedGroup);
+    this.logger.logInfo("User left Group", { userId, updatedGroup });
   }
 
   public async removeUserFromGroup(
@@ -415,21 +470,23 @@ class GroupService {
     groupId: Types.ObjectId
   ): Promise<void> {
     if (!userId || !(userId instanceof Types.ObjectId)) {
-      throw new Errors.BadRequestError("Invalid user id");
+      throw new Errors.BadRequestError("Invalid user id", { userId });
     }
 
     if (!ownerId || !(ownerId instanceof Types.ObjectId)) {
-      throw new Errors.BadRequestError("Invalid owner id");
+      throw new Errors.BadRequestError("Invalid owner id", { ownerId });
     }
 
     if (!groupId || !(groupId instanceof Types.ObjectId)) {
-      throw new Errors.BadRequestError("Invalid group id");
+      throw new Errors.BadRequestError("Invalid group id", { groupId });
     }
 
     const group = await this.groupDAO.findById(groupId);
 
     if (!group) {
-      throw new Errors.ResourceNotFoundError("Group does not exist");
+      throw new Errors.ResourceNotFoundError("Group does not exist", {
+        groupId,
+      });
     }
 
     const isOwner = group.owners.some((owner: Types.ObjectId) =>
@@ -438,7 +495,8 @@ class GroupService {
 
     if (!isOwner) {
       throw new Errors.ForbiddenError(
-        "User doesn't have permission to remove user from group"
+        "User doesn't have permission to remove user from group",
+        { userId, owners: group.owners }
       );
     }
 
@@ -447,7 +505,10 @@ class GroupService {
     );
 
     if (!isMember) {
-      throw new Errors.BadRequestError("User is not a member of the group");
+      throw new Errors.BadRequestError("User is not a member of the group", {
+        userId,
+        groupMembers: group.users,
+      });
     }
 
     const updatedGroup = await this.groupDAO.findOneAndUpdate(
@@ -456,10 +517,11 @@ class GroupService {
       { new: true }
     );
 
-    logger.info(
-      `Owner "${ownerId}" removed User "${userId}" from Group: `,
-      updatedGroup
-    );
+    this.logger.logInfo("Owner removed User from Group", {
+      ownerId,
+      userId,
+      updatedGroup,
+    });
   }
 
   public async deleteGroup(
@@ -467,17 +529,19 @@ class GroupService {
     groupId: Types.ObjectId
   ): Promise<void> {
     if (!userId || !(userId instanceof Types.ObjectId)) {
-      throw new Errors.BadRequestError("Invalid user id");
+      throw new Errors.BadRequestError("Invalid user id", { userId });
     }
 
     if (!groupId || !(groupId instanceof Types.ObjectId)) {
-      throw new Errors.BadRequestError("Invalid group id");
+      throw new Errors.BadRequestError("Invalid group id", { groupId });
     }
 
     const group = await this.groupDAO.findById(groupId);
 
     if (!group) {
-      throw new Errors.ResourceNotFoundError("Group does not exist");
+      throw new Errors.ResourceNotFoundError("Group does not exist", {
+        groupId,
+      });
     }
 
     const isOwner = group.owners.some((owner: Types.ObjectId) =>
@@ -486,7 +550,8 @@ class GroupService {
 
     if (!isOwner) {
       throw new Errors.ForbiddenError(
-        "User doesn't have permission to delete group"
+        "User doesn't have permission to delete group",
+        { userId, owners: group.owners }
       );
     }
 
@@ -498,7 +563,11 @@ class GroupService {
       { isDeleted: true }
     );
 
-    logger.info(`Owner "${userId}" deleted Group: `, updatedGroup);
+    this.logger.logInfo("Owner deleted Group", {
+      userId,
+      updatedGroup,
+      userGroups,
+    });
   }
 
   public async addOwner(
@@ -507,21 +576,23 @@ class GroupService {
     groupId: Types.ObjectId
   ): Promise<IGroup> {
     if (!userId || !(userId instanceof Types.ObjectId)) {
-      throw new Errors.BadRequestError("Invalid user id");
+      throw new Errors.BadRequestError("Invalid user id", { userId });
     }
 
     if (!ownerId || !(ownerId instanceof Types.ObjectId)) {
-      throw new Errors.BadRequestError("Invalid owner id");
+      throw new Errors.BadRequestError("Invalid owner id", { ownerId });
     }
 
     if (!groupId || !(groupId instanceof Types.ObjectId)) {
-      throw new Errors.BadRequestError("Invalid group id");
+      throw new Errors.BadRequestError("Invalid group id", { groupId });
     }
 
     const group = await this.groupDAO.findById(groupId);
 
     if (!group) {
-      throw new Errors.ResourceNotFoundError("Group does not exist");
+      throw new Errors.ResourceNotFoundError("Group does not exist", {
+        groupId,
+      });
     }
 
     const isOwner = group.owners.some((owner: Types.ObjectId) =>
@@ -530,7 +601,8 @@ class GroupService {
 
     if (!isOwner) {
       throw new Errors.ForbiddenError(
-        "User doesn't have permission to add owner"
+        "User doesn't have permission to add owner",
+        { userId, owners: group.owners }
       );
     }
 
@@ -540,7 +612,11 @@ class GroupService {
       { new: true }
     );
 
-    logger.info(`Owner "${ownerId}" added Owner "${userId}" to Group: `);
+    this.logger.logInfo("Owner added Owner to Group", {
+      userId,
+      ownerId,
+      updatedGroup,
+    });
 
     return updatedGroup;
   }

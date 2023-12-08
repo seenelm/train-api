@@ -1,54 +1,28 @@
 import * as Errors from "../utils/errors";
 import { NextFunction, Request, Response } from "express";
+import CustomLogger from "../common/logger";
 
-function handleInternalServerError(error: any, res: Response) {
-  res.status(error.statusCode).json(error.message);
-}
-
-function handleConflictError(error: any, res: Response) {
-  res.status(error.statusCode).json(error.errors);
-}
-
-function handleResourceNotFoundError(error: any, res: Response) {
-  res.status(error.statusCode).json(error.message);
-}
-
-function handleCustomError(error: any, res: Response) {
-  res.status(error.statusCode).json(error.errors);
-}
-
-function handleBadRequestError(error: any, res: Response) {
-  res.status(error.statusCode).json(error.message);
-}
-
-function handleForbiddenError(error: any, res: Response) {
-  res.status(error.statusCode).json(error.message);
-}
-
-function handleUnauthorizedError(error: any, res: Response) {
-  res.status(error.statusCode).json(error.message);
-}
-
-export const errorController = (error: any, req: Request, res: Response, next: NextFunction) => {
-  if (error instanceof Errors.ConflictError) {
-    error = handleConflictError(error, res);
-  }
-  if (error instanceof Errors.InternalServerError) {
-    error = handleInternalServerError(error, res);
-  }
-  if (error instanceof Errors.ResourceNotFoundError) {
-    error = handleResourceNotFoundError(error, res);
-  }
+export const errorController = (
+  error: Error,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const logger = new CustomLogger("errorController");
   if (error instanceof Errors.CustomError) {
-    error = handleCustomError(error, res);
-  }
-  if (error instanceof Errors.BadRequestError) {
-    error = handleBadRequestError(error, res);
-  }
-  if (error instanceof Errors.ForbiddenError) {
-    error = handleForbiddenError(error, res);
-  }
-  if (error instanceof Errors.UnauthorizedError) {
-    error = handleUnauthorizedError(error, res);
+    logger.logError(error.message, error, {
+      path: req.path,
+      method: req.method,
+      statusCode: error.statusCode,
+      additionalFields: error.additionalFields,
+    });
+    res.status(error.statusCode).json(error.message);
+  } else {
+    logger.logError(error.message, error, {
+      path: req.path,
+      method: req.method,
+      statusCode: 500,
+    });
+    res.status(500).json(error.message);
   }
 };

@@ -1,67 +1,63 @@
+export enum HttpStatusCode {
+  BAD_REQUEST = 400,
+  CONFLICT = 409,
+  NOT_FOUND = 404,
+  INTERNAL_SERVER = 500,
+  FORBIDDEN = 403,
+  UNAUTHORIZED = 401,
+  OK = 200,
+  CREATED = 201,
+}
+
 export class CustomError extends Error {
   public statusCode: number;
-  public errors: any;
+  public additionalFields: object;
 
-  constructor(errors: any, statusCode: number) {
-    super();
-    this.statusCode = statusCode;
-    this.errors = errors;
-  }
-};
-
-export class BadRequestError extends Error {
-  public statusCode: number;
-  
-  constructor(message: string) {
+  constructor(
+    message: string,
+    statusCode: number,
+    additionalFields: object = {}
+  ) {
     super(message);
-    this.statusCode = 400;
+    this.statusCode = statusCode;
+    this.additionalFields = additionalFields;
+
+    Error.captureStackTrace(this, this.constructor);
   }
 }
 
-export class ConflictError extends Error {
-  public errors: any;
-  public statusCode: number;
-
-  constructor(message: string, errors: any) {
-    super(message);
-    this.statusCode = 409;
-    this.errors = errors;
+export class BadRequestError extends CustomError {
+  constructor(message: string, additionalFields: object = {}) {
+    super(message, HttpStatusCode.BAD_REQUEST, additionalFields);
   }
-};
+}
 
-export class ResourceNotFoundError extends Error {
-  public statusCode: number;
-
-  constructor(message: string) {
-    super(message);
-    this.name = "ResourceNotFoundError";
-    this.statusCode = 404;
+export class ConflictError extends CustomError {
+  constructor(message: string, additionalFields: object = {}) {
+    super(message, HttpStatusCode.CONFLICT, additionalFields);
   }
-};
+}
 
-export class InternalServerError extends Error {
-  public statusCode: number;
-  
-  constructor(message: string) {
-    super(message);
-    this.statusCode = 500;
+export class ResourceNotFoundError extends CustomError {
+  constructor(message: string, additionalFields: object = {}) {
+    super(message, HttpStatusCode.NOT_FOUND, additionalFields);
   }
-};
+}
 
-export class ForbiddenError extends Error {
-  public statusCode: number;
-  
-  constructor(message: string) {
-    super(message);
-    this.statusCode = 403;
+export class InternalServerError extends CustomError {
+  constructor(message: string, additionalFields: object = {}) {
+    super(message, HttpStatusCode.INTERNAL_SERVER, additionalFields);
   }
-};
+}
 
-export class UnauthorizedError extends Error {
-  public statusCode: number;
+export class ForbiddenError extends CustomError {
+  constructor(message: string, additionalFields: object = {}) {
+    super(message, HttpStatusCode.FORBIDDEN, additionalFields);
+  }
+}
 
-  constructor(message: string) {
-    super(message);
-    this.statusCode = 401;
+export class UnauthorizedError extends CustomError {
+  constructor(message: string, additionalFields: object = {}) {
+    super(message, HttpStatusCode.UNAUTHORIZED, additionalFields);
   }
 }
