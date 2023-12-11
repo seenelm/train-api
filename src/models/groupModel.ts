@@ -2,7 +2,7 @@ import { Schema, model, Types, Document } from "mongoose";
 import { ProfileAccess } from "../common/constants";
 
 interface IGroup extends Document {
-  name: string;
+  groupName: string;
   bio: string;
   owners: Types.ObjectId[];
   users: Types.ObjectId[];
@@ -11,7 +11,7 @@ interface IGroup extends Document {
 }
 
 const groupSchema = new Schema({
-  name: {
+  groupName: {
     type: String,
     required: true,
   },

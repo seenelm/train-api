@@ -8,7 +8,6 @@ import MongoDB from "./dataAccess/MongoDB";
 import { errorController } from "./controllers/errorController";
 
 import userRouter from "./routes/userRouter";
-import userGroupsRouter from "./routes/userGroupsRouter";
 import groupRouter from "./routes/groupRouter";
 import userProfileRouter from "./routes/userProfileRouter";
 import searchRouter from "./routes/searchRouter";
@@ -23,8 +22,7 @@ app.use(bodyParser.json());
 app.use(cors());
 
 app.use("/api", userRouter);
-app.use("/api/users", userGroupsRouter);
-app.use("/api/user-profile/users", userProfileRouter);
+app.use("/api/users", userProfileRouter);
 app.use("/api/groups", groupRouter);
 app.use("/api", searchRouter);
 

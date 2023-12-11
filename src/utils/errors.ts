@@ -9,6 +9,17 @@ export enum HttpStatusCode {
   CREATED = 201,
 }
 
+export class AuthError extends Error {
+  public statusCode: number;
+  public errors: object;
+
+  constructor(errors: object = {}, statusCode: number) {
+    super();
+    this.statusCode = statusCode;
+    this.errors = errors;
+  }
+}
+
 export class CustomError extends Error {
   public statusCode: number;
   public additionalFields: object;

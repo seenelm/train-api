@@ -18,10 +18,10 @@ export const addGroup = async (
   next: NextFunction
 ) => {
   try {
-    const { name, userId } = req.body;
+    const { groupName, userId } = req.body;
     const userID = new Types.ObjectId(userId);
 
-    const group = await groupService.addGroup(name, userID);
+    const group = await groupService.addGroup(groupName, userID);
     return res.status(201).json(group);
   } catch (error) {
     next(error);
@@ -51,7 +51,9 @@ export const updateGroupBio = async (
   const { groupBio } = req.body;
   const { userId, groupId } = req.params;
 
-  const userID = new Types.ObjectId(userId);
+  // const userID = new Types.ObjectId(userId);
+  const userID = req.user.id;
+  console.log("Group User ID: ", userID);
   const groupID = new Types.ObjectId(groupId);
   try {
     await groupService.updateGroupBio(userID, groupID, groupBio);

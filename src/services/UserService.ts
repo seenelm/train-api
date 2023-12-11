@@ -109,9 +109,11 @@ class UserService {
 
   public async loginUser(username: string, password: string) {
     const user = await this.userDAO.findOne({ username });
+    let errors = {};
 
     if (!user) {
-      throw new Errors.BadRequestError("Incorrect Username or Password");
+      errors = { username: "Incorrect Username or Password" };
+      throw new Errors.AuthError(errors, 400);
     }
 
     const validPassword = await BcryptUtil.comparePassword(
@@ -125,7 +127,8 @@ class UserService {
     });
 
     if (!validPassword) {
-      throw new Errors.BadRequestError("Incorrect Username or Password");
+      errors = { password: "Incorrect Username or Password" };
+      throw new Errors.AuthError(errors, 400);
     }
 
     const userProfile = await this.userProfileDAO.findOne({

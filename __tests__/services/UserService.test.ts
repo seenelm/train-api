@@ -128,135 +128,192 @@ describe("UserService", () => {
         process.env.SECRET_CODE
       );
     });
-    // it("should throw a username Conflict Error", async () => {
-    //   const mockUsername = "username";
-    //   const mockPassword = "Password123!";
-    //   const mockName = "name";
+    it("should throw a username Conflict Error", async () => {
+      const mockUsername = "username";
+      const mockPassword = "Password123!";
+      const mockName = "name";
 
-    //   const mockUser = {
-    //     _id: new Types.ObjectId(),
-    //     username: mockUsername,
-    //     password: mockPassword,
-    //     isActive: true,
-    //   } as IUser;
+      const mockUser = {
+        _id: new Types.ObjectId(),
+        username: mockUsername,
+        password: mockPassword,
+        isActive: true,
+      } as IUser;
 
-    //   try {
-    //     userDAO.findOne = jest.fn().mockResolvedValue(mockUser);
+      userDAO.findOne = jest.fn().mockResolvedValue(mockUser);
 
-    //     const response = await userService.registerUser(
-    //       mockUsername,
-    //       mockPassword,
-    //       mockName
-    //     );
+      try {
+        const response = await userService.registerUser(
+          mockUsername,
+          mockPassword,
+          mockName
+        );
 
-    //     expect(response).rejects.toThrow(Errors.ConflictError);
-    //     expect(Errors.ConflictError).toEqual({
-    //       username: "username already taken",
-    //     });
-    //     expect(userDAO.findOne).toHaveBeenCalledWith(mockUsername);
-    //   } catch (error) {}
-    // });
-    // it("should throw error when createUser fails", async () => {
-    //   const mockUsername = "username";
-    //   const mockPasswordHash = "Password123!Hash";
-    //   const mockName = "name";
-
-    //   try {
-    //     userDAO.create = jest
-    //       .fn()
-    //       .mockRejectedValue(new Error("Database Error"));
-
-    //     const response = await userService.registerUser(
-    //       mockUsername,
-    //       mockPasswordHash,
-    //       mockName
-    //     );
-
-    //     expect(response).rejects.toThrow(Errors.InternalServerError);
-    //   } catch (error) {}
-    // });
+        expect(userDAO.findOne).toHaveBeenCalledWith({
+          username: mockUsername,
+        });
+      } catch (error) {
+        const err = error as Errors.ConflictError;
+        expect(err).toBeInstanceOf(Errors.ConflictError);
+        expect(err.statusCode).toEqual(409);
+        expect(err.message).toEqual("username already taken");
+      }
+    });
   });
 
-  // describe("loginUser", () => {
-  //   const mockUsername = "username";
-  //   const mockPassword = "Password123!";
-  //   const mockName = "name";
-  //   const mockToken = "mockToken";
+  describe("loginUser", () => {
+    it("should login a user", async () => {
+      // arrange
+      const mockUsername = "username";
+      const mockPassword = "Password123!";
+      const mockPasswordHash = "Password123!Hash";
+      const mockName = "name";
+      const mockToken = "mockToken";
 
-  //   const mockUser = {
-  //     _id: new Types.ObjectId(),
-  //     username: mockUsername,
-  //     password: mockPassword,
-  //     isActive: true,
-  //   } as IUser;
+      const mockUser = {
+        _id: new Types.ObjectId(),
+        username: mockUsername,
+        password: mockPasswordHash,
+        isActive: true,
+      } as IUser;
 
-  //   const mockUserProfile = {
-  //     _id: new Types.ObjectId(),
-  //     userId: mockUser._id,
-  //     name: mockName,
-  //   } as IUserProfile;
-  //   it("should login the user", async () => {
-  //     const mockPayload = {
-  //       name: mockUserProfile.name,
-  //       id: mockUser._id,
-  //     };
+      const mockUserProfile = {
+        _id: new Types.ObjectId(),
+        userId: mockUser._id,
+        username: mockUser.username,
+        name: mockName,
+        accountType: ProfileAccess.Public,
+      } as IUserProfile;
 
-  //     try {
-  //       userDAO.findOne = jest.fn().mockResolvedValue(mockUser);
-  //       BcryptUtil.comparePassword = jest.fn().mockResolvedValue(true);
-  //       userProfileDAO.findOne = jest.fn().mockResolvedValue(mockUserProfile);
-  //       JWTUtil.sign = jest.fn().mockResolvedValue(mockToken);
+      userDAO.findOne = jest.fn().mockResolvedValue(mockUser);
+      BcryptUtil.comparePassword = jest.fn().mockResolvedValue(true);
+      userProfileDAO.findOne = jest.fn().mockResolvedValue(mockUserProfile);
 
-  //       const response = await userService.loginUser(
-  //         mockUsername,
-  //         mockPassword
-  //       );
+      const payload = {
+        name: mockUserProfile.name,
+        userId: mockUser._id,
+      };
+      JWTUtil.sign = jest.fn().mockResolvedValue(mockToken);
 
-  //       expect(userDAO.findOne).toHaveBeenCalledWith(mockUsername);
-  //       expect(BcryptUtil.comparePassword).toHaveBeenCalledWith(
-  //         mockPassword,
-  //         mockUser.password
-  //       );
-  //       expect(userProfileDAO.findOne).toHaveBeenCalledWith(mockUser._id);
-  //       expect(JWTUtil.sign).toHaveBeenCalledWith(mockPayload);
-  //       expect(response).toEqual({
-  //         userId: mockUser._id,
-  //         token: mockToken,
-  //         username: mockUser.username,
-  //       });
-  //     } catch (error) {}
-  //   });
-  //   it("should throw an error when password is not valid", async () => {
-  //     try {
-  //       userDAO.findOne = jest.fn().mockResolvedValue(mockUser);
-  //       BcryptUtil.comparePassword = jest.fn().mockResolvedValue(false);
+      // act
+      const result = await userService.loginUser(mockUsername, mockPassword);
 
-  //       const response = await userService.loginUser(
-  //         mockUsername,
-  //         mockPassword
-  //       );
-  //       expect(response).rejects.toThrow(Errors.ConflictError);
-  //       expect(userDAO.findOne).toHaveBeenCalledWith(mockUsername);
+      // assert
+      expect(result).toEqual({
+        userId: mockUser._id,
+        token: mockToken,
+        username: mockUser.username,
+      });
 
-  //       expect(BcryptUtil.comparePassword).toHaveBeenCalledWith(
-  //         mockPassword,
-  //         mockUser.password
-  //       );
-  //       expect(BcryptUtil.comparePassword).toBe(false);
-  //     } catch (error) {}
-  //   });
-  //   it("should throw an error when user is not found", async () => {
-  //     try {
-  //       userDAO.findOne = jest.fn().mockResolvedValue(null);
+      expect(userDAO.findOne).toHaveBeenCalledWith({ username: mockUsername });
+      expect(BcryptUtil.comparePassword).toHaveBeenCalledWith(
+        mockPassword,
+        mockUser.password
+      );
+      expect(userProfileDAO.findOne).toHaveBeenCalledWith({
+        userId: mockUser._id,
+      });
+      expect(JWTUtil.sign).toHaveBeenCalledWith(
+        payload,
+        process.env.SECRET_CODE
+      );
+    });
 
-  //       const response = await userService.loginUser(
-  //         mockUsername,
-  //         mockPassword
-  //       );
-  //       expect(response).rejects.toThrow(Errors.ConflictError);
-  //       expect(userDAO.findOne).toHaveBeenCalledWith(mockUsername);
-  //       expect(userDAO.findOne).toBeNull();
-  //     } catch (error) {}
-  //   });
-  // });
+    it("should throw a BadRequestError if the username is incorrect", async () => {
+      // arrange
+      const mockUsername = "username";
+      const mockPassword = "Password123!";
+
+      userDAO.findOne = jest.fn().mockResolvedValue(null);
+
+      try {
+        const result = await userService.loginUser(mockUsername, mockPassword);
+        expect(userDAO.findOne).toHaveBeenCalledWith({
+          username: mockUsername,
+        });
+      } catch (error) {
+        const err = error as Errors.BadRequestError;
+        expect(err).toBeInstanceOf(Errors.BadRequestError);
+        expect(err.statusCode).toEqual(400);
+        expect(err.message).toEqual("Incorrect Username or Password");
+      }
+    });
+
+    it("should throw a BadRequestError if the password is incorrect", async () => {
+      // arrange
+      const mockUsername = "username";
+      const mockPassword = "Password123!";
+      const mockPasswordHash = "Password123!Hash";
+
+      const mockUser = {
+        _id: new Types.ObjectId(),
+        username: mockUsername,
+        password: mockPasswordHash,
+        isActive: true,
+      } as IUser;
+
+      userDAO.findOne = jest.fn().mockResolvedValue(mockUser);
+      BcryptUtil.comparePassword = jest.fn().mockResolvedValue(false);
+
+      try {
+        const result = await userService.loginUser(mockUsername, mockPassword);
+        expect(userDAO.findOne).toHaveBeenCalledWith({
+          username: mockUsername,
+        });
+        expect(BcryptUtil.comparePassword).toHaveBeenCalledWith(
+          mockPassword,
+          mockUser.password
+        );
+      } catch (error) {
+        const err = error as Errors.BadRequestError;
+        expect(err).toBeInstanceOf(Errors.BadRequestError);
+        expect(err.statusCode).toEqual(400);
+        expect(err.message).toEqual("Incorrect Username or Password");
+      }
+    });
+  });
+
+  describe("findUserById", () => {
+    it("should find a user by id", async () => {
+      // arrange
+      const mockUserId = new Types.ObjectId();
+
+      const mockUser = {
+        _id: mockUserId,
+        username: "username",
+        password: "Password123!Hash",
+        isActive: true,
+      } as IUser;
+
+      userDAO.findUserById = jest.fn().mockResolvedValue(mockUser);
+
+      const result = await userService.findUserById(mockUserId);
+
+      expect(result).toEqual(mockUser);
+      expect(userDAO.findUserById).toHaveBeenCalledWith(
+        mockUserId,
+        "username isActive"
+      );
+    });
+
+    it("should throw a ResourceNotFoundError if the user is not found", async () => {
+      // arrange
+      const mockUserId = new Types.ObjectId();
+
+      userDAO.findUserById = jest.fn().mockResolvedValue(null);
+
+      try {
+        const result = await userService.findUserById(mockUserId);
+        expect(userDAO.findUserById).toHaveBeenCalledWith(
+          mockUserId,
+          "username isActive"
+        );
+      } catch (error) {
+        const err = error as Errors.ResourceNotFoundError;
+        expect(err).toBeInstanceOf(Errors.ResourceNotFoundError);
+        expect(err.statusCode).toEqual(404);
+        expect(err.message).toEqual("User not found");
+      }
+    });
+  });
 });

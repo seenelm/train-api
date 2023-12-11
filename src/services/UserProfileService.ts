@@ -1,6 +1,6 @@
 import UserProfileDAO from "../dataAccess/UserProfileDAO";
 import { IUserProfile, UserProfileModel } from "../models/userProfile";
-import { IFollow, FollowModel } from "../models/followModel";
+import UserGroupsDAO from "../dataAccess/UserGroupsDAO";
 import FollowDAO from "../dataAccess/FollowDAO";
 import * as Errors from "../utils/errors";
 import { Types } from "mongoose";
@@ -10,12 +10,33 @@ import { ProfileAccess } from "../common/constants";
 class UserProfileService {
   private userProfileDAO: UserProfileDAO;
   private followDAO: FollowDAO;
+  private userGroupsDAO: UserGroupsDAO;
   private logger: CustomLogger;
 
-  constructor(userProfileDAO: UserProfileDAO, followDAO: FollowDAO) {
+  constructor(
+    userProfileDAO: UserProfileDAO,
+    followDAO: FollowDAO,
+    userGroupsDAO: UserGroupsDAO
+  ) {
     this.userProfileDAO = userProfileDAO;
     this.followDAO = followDAO;
+    this.userGroupsDAO = userGroupsDAO;
     this.logger = new CustomLogger(this.constructor.name);
+  }
+
+  public async fetchUserGroups(userId: Types.ObjectId) {
+    const user = await this.userGroupsDAO.findOneUser({ userId }, "groups");
+    const userGroups = user.groups;
+
+    console.log("UserGroups: ", userGroups);
+
+    if (!user) {
+      throw new Errors.ResourceNotFoundError("User not found");
+    }
+
+    this.logger.logInfo(`User "${userId}" Groups: `, userGroups);
+
+    return userGroups;
   }
 
   public async updateUserBio(
