@@ -19,13 +19,9 @@ groupRouter.post("/", authenticate, groupController.addGroup);
 //   groupController.confirmGroupRequest
 // );
 
-groupRouter.put(
-  "/:groupId/users/:userId/profile/bio",
-  authenticate,
-  groupController.updateGroupBio
-);
+groupRouter.put("/:groupId/bio", authenticate, groupController.updateGroupBio);
 groupRouter.patch(
-  "/:groupId/users/:userId/profile/name",
+  "/:groupId/groupName",
   authenticate,
   groupController.updateGroupName
 );

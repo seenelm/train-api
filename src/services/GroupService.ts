@@ -22,7 +22,10 @@ class GroupService {
     this.logger = new CustomLogger(this.constructor.name);
   }
 
-  public async addGroup(name: string, userId: Types.ObjectId): Promise<IGroup> {
+  public async addGroup(
+    groupName: string,
+    userId: Types.ObjectId
+  ): Promise<IGroup> {
     // const session = await mongoose.startSession();
     // session.startTransaction();
 
@@ -30,7 +33,10 @@ class GroupService {
 
     const ownerId = userId;
 
-    const group = await this.groupDAO.create({ name, owners: [ownerId] });
+    const group = await this.groupDAO.create({
+      groupName: groupName,
+      owners: [ownerId],
+    });
 
     const user = await this.userGroupsDAO.findOneAndUpdate(
       { userId },
@@ -108,6 +114,14 @@ class GroupService {
       { new: true }
     );
 
+    if (!updatedGroup) {
+      throw new Errors.InternalServerError("Failed to update group bio", {
+        userId,
+        groupId,
+        groupBio,
+      });
+    }
+
     this.logger.logInfo("Owner updated Group Bio", { ownerId, updatedGroup });
   }
 
@@ -143,7 +157,7 @@ class GroupService {
 
     const updatedGroup = await this.groupDAO.findOneAndUpdate(
       { _id: groupId },
-      { name: groupName },
+      { groupName },
       { new: true }
     );
 
@@ -215,7 +229,7 @@ class GroupService {
     if (group.accountType !== ProfileAccess.Public) {
       throw new Errors.BadRequestError("Group account is not public", {
         accountType: group.accountType,
-        groupName: group.name,
+        groupName: group.groupName,
       });
     }
 
@@ -262,7 +276,7 @@ class GroupService {
     if (group.accountType !== ProfileAccess.Private) {
       throw new Errors.BadRequestError("Group account is not private", {
         accountType: group.accountType,
-        groupName: group.name,
+        groupName: group.groupName,
       });
     }
 
@@ -328,7 +342,7 @@ class GroupService {
     if (group.accountType !== ProfileAccess.Private) {
       throw new Errors.BadRequestError("Group account is not private", {
         accountType: group.accountType,
-        groupName: group.name,
+        groupName: group.groupName,
       });
     }
 
@@ -390,7 +404,7 @@ class GroupService {
     if (group.accountType !== ProfileAccess.Private) {
       throw new Errors.BadRequestError("Group account is not private", {
         accountType: group.accountType,
-        groupName: group.name,
+        groupName: group.groupName,
       });
     }
 

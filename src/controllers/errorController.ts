@@ -17,6 +17,14 @@ export const errorController = (
       additionalFields: error.additionalFields,
     });
     res.status(error.statusCode).json(error.message);
+  } else if (error instanceof Errors.AuthError) {
+    logger.logError(error.message, error, {
+      path: req.path,
+      method: req.method,
+      statusCode: error.statusCode,
+      errors: error.errors,
+    });
+    res.status(error.statusCode).json(error.errors);
   } else {
     logger.logError(error.message, error, {
       path: req.path,

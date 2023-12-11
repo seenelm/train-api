@@ -12,7 +12,22 @@ class CustomLogger {
           level: "info",
           filename: "./logs/app.log",
           handleExceptions: true,
-          format: format.combine(format.timestamp(), format.json()),
+          format: format.combine(
+            format.timestamp(),
+            // format.json(),
+            format.timestamp({ format: "YYYY-MM-DDTHH:mm:ss.SSSZ" }),
+            format.printf((info) => {
+              return JSON.stringify(
+                {
+                  ...info,
+                  timestamp: info.timestamp,
+                  level: info.level.toUpperCase(),
+                },
+                null,
+                2
+              );
+            })
+          ),
           maxsize: 5242880, // 5MB
           maxFiles: 5,
         }),
@@ -21,15 +36,21 @@ class CustomLogger {
   }
 
   logInfo(message: string, additionalFields: object = {}) {
-    this.logger.info(message, additionalFields);
+    this.logger.info({ message, ...additionalFields });
   }
 
-  logError(message: string, error: Error, additionalFields: object = {}) {
-    const loggingError = new Error(message);
-    this.logger.error(message, {
-      ...additionalFields,
+  logError(
+    message: string,
+    error: Error,
+    additionalFields: object = {},
+    errors: object = {}
+  ) {
+    this.logger.error({
+      message,
       errorMessage: error.message,
-      stack: loggingError.stack,
+      ...additionalFields,
+      ...errors,
+      stack: error.stack,
     });
   }
 }

@@ -50,7 +50,11 @@ const userLoginSchema = Joi.object({
     }),
 });
 
-export const validateRegistration = (req: Request, res: Response, next: NextFunction) => {
+export const validateRegistration = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { error } = registerUserSchema.validate(req.body, {
     abortEarly: false,
   });
@@ -69,7 +73,11 @@ export const validateRegistration = (req: Request, res: Response, next: NextFunc
   }
 };
 
-export const validateLogin = (req: Request, res: Response, next: NextFunction) => {
+export const validateLogin = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { error } = userLoginSchema.validate(req.body, {
     abortEarly: false,
   });
@@ -80,7 +88,9 @@ export const validateLogin = (req: Request, res: Response, next: NextFunction) =
       errors[err.context.key] = err.message;
     });
 
-    return res.status(400).json({ errors });
+    console.log("Errors: ", errors);
+
+    return res.status(400).json(errors);
   } else {
     next();
   }
