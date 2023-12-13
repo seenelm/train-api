@@ -20,10 +20,12 @@ groupRouter.post("/", authenticate, groupController.addGroup);
 // );
 
 groupRouter.put(
-  "/:groupId/profile",
-  authenticate,
-  groupController.updateGroupProfile
+    "/:groupId/profile",
+    authenticate,
+    groupController.updateGroupProfile,
 );
+
+groupRouter.put("/:groupId/join", authenticate, groupController.joinGroup);
 
 // groupRouter.put("/:groupId/bio", authenticate, groupController.updateGroupBio);
 // groupRouter.patch(
@@ -31,33 +33,5 @@ groupRouter.put(
 //   authenticate,
 //   groupController.updateGroupName
 // );
-
-// Delete group.
-// router.delete("/:groupId", async (req, res) => {
-//   try {
-//     const { roleId, userId } = req.body;
-//     const { groupId } = req.params;
-//     const group = await Group.findById(groupId);
-
-//     if (!group) {
-//       return res.status(404).json({ error: "Group not found" });
-//     }
-
-//     const owner = await Role.findById(roleId);
-//     if (!owner) {
-//       return res
-//         .status(403)
-//         .json({ error: "Only the Owner is allowed to delete the group" });
-//     }
-
-//     await Role.deleteMany({ group: groupId });
-//     await Group.findByIdAndDelete(groupId);
-//     await User.findByIdAndUpdate(userId, { $pull: { groups: groupId } });
-
-//     res.status(201).json({ message: "Group deleted" });
-//   } catch (error) {
-//     return res.status(503).json({ error: "Internal server error" });
-//   }
-// });
 
 export default groupRouter;
