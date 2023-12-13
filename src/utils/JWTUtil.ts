@@ -1,7 +1,6 @@
 import * as jwt from "jsonwebtoken";
 
 class JWTUtil {
-  
   public static sign(payload: object, secret: string): Promise<string> {
     return new Promise((resolve, reject) => {
       jwt.sign(payload, secret, (error, token) => {
@@ -25,6 +24,6 @@ class JWTUtil {
       });
     });
   }
-};
+}
 
 export default JWTUtil;

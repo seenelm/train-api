@@ -19,12 +19,18 @@ groupRouter.post("/", authenticate, groupController.addGroup);
 //   groupController.confirmGroupRequest
 // );
 
-groupRouter.put("/:groupId/bio", authenticate, groupController.updateGroupBio);
-groupRouter.patch(
-  "/:groupId/groupName",
+groupRouter.put(
+  "/:groupId/profile",
   authenticate,
-  groupController.updateGroupName
+  groupController.updateGroupProfile
 );
+
+// groupRouter.put("/:groupId/bio", authenticate, groupController.updateGroupBio);
+// groupRouter.patch(
+//   "/:groupId/groupName",
+//   authenticate,
+//   groupController.updateGroupName
+// );
 
 // Delete group.
 // router.delete("/:groupId", async (req, res) => {

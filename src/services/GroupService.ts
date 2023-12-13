@@ -75,6 +75,56 @@ class GroupService {
     return group;
   }
 
+  public async updateGroupProfile(
+    ownerId: Types.ObjectId,
+    groupId: Types.ObjectId,
+    groupBio: string,
+    groupName: string,
+    accountType: number
+  ): Promise<IGroup> {
+    const group = await this.groupDAO.findById(groupId);
+
+    if (!group) {
+      throw new Errors.ResourceNotFoundError("Group does not exist", {
+        groupId,
+      });
+    }
+
+    const isOwner = group.owners.some((owner: Types.ObjectId) =>
+      owner._id.equals(ownerId)
+    );
+
+    if (!isOwner) {
+      throw new Errors.ForbiddenError(
+        "User doesn't have permission to update group profile",
+        { userId: ownerId, owners: group.owners }
+      );
+    }
+
+    const updatedGroup = await this.groupDAO.findOneAndUpdate(
+      { _id: groupId },
+      { bio: groupBio, groupName, accountType },
+      { new: true }
+    );
+
+    if (!updatedGroup) {
+      throw new Errors.InternalServerError("Failed to update group profile", {
+        ownerId,
+        groupId,
+        groupBio,
+        groupName,
+        accountType,
+      });
+    }
+
+    this.logger.logInfo("Owner updated Group Profile", {
+      ownerId,
+      updatedGroup,
+    });
+
+    return updatedGroup;
+  }
+
   public async updateGroupBio(
     userId: Types.ObjectId,
     groupId: Types.ObjectId,
