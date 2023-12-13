@@ -1,13 +1,4 @@
-export enum HttpStatusCode {
-  BAD_REQUEST = 400,
-  CONFLICT = 409,
-  NOT_FOUND = 404,
-  INTERNAL_SERVER = 500,
-  FORBIDDEN = 403,
-  UNAUTHORIZED = 401,
-  OK = 200,
-  CREATED = 201,
-}
+import { StatusCodes as HttpStatusCode } from "http-status-codes";
 
 export class AuthError extends Error {
   public statusCode: number;
@@ -57,7 +48,7 @@ export class ResourceNotFoundError extends CustomError {
 
 export class InternalServerError extends CustomError {
   constructor(message: string, additionalFields: object = {}) {
-    super(message, HttpStatusCode.INTERNAL_SERVER, additionalFields);
+    super(message, HttpStatusCode.INTERNAL_SERVER_ERROR, additionalFields);
   }
 }
 
