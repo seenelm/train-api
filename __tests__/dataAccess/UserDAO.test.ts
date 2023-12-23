@@ -1,42 +1,7 @@
 import UserDAO from "../../src/dataAccess/UserDAO";
-import { ResourceNotFoundError, InternalServerError } from "../../src/utils/errors";
+import { InternalServerError } from "../../src/utils/errors";
 import { UserModel, IUser } from "../../src/models/userModel";
 import { Types, Query } from "mongoose";
-
-const mockUserDoc = {
-  name: "Name",
-  username: "Username98",
-  password: "Password123!",
-};
-
-const mockUser = {
-  _id: new Types.ObjectId(),
-  name: "Name",
-  username: "Username98",
-  password: "Password123!",
-  groups: [],
-  bio: ""
-};
-
-const mockUser1 = {
-  _id: new Types.ObjectId(), 
-  name: "Lionel Messi", 
-  username: "lMessi", 
-  password: "Password123!",
-  groups: [],
-  bio: ""
-}
-
-const mockUser2 = {
-  _id: new Types.ObjectId(), 
-  name: "Lionel Messi", 
-  username: "lMessi2", 
-  password: "Password123!",
-  groups: [],
-  bio: ""
-}
-
-const USER_ID = new Types.ObjectId();
 
 describe("UserDAO", () => {
   let userDAO: UserDAO;
@@ -51,28 +16,50 @@ describe("UserDAO", () => {
   });
 
   describe("create", () => {
+    const mockUsername = "Username98";
+    const mockPassword = "Password123!";
+
+    const mockUser = {
+      _id: new Types.ObjectId(),
+      username: mockUsername,
+      password: mockPassword,
+      isActive: true,
+    } as IUser
+
     it("should create a new user", async () => {
-      UserModel.create = jest.fn().mockResolvedValue(mockUserDoc);
+      UserModel.create = jest.fn().mockResolvedValue(mockUser);
       // act
-      const user = await userDAO.create(mockUserDoc);
+      const user = await userDAO.create(mockUser);
 
       // assert
-      expect(UserModel.create).toHaveBeenCalledWith(mockUserDoc);
-      expect(user).toEqual(mockUserDoc);
+      expect(UserModel.create).toHaveBeenCalledWith(mockUser);
+      expect(user).toEqual(mockUser);
       
     })
     it("should throw an Internal Server Error", async () => {
       UserModel.create = jest.fn().mockRejectedValue(new Error("Database Error"));
       try {
         // act
-        const user = await userDAO.create(mockUserDoc);
+        const user = await userDAO.create(mockUser);
 
         // assert
         expect(user).rejects.toThrow(InternalServerError);
       } catch (error) {}
     });
-  })
+  });
+
   describe("findById", () => {
+    const mockUsername = "Username98";
+    const mockPassword = "Password123!";
+    const USER_ID = new Types.ObjectId();
+
+    const mockUser = {
+      _id: new Types.ObjectId(),
+      username: mockUsername,
+      password: mockPassword,
+      isActive: true,
+    } as IUser
+
     it("should find a user by id", async () => {
       // arrange
       jest.spyOn(UserModel, "findById").mockReturnThis()
@@ -99,7 +86,19 @@ describe("UserDAO", () => {
       expect(user).toBe(null);
     });
   });
+
+
   describe("findOne", () => {
+    const mockUsername = "Username98";
+    const mockPassword = "Password123!";
+
+    const mockUser = {
+      _id: new Types.ObjectId(),
+      username: mockUsername,
+      password: mockPassword,
+      isActive: true,
+    } as IUser
+    
     it("should find a user", async () => {
       // arrange
       let query = { username: mockUser.username };
@@ -116,32 +115,20 @@ describe("UserDAO", () => {
       expect(UserModel.findOne).toHaveBeenCalledWith(query);
       expect(user).toEqual(mockUser);
     });
-  });
-  describe("searchUsers", () => {
-    it("should return array of users", async () => {
-      const mockUsers = [ mockUser1, mockUser2 ];
-      const mockQuery = "lMessi";
-
-      jest.spyOn(UserModel, "find").mockReturnThis()
-      .mockReturnValue({
-        exec: jest.fn().mockResolvedValue(mockUsers),
-      } as unknown as Query<IUser[], any>);
-
-      const result = await userDAO.searchUsers(mockQuery);
-
-      expect(result).toEqual(mockUsers);
-    });
     it("should return null", async () => {
-      const mockQuery = "lMessi";
+      // arrange
+      let query = { username: mockUser.username };
 
-      jest.spyOn(UserModel, "find").mockReturnThis()
+      jest.spyOn(UserModel, "findOne").mockReturnThis()
       .mockReturnValue({
         exec: jest.fn().mockResolvedValue(null),
-      } as unknown as Query<IUser[], any>);
+      } as unknown as Query<IUser, any>)
 
-      const result = await userDAO.searchUsers(mockQuery);
+      // act
+      const user = await userDAO.findOne(query);
 
-      expect(result).toBeNull();
+      // assert
+      expect(user).toBeNull();
     });
   });
-})
+});

@@ -7,6 +7,13 @@ class MongoDB {
     this.dbUri = dbUri;
   }
 
+  async startSession(): Promise<mongoose.ClientSession> {
+    if (mongoose.connection.readyState) {
+      return await mongoose.startSession();
+    }
+    throw new Error("No active Mongoose Connection.");
+  }
+
   /**
    * Connect to MongoDB database.
    */
@@ -15,7 +22,9 @@ class MongoDB {
       console.error("Error on initial connection: ", error);
     });
     const db = mongoose.connection;
-    db.on("error", console.error.bind(console, "connection error:"));
+    db.on("error", err => {
+      console.log("Error connecting to Database: ", err);
+    });
     db.once("open", () => {
       console.log("Database connected");
     });

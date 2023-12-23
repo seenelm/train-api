@@ -7,3 +7,6 @@ dist/
 
 # Ignore vscode directory
 .vscode/
+
+# Ignore logs directory
+logs/
