@@ -59,3 +59,4 @@ export const requestUser = async (req: Request, res: Response) => {};
 export const confirmUserRequest = async (req: Request, res: Response) => {};
 
 export const deleteAccount = async (req: Request, res: Response) => {};
+

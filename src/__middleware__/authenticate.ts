@@ -1,34 +1,82 @@
 import { NextFunction, Request, Response } from "express";
 import JWTUtil from "../utils/JWTUtil";
+import {
+    InternalServerError,
+    ResourceNotFoundError,
+    UnauthorizedError,
+} from "../utils/errors";
+import { UserModel, IUser } from "../models/userModel";
+import { Types } from "mongoose";
+import { TokenPayload } from "../services/UserService";
+
+import * as jwt from "jsonwebtoken";
+import CustomLogger from "../common/logger";
+
+const logger = new CustomLogger("authenticate");
 
 declare global {
-  namespace Express {
-    interface Request {
-      user: any
+    namespace Express {
+        interface Request {
+            user: any;
+        }
     }
-  }
 }
 
-export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
-  const testToken = req.headers.authorization;
-  let token: string;
+export const getAccessToken = (authorization: string): string => {
+    let token: string;
 
-  if (testToken && testToken.startsWith("Bearer")) {
-    token = testToken.split(" ")[1];
-  }
+    if (!authorization || authorization.trim() === "") {
+        throw new UnauthorizedError("Missing Authorization Header", {
+            authorization,
+        });
+    }
 
-  if (!token) {
-    console.log("Not authorized");
-    // next(new CustomError("You are not logged in", 401));
-    res.status(401).json({ error: "Not authorized" });
-  }
+    let size = authorization.split(" ");
 
-  try {
-    const decodedToken = await JWTUtil.verify(token, process.env.SECRET_CODE);
+    if (
+        size.length > 1 &&
+        authorization &&
+        authorization.startsWith("Bearer")
+    ) {
+        token = size[1];
+    } else {
+        throw new UnauthorizedError("Invalid Authorization", {
+            authorization,
+            size,
+        });
+    }
 
-    req.user = decodedToken;
+    return token;
+};
 
-    next();
-  } catch (error) {
-  }
+export const authenticate = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    const token = getAccessToken(req.headers.authorization);
+    let user: IUser;
+
+    try {
+        const decodedToken = await JWTUtil.verify(
+            token,
+            process.env.SECRET_CODE,
+        );
+        const payload = decodedToken as TokenPayload;
+
+        user = await UserModel.findById(new Types.ObjectId(payload.userId));
+
+        if (!user) {
+            throw new ResourceNotFoundError("User is not found");
+        }
+
+        req.user = user;
+        next();
+    } catch (error) {
+        if (error instanceof jwt.JsonWebTokenError) {
+            throw new UnauthorizedError(error.message);
+        } else {
+            throw error;
+        }
+    }
 };

@@ -1,123 +1,88 @@
-import { GroupModel } from "../models/groupModel";
-import { UserModel } from "../models/userModel";
-import mongoose from "mongoose";
 import { Request, Response, NextFunction } from "express";
 import GroupService from "../services/GroupService";
+import GroupDAO from "../dataAccess/GroupDAO";
+import { GroupModel } from "../models/groupModel";
+import UserGroupsDAO from "../dataAccess/UserGroupsDAO";
+import { UserGroupsModel } from "../models/userGroups";
+import { Types } from "mongoose";
+import { StatusCodes as HttpStatusCode } from "http-status-codes";
 
-const groupService = new GroupService();
+const groupDAO = new GroupDAO(GroupModel);
+const userGroupsDAO = new UserGroupsDAO(UserGroupsModel);
+
+const groupService = new GroupService(groupDAO, userGroupsDAO);
 
 // Add group to associated Users model.
-export const addGroup = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { name, userId } = req.body;
-    const result = await groupService.addGroup(name, userId);
-    console.log(result.newGroup);
-    return res.status(201).json(result.newGroup);
-  } catch (error) {
-    next(error);
-  }
-};
+export const addGroup = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const { groupName, userId } = req.body;
+        const userID = new Types.ObjectId(userId);
 
-export const updateGroupBio = async (req: Request, res: Response, next: NextFunction) => {
-  const { groupBio } = req.body;
-  const { userId, groupId } = req.params;
-  try {
-    await groupService.updateGroupBio(userId, groupId, groupBio);
-    return res.status(201).json({ success: true });
-  } catch (error) {
-    next(error);
-  }
-}
-
-export const updateGroupName = async (req: Request, res: Response, next: NextFunction) => {
-  const { groupName } = req.body;
-  const { userId, groupId } = req.params;
-  try {
-    await groupService.updateGroupName(userId, groupId, groupName);
-    return res.status(201).json({ success: true });
-  } catch (error) {
-    next(error);
-  }
-}
-
-// Request to join private group.
-export const requestGroup = async (req: Request, res: Response) => {
-  try {
-    const { groupId } = req.params;
-    // const userId = new mongoose.Types.ObjectId(req.user.id);
-
-    // Check if group exists.
-    const group = await GroupModel.findById(groupId);
-    if (!group) {
-      return res.status(404).json({ error: "Group not found" });
+        const group = await groupService.addGroup(groupName, userID);
+        return res.status(HttpStatusCode.CREATED).json(group);
+    } catch (error) {
+        next(error);
     }
-
-    // Check if user is already member of group.
-    // if (group.users.includes(userId)) {
-    //   return res.status(400).json({ error: "User is already member of group" });
-    // }
-
-    // Check if user already sent a request.
-    // const existingRequest = group.requests.some((request) =>
-    //   userId.equals(request._id)
-    // );
-
-    // if (existingRequest) {
-    //   return res.status(400).json({ error: "Request already sent" });
-    // }
-
-    // group.requests.push(userId);
-    // await group.save();
-
-    // return res.status(201).json({ status: "pending" });
-
-    // Check if user already sent a request.
-  } catch (error) {
-    console.log(error);
-    // res.status(503).json(error.message);
-  }
 };
 
-// Owner of private group confirms users request to join group.
-export const confirmGroupRequest = async (req: Request, res: Response) => {
-  // try {
-  //   const { groupId, userId } = req.params;
-  //   const ownerId = new mongoose.Types.ObjectId(req.user.id);
-  //   console.log("Owner Id: ", ownerId);
-
-  //   // Check if group exists
-  //   const group = await GroupModel.findById(groupId);
-  //   if (!group) {
-  //     return res.status(404).json({ error: "Group not found" });
-  //   }
-
-  //   // Verify owner of the group
-  //   if (!ownerId.equals(group.owner)) {
-  //     return res.status(403).json({ error: "Unauthorized user " });
-  //   }
-
-  //   // add user to group
-  //   group.users.push(userId);
-  //   await group.save();
-
-  //   // remove user from requests array
-  //   await GroupModel.findOneAndUpdate(
-  //     { _id: groupId },
-  //     { $pull: { requests: { _id: userId } } },
-  //     { new: true }
-  //   );
-
-  //   return res.status(201).json({ success: true });
-  // } catch (error) {
-  //   res.status(503).json({ error: error.message });
-  // }
+export const fetchGroup = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    const { groupId } = req.params;
+    let groupID = new Types.ObjectId(groupId);
+    try {
+        const group = await groupService.fetchGroup(groupID);
+        return res.status(HttpStatusCode.OK).json(group);
+    } catch (error) {
+        next(error);
+    }
 };
 
-// Join public group.
-export const joinPublicGroup = async (req: Request, res: Response) => {};
+export const updateGroupProfile = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    const { groupId } = req.params;
+    const { groupBio, groupName, accountType } = req.body;
 
-// Delete group if you are owner of group.
-export const deleteGroup = async (req: Request, res: Response) => {};
+    const ownerId = req.user.id;
+    const groupID = new Types.ObjectId(groupId);
 
-// Leave group.
-export const leaveGroup = async (req: Request, res: Response) => {};
+    try {
+        await groupService.updateGroupProfile(
+            ownerId,
+            groupID,
+            groupBio,
+            groupName,
+            accountType,
+        );
+        return res.status(HttpStatusCode.OK).json({ success: true });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const joinGroup = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    const { groupId } = req.params;
+
+    const groupID = new Types.ObjectId(groupId);
+    const userId = req.user.id;
+
+    try {
+        await groupService.joinGroup(userId, groupID);
+        return res.status(HttpStatusCode.OK).json({ success: true });
+    } catch (error) {
+        next(error);
+    }
+};

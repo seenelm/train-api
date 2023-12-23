@@ -34,3 +34,4 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
 // Logout of application and remove token.
 export const logout = async (req, res) => {};
+
