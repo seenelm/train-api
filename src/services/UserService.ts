@@ -115,23 +115,6 @@ class UserService {
         // }
     }
 
-<<<<<<< HEAD
-    const users = await this.userDAO.searchUsers(query);
-    console.log("Users: ", users);
-    if (!users) {
-      throw new Errors.ResourceNotFoundError("User does not exist");
-    }
-
-    const usersList = users.map((user) => ({
-      username: user.username,
-      name: user.name,
-    }));
-    console.log("usersList: ", usersList);
-    
-    return { usersList };
-    
-  }
-=======
     public async loginUser(username: string, password: string) {
         const user = await this.userDAO.findOne({ username });
         let errors = {};
@@ -195,7 +178,6 @@ class UserService {
                 userId,
             });
         }
->>>>>>> origin/main
 
         this.logger.logInfo("Find User By Id", { user });
 
