@@ -6,6 +6,10 @@ import * as Errors from "../utils/errors";
 import { Types } from "mongoose";
 import CustomLogger from "../common/logger";
 import { ProfileAccess } from "../common/constants";
+import {
+    FetchUserGroupsRequest,
+    UpdateUserProfileRequest,
+} from "../dtos/userProfileDTO";
 
 class UserProfileService {
     private userProfileDAO: UserProfileDAO;
@@ -24,11 +28,15 @@ class UserProfileService {
         this.logger = new CustomLogger(this.constructor.name);
     }
 
-    public async fetchUserGroups(userId: Types.ObjectId) {
-        const user = await this.userGroupsDAO.findOneUser({ userId }, "groups");
+    public async fetchUserGroups(
+        fetchUserGroupsRequest: FetchUserGroupsRequest,
+    ) {
+        const { userId } = fetchUserGroupsRequest;
+        const user = await this.userGroupsDAO.findOneAndPopulate(
+            { userId },
+            "groups",
+        );
         const userGroups = user.groups;
-
-        console.log("UserGroups: ", userGroups);
 
         if (!user) {
             throw new Errors.ResourceNotFoundError("User not found");
@@ -40,11 +48,9 @@ class UserProfileService {
     }
 
     public async updateUserProfile(
-        userId: Types.ObjectId,
-        userBio: string,
-        name: string,
-        accountType: number,
+        updateUserProfileRequest: UpdateUserProfileRequest,
     ): Promise<void> {
+        const { userId, name, userBio, accountType } = updateUserProfileRequest;
         const user = await this.userProfileDAO.findOneAndUpdate(
             { userId },
             { bio: userBio, name, accountType },
@@ -55,85 +61,6 @@ class UserProfileService {
             userId,
             userBio,
             name,
-            accountType,
-        });
-
-        if (!user) {
-            throw new Errors.ResourceNotFoundError("User does not exist", {
-                userId,
-            });
-        }
-    }
-
-    public async updateUserBio(
-        userId: Types.ObjectId | string,
-        userBio: string | null,
-    ): Promise<void> {
-        if (!userBio) {
-            throw new Errors.BadRequestError("Users Bio is Undefined", {
-                userBio,
-            });
-        }
-
-        const user = await this.userProfileDAO.findOneAndUpdate(
-            { userId: userId },
-            { bio: userBio },
-            { new: true },
-        );
-
-        this.logger.logInfo("User added a bio", { userId, userBio });
-
-        if (!user) {
-            throw new Errors.ResourceNotFoundError("User does not exist", {
-                userId,
-            });
-        }
-    }
-
-    public async updateUsersFullName(
-        userId: Types.ObjectId | string,
-        name: string | null,
-    ): Promise<void> {
-        if (!name) {
-            throw new Errors.BadRequestError("Users Name is Undefined", {
-                name,
-            });
-        }
-
-        const user = await this.userProfileDAO.findOneAndUpdate(
-            { userId: userId },
-            { name },
-            { new: true },
-        );
-
-        this.logger.logInfo("User updated their name", { userId, name });
-
-        if (!user) {
-            throw new Errors.ResourceNotFoundError("User does not exist", {
-                userId,
-            });
-        }
-    }
-
-    public async updateAccountType(
-        userId: Types.ObjectId,
-        accountType: number | null,
-    ): Promise<void> {
-        if (!accountType) {
-            throw new Errors.BadRequestError("Account Type is Undefined", {
-                userId,
-                accountType,
-            });
-        }
-
-        const user = await this.userProfileDAO.findOneAndUpdate(
-            { userId: userId },
-            { accountType },
-            { new: true },
-        );
-
-        this.logger.logInfo("User updated their account type", {
-            userId,
             accountType,
         });
 
@@ -163,6 +90,34 @@ class UserProfileService {
         }
 
         return userProfile;
+    }
+
+    public async fetchUserData(userId: Types.ObjectId | string) {
+        const userData = await this.userProfileDAO.fetchUserData(userId);
+
+        if (!userData) {
+            throw new Errors.ResourceNotFoundError("User not found", {
+                userId,
+            });
+        }
+
+        this.logger.logInfo("Fetch User Data", { userData });
+
+        return userData;
+    }
+
+    public async fetchFollowData(userId: Types.ObjectId) {
+        const followData = await this.followDAO.getFollowData(userId);
+
+        if (!followData) {
+            throw new Errors.ResourceNotFoundError("User not found", {
+                userId,
+            });
+        }
+
+        this.logger.logInfo("Fetch Follow Data", { followData });
+
+        return followData;
     }
 
     /**
@@ -319,6 +274,16 @@ class UserProfileService {
             { $addToSet: { requests: followerId } },
             { new: true },
         );
+    }
+
+    public async getFollowRequests(userId: Types.ObjectId) {
+        const followRequests = await this.followDAO.getFollowRequests(userId);
+
+        if (!followRequests) {
+            throw new Errors.ResourceNotFoundError("User not found");
+        }
+
+        return followRequests;
     }
 
     /**
