@@ -50,6 +50,6 @@ export class UpdateUserProfileRequest {
     @IsString()
     userBio: string;
 
-    @IsNumber()
+    @IsNumber({}, { message: "accountType must be a number" })
     accountType: number;
 }

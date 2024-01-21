@@ -264,5 +264,77 @@ describe("User Profile Controller", () => {
                 ],
             });
         });
+
+        it("should return a 400 status code when userBio is not a string", async () => {
+            const userId = new Types.ObjectId();
+
+            const updateuserProfileRequest = {
+                userId: userId,
+                username: "mockUsername",
+                name: "mockName",
+                userBio: 123,
+                accountType: 1,
+            };
+
+            const payload = { userId };
+            const secretKey = process.env.SECRET_CODE;
+
+            if (!secretKey) {
+                console.log("Secret key is not defined");
+                throw new Error("Secret key is not defined");
+            }
+
+            const token = await JWTUtil.sign(payload, secretKey);
+            if (!token) {
+                console.log("Token is not defined");
+                throw new Error("Token is not defined");
+            }
+
+            const response = await request(app)
+                .put(`/api/users/${userId}/profile`)
+                .send(updateuserProfileRequest)
+                .set("Authorization", `Bearer ${token}`);
+
+            expect(response.status).toBe(HttpStatusCode.BAD_REQUEST);
+            expect(response.body).toEqual({
+                userBio: ["userBio must be a string"],
+            });
+        });
+
+        it("should return a 400 status code when accountType is not a number", async () => {
+            const userId = new Types.ObjectId();
+
+            const updateuserProfileRequest = {
+                userId: userId,
+                username: "mockUsername",
+                name: "mockName",
+                userBio: "This is a test",
+                accountType: "1",
+            };
+
+            const payload = { userId };
+            const secretKey = process.env.SECRET_CODE;
+
+            if (!secretKey) {
+                console.log("Secret key is not defined");
+                throw new Error("Secret key is not defined");
+            }
+
+            const token = await JWTUtil.sign(payload, secretKey);
+            if (!token) {
+                console.log("Token is not defined");
+                throw new Error("Token is not defined");
+            }
+
+            const response = await request(app)
+                .put(`/api/users/${userId}/profile`)
+                .send(updateuserProfileRequest)
+                .set("Authorization", `Bearer ${token}`);
+
+            expect(response.status).toBe(HttpStatusCode.BAD_REQUEST);
+            expect(response.body).toEqual({
+                accountType: ["accountType must be a number"],
+            });
+        });
     });
 });
