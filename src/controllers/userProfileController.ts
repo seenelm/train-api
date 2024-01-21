@@ -62,10 +62,6 @@ class UserProfileController {
         res: Response,
         next: NextFunction,
     ) => {
-        // const { userId } = req.params;
-        // const userID = new Types.ObjectId(userId);
-        // const { name, userBio, accountType } = req.body;
-
         try {
             const updateUserProfileRequest = plainToClass(
                 UpdateUserProfileRequest,
