@@ -5,7 +5,7 @@ import { GroupModel } from "../models/groupModel";
 import UserGroupsDAO from "../dataAccess/UserGroupsDAO";
 import { UserGroupsModel } from "../models/userGroups";
 import { Types } from "mongoose";
-import { StatusCodes as HttpStatusCode } from "http-status-codes";
+import { StatusCodes as HttpStatusCode, TOO_MANY_REQUESTS } from "http-status-codes";
 
 const groupDAO = new GroupDAO(GroupModel);
 const userGroupsDAO = new UserGroupsDAO(UserGroupsModel);
@@ -77,7 +77,8 @@ export const joinGroup = async (
     const { groupId } = req.params;
 
     const groupID = new Types.ObjectId(groupId);
-    const userId = req.user.id;
+    const userId = new Types.ObjectId(req.user.id);
+
 
     try {
         await groupService.joinGroup(userId, groupID);
@@ -86,3 +87,53 @@ export const joinGroup = async (
         next(error);
     }
 };
+
+export const requestToJoinGroup = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    const { groupId } = req.params;
+
+    const groupID = new Types.ObjectId(groupId);
+    const userId = new Types.ObjectId(req.user.id);
+
+    try {
+        await groupService.requestToJoinGroup(userId, groupID);
+        return res.status(HttpStatusCode.OK).json({ success: true });
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const getJoinRequests = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    const { groupId } = req.params;
+    const userId = new Types.ObjectId(req.user.id);
+
+    const groupID = new Types.ObjectId(groupId);
+    try {
+        const requests = await groupService.getJoinRequests(userId, groupID);
+        return res.status(HttpStatusCode.OK).json(requests);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const getJoinRequestsByUser = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    const userId = new Types.ObjectId(req.user.id);
+
+    try {
+        const requests = await groupService.getJoinRequestsByUser(userId);
+        return res.status(HttpStatusCode.OK).json(requests);
+    } catch (error) {
+        next(error);
+    }
+}

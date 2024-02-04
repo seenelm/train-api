@@ -41,10 +41,6 @@ class UserService {
         password: string,
         name: string,
     ) {
-        // const session = await db.startSession();
-        // session.startTransaction();
-
-        // try {
         const existingUser = await this.userDAO.findOne({ username });
         if (existingUser) {
             throw new Errors.ConflictError("username already taken");
@@ -106,13 +102,6 @@ class UserService {
         });
 
         return { userId: newUser._id, token, username };
-
-        // } catch (error) {
-        //   await session.abortTransaction();
-        //   throw error;
-        // } finally {
-        //   session.endSession();
-        // }
     }
 
     public async loginUser(username: string, password: string) {

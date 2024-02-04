@@ -28,6 +28,8 @@
     "mongodb": "^5.7.0",
     "mongodb-memory-server": "^8.13.0",
     "mongoose": "^7.4.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0",
     "winston": "^3.11.0"
   },
   "devDependencies": {

@@ -33,7 +33,7 @@ const groupSchema = new Schema({
   requests: [
     {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "UserProfile",
     },
   ],
   accountType: {

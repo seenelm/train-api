@@ -1,5 +1,5 @@
 import UserProfileDAO from "../dataAccess/UserProfileDAO";
-import { IUserProfile, UserProfileModel } from "../models/userProfile";
+import { IUserProfile } from "../models/userProfile";
 import UserGroupsDAO from "../dataAccess/UserGroupsDAO";
 import FollowDAO from "../dataAccess/FollowDAO";
 import * as Errors from "../utils/errors";
@@ -165,6 +165,20 @@ class UserProfileService {
         return userProfile;
     }
 
+    public async fetchFollowData(userId: Types.ObjectId) {
+        const followData = await this.followDAO.getFollowData(userId);
+
+        if (!followData) {
+            throw new Errors.ResourceNotFoundError("User not found", {
+                userId,
+            });
+        }
+
+        this.logger.logInfo("Fetch Follow Data", { followData });
+
+        return followData;
+    }
+    
     /**
      * Follow a users public account
      * @param followerId

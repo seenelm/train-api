@@ -8,6 +8,13 @@ userProfileRouter.get(
     authenticate,
     userProfileController.fetchUserProfile,
 );
+
+userProfileRouter.get(
+    "/:userId/followData",
+    authenticate,
+    userProfileController.fetchFollowData,
+);
+
 userProfileRouter.get(
     "/:userId/followers",
     authenticate,
@@ -25,31 +32,13 @@ userProfileRouter.get(
     userProfileController.fetchUserGroups,
 );
 
-userProfileRouter.post("/", authenticate, userProfileController.followUser);
+userProfileRouter.post("/:followeeId/follow", authenticate, userProfileController.followUser);
 
 userProfileRouter.put(
     "/:userId/profile",
     authenticate,
     userProfileController.updateUserProfile,
 );
-
-// userProfileRouter.put(
-//   "/:userId/bio",
-//   authenticate,
-//   userProfileController.updateUserBio
-// );
-
-// userProfileRouter.patch(
-//   "/:userId/name",
-//   authenticate,
-//   userProfileController.updateUsersFullName
-// );
-// userProfileRouter.patch(
-//   "/:userId/accountType",
-//   authenticate,
-//   userProfileController.updateAccountType
-// );
-
 userProfileRouter.patch(
     "/follow/requests/:followeeId",
     authenticate,
@@ -75,5 +64,21 @@ userProfileRouter.patch(
     authenticate,
     userProfileController.unfollowUser,
 );
+// userProfileRouter.put(
+//   "/:userId/bio",
+//   authenticate,
+//   userProfileController.updateUserBio
+// );
+
+// userProfileRouter.patch(
+//   "/:userId/name",
+//   authenticate,
+//   userProfileController.updateUsersFullName
+// );
+// userProfileRouter.patch(
+//   "/:userId/accountType",
+//   authenticate,
+//   userProfileController.updateAccountType
+// );
 
 export default userProfileRouter;

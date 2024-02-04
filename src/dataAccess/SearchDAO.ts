@@ -2,6 +2,7 @@ import { Model } from "mongoose";
 import { IUser } from "../models/userModel";
 import { IGroup } from "../models/groupModel";
 import { IUserProfile } from "../models/userProfile";
+import { Types } from "mongoose";
 
 class SearchDAO {
   private userModel: Model<IUser>;
@@ -18,7 +19,8 @@ class SearchDAO {
    * @returns array of users (userId, username, name) and groups (groupId, group name)
    */
   public async search(
-    query: string | object
+    query: string | object,
+    userId: Types.ObjectId
   ): Promise<(IUser & IUserProfile & IGroup)[] | null> {
     const users = await this.userModel.aggregate([
       {
@@ -51,11 +53,34 @@ class SearchDAO {
       },
     ]);
 
-    const groups = await this.groupModel
-      .find({
-        groupName: { $regex: query, $options: "i" },
-      })
-      .select("groupName");
+    const groups = await this.groupModel.aggregate([
+      {
+        $match: {
+          groupName: { $regex: query, $options: "i" },
+        },
+      },
+      {
+        $addFields: {
+          isMember: {
+            $or: [
+              {
+                $in: [userId, "$users"],
+              },
+              {
+                $in: [userId, "$owners"],
+              },
+            ],
+          },
+        },
+      },
+      {
+        $project: {
+          groupName: 1,
+          isMember: 1,
+          accountType: 1,
+        },
+      },
+    ]);
 
     return users.concat(groups);
   }

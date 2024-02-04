@@ -114,6 +114,21 @@ export const fetchUserProfile = async (
     }
 };
 
+export const fetchFollowData = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    const { userId } = req.params;
+    let id = new Types.ObjectId(userId);
+    try {
+        const followData = await userProfileService.fetchFollowData(id);
+        return res.status(201).json(followData);
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const getFollowers = async (
     req: Request,
     res: Response,
@@ -151,10 +166,10 @@ export const followUser = async (
     res: Response,
     next: NextFunction,
 ) => {
-    const { followeeId } = req.body;
+    const { followeeId } = req.params;
 
     const followeeID = new Types.ObjectId(followeeId);
-    const followerId = req.user._id;
+    const followerId = new Types.ObjectId(req.user._id);
 
     try {
         await userProfileService.followUser(followerId, followeeID);
@@ -169,10 +184,10 @@ export const requestToFollowUser = async (
     res: Response,
     next: NextFunction,
 ) => {
-    const { followeeId } = req.body;
+    const { followeeId } = req.params;
 
     const followeeID = new Types.ObjectId(followeeId);
-    const followerId = req.user._id;
+    const followerId = new Types.ObjectId(req.user._id);
 
     try {
         await userProfileService.requestToFollowUser(followerId, followeeID);
