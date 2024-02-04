@@ -3,6 +3,7 @@ import { UserModel } from "../models/userModel";
 import { GroupModel } from "../models/groupModel";
 import * as Errors from "../utils/errors";
 import CustomLogger from "../common/logger";
+import { Types } from "mongoose";
 
 class SearchService {
   private searchDAO: SearchDAO;
@@ -14,7 +15,7 @@ class SearchService {
     this.logger = new CustomLogger(this.constructor.name);
   }
 
-  public async findUsersAndGroups(query: string | object) {
+  public async findUsersAndGroups(query: string | object, userId: Types.ObjectId) {
     if (typeof query === "string" && (!query || query.trim() === "")) {
       throw new Errors.BadRequestError("Invalid query string");
     }
@@ -26,7 +27,7 @@ class SearchService {
       throw new Errors.BadRequestError("Invalid query object");
     }
 
-    const result = await this.searchDAO.search(query);
+    const result = await this.searchDAO.search(query, userId);
     this.logger.logInfo("Search", { query, result });
     return result;
   }

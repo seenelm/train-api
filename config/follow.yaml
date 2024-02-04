@@ -1,0 +1,225 @@
+openapi: 3.0.0
+info:
+    title: Train API
+    version: 1.0.0
+    description: Train API documentation
+servers:
+    - url: http://localhost:3000/api
+tags:
+    - name: Follow
+      description: Operations related to following users
+paths:
+    /users/{followeeId}/follow:
+        post:
+            tags:
+                - Follow
+            summary: Follow a user
+            description: Follows a user
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: followeeId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the user being followed
+            responses:
+                200:
+                    description: User followed successfully
+                400:
+                    description: Bad request - Invalid input or account not private
+                404:
+                    description: User or follow document not found
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                409:
+                    description: Conflict - User is already following
+                500:
+                    description: Internal server error
+    /users/follow/requests/{followeeId}:
+        patch:
+            tags:
+                - Follow
+            summary: Request to follow a user
+            description: Send a request to follow a private account
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: followeeId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the user being requested to follow
+            responses:
+                200:
+                    description: Follow request sent successfully
+                400:
+                    description: Bad request - Invalid input, account not private, or request already sent
+                404:
+                    description: User or follow document not found
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                409:
+                    description: Conflict - User is already following
+                500:
+                    description: Internal server error
+    /users/follow/requests/{followerId}/accept:
+        patch:
+            tags:
+                - Follow
+            summary: Accept a follow request
+            description: Accepts a follow request from another user
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: followerId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the user who sent the follow request
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                followeeId:
+                                    type: string
+                                    description: The unique identifier of the user accepting the follow request
+                            required:
+                                - followeeId
+            responses:
+                200:
+                    description: Follow request accepted successfully
+                400:
+                    description: Bad request - Invalid input, account not private, or request not found
+                404:
+                    description: User or follow document not found
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                500:
+                    description: Internal server error
+    /users/follow/requests/{followerId}/reject:
+        patch:
+            tags:
+                - Follow
+            summary: Reject a follow request
+            description: Rejects a follow request from another user
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: followerId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the user who sent the follow request
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                followeeId:
+                                    type: string
+                                    description: The unique identifier of the user rejecting the follow request
+                            required:
+                                - followeeId
+            responses:
+                200:
+                    description: Follow request rejected successfully
+                400:
+                    description: Bad request - Invalid input, account not private, or request not found
+                404:
+                    description: User or follow document not found
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                500:
+                    description: Internal server error
+    /users/follow/requests/{followerId}/remove:
+        patch:
+            tags:
+                - Follow
+            summary: Remove a follow request
+            description: Removes a follow request from another user
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: followerId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the user who sent the follow request
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                followeeId:
+                                    type: string
+                                    description: The unique identifier of the user removing the follow request
+                            required:
+                                - followeeId
+            responses:
+                200:
+                    description: Follow request removed successfully
+                400:
+                    description: Bad request - Invalid input, account not private, or request not found
+                404:
+                    description: User or follow document not found
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                500:
+                    description: Internal server error
+    /users/follow/requests/{followerId}/unfollow:
+        patch:
+            tags:
+                - Follow
+            summary: Unfollow a user
+            description: Unfollows a user
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: followerId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the user who sent the follow request
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                followeeId:
+                                    type: string
+                                    description: The unique identifier of the user removing the follow request
+                            required:
+                                - followeeId
+            responses:
+                200:
+                    description: User unfollowed successfully
+                400:
+                    description: Bad request - Invalid input, account not private, or request not found
+                404:
+                    description: User or follow document not found
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                500:
+                    description: Internal server error
+components:
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT

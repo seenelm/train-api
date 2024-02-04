@@ -21,7 +21,10 @@ export default abstract class BaseDAO<T extends Document> {
     });
     return entity;
   }
-
+  public async find(query: FilterQuery<T>): Promise<T[]> {
+    return await this.model.find(query).exec();
+  }
+  
   public async findById(id: Types.ObjectId): Promise<T | null> {
     return await this.model.findById(id).exec();
   }

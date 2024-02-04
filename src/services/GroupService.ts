@@ -5,6 +5,7 @@ import { IGroup } from "../models/groupModel";
 import UserGroupsDAO from "../dataAccess/UserGroupsDAO";
 import CustomLogger from "../common/logger";
 import { ProfileAccess } from "../common/constants";
+import { IUserProfile } from "../models/userProfile";
 
 class GroupService {
     private groupDAO: GroupDAO;
@@ -21,10 +22,6 @@ class GroupService {
         groupName: string,
         userId: Types.ObjectId,
     ): Promise<IGroup> {
-        // const session = await mongoose.startSession();
-        // session.startTransaction();
-
-        // try {
 
         const ownerId = userId;
 
@@ -44,20 +41,10 @@ class GroupService {
                 userId,
             });
         }
-        // user.groups.push(group._id);
-        // await user.save();
 
         this.logger.logInfo("Owner added a Group", { ownerId, group, user });
 
         return group;
-        // } catch (error) {
-        //   console.error(error);
-        //   errorLogger.error(error);
-        //   await session.abortTransaction();
-        //   throw error;
-        // } finally {
-        //   session.endSession();
-        // }
     }
 
     public async fetchGroup(groupId: Types.ObjectId): Promise<IGroup> {
@@ -169,7 +156,13 @@ class GroupService {
             { new: true },
         );
 
-        this.logger.logInfo("User joined Group", { userId, updatedGroup });
+        const userGroups = await this.userGroupsDAO.findOneAndUpdate(
+            { userId },
+            { $addToSet: { groups: groupId } },
+            { new: true },
+        );
+
+        this.logger.logInfo("User joined Group", { userId, updatedGroup, userGroups });
     }
 
     public async requestToJoinGroup(
@@ -232,6 +225,54 @@ class GroupService {
             updatedGroup,
         });
     }
+
+    public async getJoinRequests(
+        userId: Types.ObjectId,
+        groupId: Types.ObjectId,
+    ): Promise<IUserProfile[]> {
+        const group = await this.groupDAO.findById(groupId);
+
+        if (!group) {
+            throw new Errors.ResourceNotFoundError("Group does not exist", {
+                groupId,
+            });
+        }
+
+        const isOwner = group.owners.some((owner: Types.ObjectId) =>
+            owner._id.equals(userId),
+        );
+
+        if (!isOwner) {
+            throw new Errors.ForbiddenError(
+                "User doesn't have permission to get join requests",
+                { userId, owners: group.owners },
+            );
+        }
+
+        const joinRequests = await this.groupDAO.getJoinRequests(groupId);
+
+        this.logger.logInfo("Owner fetched join requests", {
+            userId,
+            groupId,
+            joinRequests,
+        });
+
+        return joinRequests;
+    }
+
+    public async getJoinRequestsByUser(
+        userId: Types.ObjectId,
+    ): Promise<IUserProfile[]> {
+        const joinRequests = await this.groupDAO.getJoinRequestsByUser(userId);
+    
+        this.logger.logInfo("User fetched join requests", {
+            userId,
+            joinRequests,
+        });
+    
+        return joinRequests;
+    }
+    
 
     public async acceptGroupRequest(
         userId: Types.ObjectId,

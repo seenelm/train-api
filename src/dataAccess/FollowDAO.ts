@@ -18,6 +18,56 @@ class FollowDAO extends BaseDAO<IFollow> {
         .exec();
     }
 
+    public async getFollowData(
+        userId: Types.ObjectId,
+    ): Promise<IFollow[] | null> {
+        return await this.follow.aggregate([
+            { $match: { userId: userId } },
+            {
+                $lookup: {
+                    from: "userprofiles",
+                    localField: "following",
+                    foreignField: "userId",
+                    as: "following",
+                },
+            },
+            {
+                $lookup: {
+                    from: "userprofiles",
+                    localField: "followers",
+                    foreignField: "userId",
+                    as: "followers",
+                },
+            },
+            {
+                $addFields: {
+                    followingCount: { $ifNull: [ { $size: "$following" }, 0 ] },
+                    followersCount: { $ifNull: [ { $size: "$followers" }, 0 ] },
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    following: {
+                        _id: 1,
+                        userId: 1,
+                        name: 1,
+                        username: 1,
+                    },
+                    followers: {
+                        _id: 1,
+                        userId: 1,
+                        name: 1,
+                        username: 1,
+                    },
+                    followingCount: 1,
+                    followersCount: 1,
+                },
+            },
+        ]);
+    }
+
+
     public async getFollowing(userId: Types.ObjectId): Promise<IUserProfile[]> | null {
         try {
             const following = await this.follow.aggregate([
