@@ -1,0 +1,242 @@
+openapi: 3.0.0
+info:
+    title: Train API
+    version: 1.0.0
+    description: Train API documentation
+servers:
+    - url: http://localhost:3000/api
+
+tags:
+    - name: Groups
+      description: Operations related to groups
+
+paths:
+    /groups:
+        post:
+            tags:
+                - Groups
+            summary: Add a group
+            description: Creates a new group with the provided name and adds the user as an owner
+            security:
+                - bearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                groupName:
+                                    type: string
+                                    description: The name of the group to be created
+                                userId:
+                                    type: string
+                                    description: The unique identifier of the user creating the group
+                            required:
+                                - groupName
+                                - userId
+            responses:
+                200:
+                    description: Group created successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    groupId:
+                                        type: string
+                                        description: The unique identifier of the created group
+                                    groupName:
+                                        type: string
+                                        description: The name of the created group
+                                    # Add more properties as required by your group model
+                404:
+                    description: User not found
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                500:
+                    description: Internal server error
+    /groups/{groupId}:
+        get:
+            tags:
+                - Groups
+            summary: Fetch a group
+            description: Retrieves details of a specific group by its ID
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: groupId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the group to be retrieved
+            responses:
+                200:
+                    description: Group details retrieved successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    groupId:
+                                        type: string
+                                        description: The unique identifier of the group
+                                    groupName:
+                                        type: string
+                                        description: The name of the group
+                                    # Add more properties as required
+    /groups/{groupId}/profile:
+        put:
+            tags:
+                - Groups
+            summary: Update group profile
+            description: Updates the profile information of a specific group
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: groupId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the group whose profile is to be updated
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                ownerId:
+                                    type: string
+                                    description: The unique identifier of the group owner
+                                groupBio:
+                                    type: string
+                                    description: The bio of the group
+                                groupName:
+                                    type: string
+                                    description: The name of the group
+                                accountType:
+                                    type: integer
+                                    description: The account type identifier
+                            required:
+                                - ownerId
+                                - groupBio
+                                - groupName
+                                - accountType
+            responses:
+                200:
+                    description: Group profile updated successfully
+                400:
+                    description: Bad request - Invalid input or missing fields
+                404:
+                    description: Group not found
+                403:
+                    description: Forbidden - User doesn't have permission to update group profile
+                500:
+                    description: Internal server error
+    /groups/{groupId}/join:
+        put:
+            tags:
+                - Groups
+            summary: Join a group
+            description: Allows a user to join a public group
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: groupId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the group to join
+            responses:
+                200:
+                    description: User successfully joined the group
+                400:
+                    description: Bad request - Invalid user or group ID, or group account is not public
+                404:
+                    description: Group not found
+                409:
+                    description: Conflict - User is already a member of the group
+                500:
+                    description: Internal server error
+    /groups/{groupId}/request/profiles:
+        get:
+            tags:
+                - Groups
+            summary: Fetch group members
+            description: Retrieves the list of members of a specific group
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: groupId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the group whose members are to be retrieved
+            responses:
+                200:
+                    description: Group members retrieved successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    type: object
+                                    properties:
+                                        userId:
+                                            type: string
+                                            description: The unique identifier of the group member
+                                        username:
+                                            type: string
+                                            description: The username of the group member
+                                        # Add more properties as required
+                404:
+                    description: Group not found
+                500:
+                    description: Internal server error
+    /groups/{userId}/requests:
+        get:
+            tags:
+                - Groups
+            summary: Fetch group requests
+            description: Retrieves the list of requests to join a specific group
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: userId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the group whose requests are to be retrieved
+            responses:
+                200:
+                    description: Group requests retrieved successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    type: object
+                                    properties:
+                                        userId:
+                                            type: string
+                                            description: The unique identifier of the user requesting to join the group
+                                        username:
+                                            type: string
+                                            description: The username of the user requesting to join the group
+                                        # Add more properties as required
+                404:
+                    description: Group not found
+                500:
+                    description: Internal server error
+components:
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT

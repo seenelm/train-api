@@ -20,7 +20,7 @@ afterAll(async () => {
   server.close();
 });
 
-describe("POST /signup", () => {
+describe("POST /api/signup", () => {
   describe("when username and password exists", () => {
     test("should respond with a 201 status code", async () => {
       const user = {
@@ -190,7 +190,7 @@ describe("POST /signup", () => {
   });
 });
 
-describe("POST /login", () => {
+describe("POST /api/login", () => {
   describe("when username and password has valid data", () => {
     test("when user is verified by database", async () => {
       const hashedPassword = await bcrypt.hash("Password123!", 12);

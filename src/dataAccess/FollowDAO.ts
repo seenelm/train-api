@@ -55,7 +55,7 @@ class FollowDAO extends BaseDAO<IFollow> {
             throw new InternalServerError(error.toString());
         }
     }
-
+  
     public async getFollowData(
         userId: Types.ObjectId,
     ): Promise<IFollow[] | null> {
@@ -79,8 +79,9 @@ class FollowDAO extends BaseDAO<IFollow> {
             },
             {
                 $addFields: {
-                    followingCount: { $size: "$following" },
-                    followersCount: { $size: "$followers" },
+
+                    followingCount: { $ifNull: [ { $size: "$following" }, 0 ] },
+                    followersCount: { $ifNull: [ { $size: "$followers" }, 0 ] },
                 },
             },
             {

@@ -14,9 +14,43 @@ import searchRouter from "./routes/searchRouter";
 
 const app = express();
 const dbUri = config.get("MongoDB.dbConfig.host");
+const swaggerJSDoc = require("swagger-jsdoc");
+const swaggerUi = require("swagger-ui-express");
 
 const db = new MongoDB(dbUri);
 
+const options = {
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "Train API",
+            version: "1.0.0",
+            description: "Train API",
+        },
+        components: {
+            securitySchemes: {
+                bearerAuth: {
+                    type: 'http',
+                    scheme: 'bearer',
+                    bearerFormat: 'JWT',
+                },
+            },
+        },
+        security: [{
+            bearerAuth: [],
+        }],
+        servers: [
+            {
+                url: "http://localhost:3000/api",
+            },
+        ],
+        basePath: "/api",
+    },
+    apis: ["./config/*.yaml"],
+};
+
+const swaggerSpec = swaggerJSDoc(options);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Middleware
 app.use(bodyParser.json());
 app.use(cors());

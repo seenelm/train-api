@@ -7,17 +7,23 @@ groupRouter.get("/:groupId", authenticate, groupController.fetchGroup);
 
 groupRouter.post("/", authenticate, groupController.addGroup);
 
-// groupRouter.post(
-//   "/:groupId/requests",
-//   authenticate,
-//   groupController.requestGroup
-// );
+groupRouter.post(
+  "/:groupId/request",
+  authenticate,
+  groupController.requestToJoinGroup
+);
 
-// groupRouter.post(
-//   "/:groupId/requests/:userId",
-//   authenticate,
-//   groupController.confirmGroupRequest
-// );
+groupRouter.get(
+    "/:groupId/request/profiles",
+    authenticate,
+    groupController.getJoinRequests
+);
+
+groupRouter.get(
+  "/:userId/requests",
+  authenticate,
+  groupController.getJoinRequestsByUser
+);
 
 groupRouter.put(
     "/:groupId/profile",
@@ -27,11 +33,6 @@ groupRouter.put(
 
 groupRouter.put("/:groupId/join", authenticate, groupController.joinGroup);
 
-// groupRouter.put("/:groupId/bio", authenticate, groupController.updateGroupBio);
-// groupRouter.patch(
-//   "/:groupId/groupName",
-//   authenticate,
-//   groupController.updateGroupName
-// );
+// groupRouter.delete("/:groupId/delete", authenticate, groupController.deleteGroup);
 
 export default groupRouter;

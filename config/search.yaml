@@ -1,0 +1,60 @@
+openapi: 3.0.0
+info:
+    title: Train API
+    version: 1.0.0
+    description: Train API documentation
+servers:
+    - url: http://localhost:3000/api
+
+tags:
+    - name: Search
+      description: Operations related to search functionality
+
+paths:
+    /search/query:
+        get:
+            tags:
+                - Search
+            summary: Search for users and groups
+            description: Performs a search for users and groups based on a query string or object
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: query
+                  name: query
+                  required: true
+                  schema:
+                      oneOf:
+                          - type: string
+                          - type: object
+                  description: The query string or object to search for users and groups
+            responses:
+                200:
+                    description: Search results returned successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    users:
+                                        type: array
+                                        items:
+                                            type: object
+                                            # Define user properties here
+                                    groups:
+                                        type: array
+                                        items:
+                                            type: object
+                                            # Define group properties here
+                400:
+                    description: Bad request - Invalid query string or object
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                500:
+                    description: Internal server error
+components:
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT

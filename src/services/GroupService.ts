@@ -22,10 +22,6 @@ class GroupService {
         groupName: string,
         userId: Types.ObjectId,
     ): Promise<IGroup> {
-        // const session = await mongoose.startSession();
-        // session.startTransaction();
-
-        // try {
 
         const ownerId = userId;
 
@@ -45,20 +41,10 @@ class GroupService {
                 userId,
             });
         }
-        // user.groups.push(group._id);
-        // await user.save();
 
         this.logger.logInfo("Owner added a Group", { ownerId, group, user });
 
         return group;
-        // } catch (error) {
-        //   console.error(error);
-        //   errorLogger.error(error);
-        //   await session.abortTransaction();
-        //   throw error;
-        // } finally {
-        //   session.endSession();
-        // }
     }
 
     public async fetchGroup(groupId: Types.ObjectId): Promise<IGroup> {
@@ -278,6 +264,19 @@ class GroupService {
         return joinRequests;
     }
 
+    public async getJoinRequestsByUser(
+        userId: Types.ObjectId,
+    ): Promise<IUserProfile[]> {
+        const joinRequests = await this.groupDAO.getJoinRequestsByUser(userId);
+    
+        this.logger.logInfo("User fetched join requests", {
+            userId,
+            joinRequests,
+        });
+    
+        return joinRequests;
+    }
+    
     public async acceptGroupRequest(
         userId: Types.ObjectId,
         ownerId: Types.ObjectId,
