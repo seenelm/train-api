@@ -163,6 +163,7 @@ class UserProfileController {
         }
     }
 
+};
     public async followUser(req: Request, res: Response, next: NextFunction) {
         const { followeeId } = req.params;
 

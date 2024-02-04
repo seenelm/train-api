@@ -18,6 +18,8 @@ const groupSchema = new Schema({
     bio: {
         type: String,
     },
+
+  ],
     owners: [
         {
             type: Schema.Types.ObjectId,
