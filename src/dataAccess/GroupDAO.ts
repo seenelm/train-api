@@ -44,32 +44,6 @@ class GroupDAO extends BaseDAO<IGroup> {
         ]);
     }
 
-    public async getJoinRequests(
-        groupId: Types.ObjectId,
-    ): Promise<IUserProfile[] | null> {
-        return await this.groupModel.aggregate([
-            {
-                $match: {
-                    _id: groupId,
-                },
-            },
-            {
-                $lookup: {
-                    from: "userprofiles",
-                    localField: "requests",
-                    foreignField: "userId",
-                    as: "joinRequests",
-                },
-            },
-            {
-                $unwind: "$joinRequests",
-            },
-            {
-                $replaceRoot: { newRoot: "$joinRequests" },
-            },
-        ]);
-    }
-
     public async getJoinRequestsByUser(
         userId: Types.ObjectId,
     ): Promise<any[] | null> { // Return type changed to any[] as it now includes group information
