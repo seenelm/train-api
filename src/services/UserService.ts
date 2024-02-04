@@ -173,22 +173,6 @@ class UserService {
         return user;
     }
 
-    public async fetchUserData(
-        userId: Types.ObjectId,
-    ): Promise<(IUser & IUserProfile & IUserGroups)[] | null> {
-        const userData = await this.userDAO.fetchUserData(userId);
-
-        if (!userData) {
-            throw new Errors.ResourceNotFoundError("User not found", {
-                userId,
-            });
-        }
-
-        this.logger.logInfo("Fetch User Data", { userData });
-
-        return userData;
-    }
-
     public async deleteUserAccount(userId: Types.ObjectId): Promise<void> {
         await this.userDAO.deleteUserAccount(userId);
     }
