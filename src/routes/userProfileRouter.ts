@@ -1,10 +1,50 @@
 import express from "express";
 const userProfileRouter = express.Router();
 import { authenticate } from "../__middleware__/authenticate";
-import * as userProfileController from "../controllers/userProfileController";
+// import * as userProfileController from "../controllers/userProfileController";
+import UserProfileController from "../controllers/userProfileController";
+import { validateRequest } from "../validators/validator";
+import {
+    FetchUserGroupsRequest,
+    UpdateUserProfileRequest,
+    FetchUserDataRequest,
+} from "../dtos/userProfileDTO";
+
+import UserProfileService from "../services/UserProfileService";
+import UserProfileDAO from "../dataAccess/UserProfileDAO";
+import { UserProfileModel } from "../models/userProfile";
+import FollowDAO from "../dataAccess/FollowDAO";
+import { FollowModel } from "../models/followModel";
+import UserGroupsDAO from "../dataAccess/UserGroupsDAO";
+import { UserGroupsModel } from "../models/userGroups";
+import { DTOValidatorService } from "../validators/validator";
+
+const dtoValidatorService = new DTOValidatorService();
+const userProfileService = new UserProfileService(
+    new UserProfileDAO(UserProfileModel),
+    new FollowDAO(FollowModel),
+    new UserGroupsDAO(UserGroupsModel),
+);
+const userProfileController = new UserProfileController(
+    dtoValidatorService,
+    userProfileService,
+);
 
 userProfileRouter.get(
-    "/:userId",
+    "/:userId/groups",
+    authenticate,
+    userProfileController.fetchUserGroups,
+);
+
+// userProfileRouter.get(
+//     "/:userId",
+//     validateRequest(FetchUserDataRequest, ["params"]),
+//     authenticate,
+//     userProfileController.fetchUserData,
+// );
+
+userProfileRouter.get(
+    "/:userId/profile",
     authenticate,
     userProfileController.fetchUserProfile,
 );
@@ -26,19 +66,19 @@ userProfileRouter.get(
     userProfileController.getFollowing,
 );
 
-userProfileRouter.get(
-    "/:userId/groups",
+userProfileRouter.post(
+    "/:followeeId/follow",
     authenticate,
-    userProfileController.fetchUserGroups,
+    userProfileController.followUser,
 );
-
-userProfileRouter.post("/:followeeId/follow", authenticate, userProfileController.followUser);
 
 userProfileRouter.put(
     "/:userId/profile",
     authenticate,
+    // validateRequest(UpdateUserProfileRequest, ["params", "body"]),
     userProfileController.updateUserProfile,
 );
+
 userProfileRouter.patch(
     "/follow/requests/:followeeId",
     authenticate,

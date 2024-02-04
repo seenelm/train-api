@@ -64,7 +64,7 @@ export const authenticate = async (
         );
         const payload = decodedToken as TokenPayload;
 
-        user = await UserModel.findById(new Types.ObjectId(payload.userId));
+        user = await UserModel.findById(payload.userId);
 
         if (!user) {
             throw new ResourceNotFoundError("User is not found");
