@@ -11,8 +11,14 @@ userRouter.post("/register", validateRegistration, userController.register);
 
 userRouter.post("/login", validateLogin, userController.login);
 
+<<<<<<< Updated upstream
 userRouter.get("/:userId", authenticate, userController.findUserById);
 userRouter.get("/:userId/profile-data", authenticate, userController.fetchUserData);
+=======
+userRouter.get("/users", authenticate, userController.findUsersByIds);
+
+// userRouter.get("/:userId/profile-data", authenticate, userController.fetchUserData);
+>>>>>>> Stashed changes
 
 userRouter.delete("/:userId", authenticate, userController.deleteUserAccount);
 

@@ -56,6 +56,7 @@ export const login = async (
   }
 };
 
+<<<<<<< Updated upstream
 export const findUserById = async (
   req: Request,
   res: Response,
@@ -84,7 +85,35 @@ export const fetchUserData = async (
   } catch (error) {
     next(error);
   }
+=======
+export const findUsersByIds = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      // Extract userIds and ensure it's treated as an array
+      const userIds = req.query.userIds;
+  
+      // Check the type and conditionally handle single string or array of strings
+      let idsArray: Types.ObjectId[];
+      if (Array.isArray(userIds)) {
+        idsArray = userIds.map(id => new Types.ObjectId(id));
+      } else if (typeof userIds === 'string') {
+        idsArray = [new Types.ObjectId(userIds)]; // Handle single ID
+      } else {
+        return res.status(400).json({ error: "userIds must be a string or array of strings" });
+      }
+  
+      // Fetch users using the service
+      const users = await userService.findUsersByIds(idsArray);
+      return res.status(200).json(users);
+    } catch (error) {
+      next(error); // Passes errors to Express error handling middleware
+    }
+>>>>>>> Stashed changes
 };
+
 
 export const deleteUserAccount = async (
   req: Request,

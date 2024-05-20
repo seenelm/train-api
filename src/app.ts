@@ -6,6 +6,7 @@ import config from "config";
 
 import MongoDB from "./dataAccess/MongoDB";
 import { errorController } from "./controllers/errorController";
+import { swaggerDocs } from "./swaggerConfig";
 
 import userRouter from "./routes/userRouter";
 import groupRouter from "./routes/groupRouter";
@@ -20,6 +21,9 @@ const db = new MongoDB(dbUri);
 // Middleware
 app.use(bodyParser.json());
 app.use(cors());
+
+// Swagger
+swaggerDocs(app);
 
 app.use("/api", userRouter);
 app.use("/api/users", userProfileRouter);

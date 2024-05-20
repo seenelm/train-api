@@ -31,6 +31,7 @@ class GroupService {
         const group = await this.groupDAO.create({
             groupName: groupName,
             owners: [ownerId],
+            users: [ownerId],
         });
 
         const user = await this.userGroupsDAO.findOneAndUpdate(
