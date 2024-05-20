@@ -4,12 +4,12 @@ import JWTUtil from "../utils/JWTUtil";
 import BcryptUtil from "../utils/BcryptUtil";
 import { IUser } from "../models/userModel";
 import UserProfileDAO from "../dataAccess/UserProfileDAO";
-import { IUserProfile } from "../models/userProfile";
 import UserGroupsDAO from "../dataAccess/UserGroupsDAO";
-import { IUserGroups } from "../models/userGroups";
 import FollowDAO from "../dataAccess/FollowDAO";
 import CustomLogger from "../common/logger";
 import { Types } from "mongoose";
+import { IUserProfile } from "../models/userProfile";
+import { IUserGroups } from "../models/userGroups";
 
 export interface TokenPayload {
     name: string;
@@ -156,22 +156,21 @@ class UserService {
         };
     }
 
-    public async findUserById(userId: Types.ObjectId): Promise<IUser | null> {
-        const user = await this.userDAO.findUserById(
-            userId,
-            "username isActive",
+    public async findUsersByIds(userIds: Types.ObjectId[]): Promise<IUser[]> {
+        const users = await this.userDAO.findUsersByIds(
+          userIds,
+          "username isActive",
         );
-
-        if (!user) {
-            throw new Errors.ResourceNotFoundError("User not found", {
-                userId,
-            });
+      
+        if (!users || users.length === 0) {
+          throw new Errors.ResourceNotFoundError("Users not found", { userIds });
         }
-
-        this.logger.logInfo("Find User By Id", { user });
-
-        return user;
-    }
+      
+        this.logger.logInfo("Find Users By Ids", { users });
+      
+        return users;
+      }
+      
 
     public async deleteUserAccount(userId: Types.ObjectId): Promise<void> {
         await this.userDAO.deleteUserAccount(userId);
