@@ -163,7 +163,11 @@ class GroupService {
             { new: true },
         );
 
-        this.logger.logInfo("User joined Group", { userId, updatedGroup, userGroups });
+        this.logger.logInfo("User joined Group", {
+            userId,
+            updatedGroup,
+            userGroups,
+        });
     }
 
     public async requestToJoinGroup(
@@ -274,7 +278,6 @@ class GroupService {
         return joinRequests;
     }
     
-
     public async acceptGroupRequest(
         userId: Types.ObjectId,
         ownerId: Types.ObjectId,

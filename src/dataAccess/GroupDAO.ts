@@ -4,18 +4,18 @@ import { Model, Types } from "mongoose";
 import { IUserProfile } from "../models/userProfile";
 
 class GroupDAO extends BaseDAO<IGroup> {
-
     private groupModel: Model<IGroup>;
-  
+
     constructor(groupModel: Model<IGroup>) {
         super(groupModel);
         this.groupModel = groupModel;
     }
 
-    public async findGroupById(groupId: Types.ObjectId, field: string): Promise<IGroup | null> {
-        return await this.groupModel.findById(groupId)
-        .select(field)
-        .exec();
+    public async findGroupById(
+        groupId: Types.ObjectId,
+        field: string,
+    ): Promise<IGroup | null> {
+        return await this.groupModel.findById(groupId).select(field).exec();
     }
 
     public async getJoinRequests(

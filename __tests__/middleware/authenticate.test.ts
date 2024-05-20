@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import {
-  authenticate,
-  getAccessToken,
+    authenticate,
+    getAccessToken,
 } from "../../src/__middleware__/authenticate";
 import {
-  ResourceNotFoundError,
-  UnauthorizedError,
+    ResourceNotFoundError,
+    UnauthorizedError,
 } from "../../src/utils/errors";
 import { UserModel } from "../../src/models/userModel";
 import { Types } from "mongoose";
@@ -19,136 +19,139 @@ jest.mock("../../src/utils/JWTUtil");
 jest.mock("../../src/models/userModel");
 
 describe("getAccessToken", () => {
-  it("should return the token if the authorization header is valid", () => {
-    const token = getAccessToken("Bearer validToken");
-    expect(token).toEqual("validToken");
-  });
+    it("should return the token if the authorization header is valid", () => {
+        const token = getAccessToken("Bearer validToken");
+        expect(token).toEqual("validToken");
+    });
 
-  it("should throw an UnauthorizedError if the authorization header is invalid", () => {
-    expect(() => getAccessToken("")).toThrow(UnauthorizedError);
-  });
+    it("should throw an UnauthorizedError if the authorization header is invalid", () => {
+        expect(() => getAccessToken("")).toThrow(UnauthorizedError);
+    });
 
-  it("should throw an UnauthorizedError if there is no authorization header", () => {
-    try {
-      getAccessToken("validToken");
-    } catch (error) {
-      const err = error as UnauthorizedError;
-      expect(err.message).toEqual("Invalid Authorization");
-      expect(err).toBeInstanceOf(UnauthorizedError);
-      expect(err.statusCode).toEqual(401);
-    }
-  });
+    it("should throw an UnauthorizedError if there is no authorization header", () => {
+        try {
+            getAccessToken("validToken");
+        } catch (error) {
+            const err = error as UnauthorizedError;
+            expect(err.message).toEqual("Invalid Authorization");
+            expect(err).toBeInstanceOf(UnauthorizedError);
+            expect(err.statusCode).toEqual(401);
+        }
+    });
 
-  it("should throw an UnauthorizedError if the token is missing", () => {
-    expect(() => getAccessToken("Bearer")).toThrow(UnauthorizedError);
-  });
+    it("should throw an UnauthorizedError if the token is missing", () => {
+        expect(() => getAccessToken("Bearer")).toThrow(UnauthorizedError);
+    });
 });
 
 describe("authenticate middleware", () => {
-  let token: string;
+    let token: string;
 
-  const mockRequest = (headers: any) =>
-    ({
-      headers,
-      user: null,
-    } as Request);
+    const mockRequest = (headers: any) =>
+        ({
+            headers,
+            user: null,
+        }) as Request;
 
-  const mockResponse = () => {
-    const res = {} as Response;
-    res.status = jest.fn().mockReturnValue(res);
-    res.json = jest.fn().mockReturnValue(res);
-    return res;
-  };
+    const mockResponse = () => {
+        const res = {} as Response;
+        res.status = jest.fn().mockReturnValue(res);
+        res.json = jest.fn().mockReturnValue(res);
+        return res;
+    };
 
-  const next: NextFunction = jest.fn();
+    const next: NextFunction = jest.fn();
 
-  beforeEach(async () => {
-    token = "validToken";
+    beforeEach(async () => {
+        token = "validToken";
 
-    jest.mock("../../src/__middleware__/authenticate", () => ({
-      ...jest.requireActual("../../src/__middleware__/authenticate"),
-      getAccessToken: jest.fn().mockReturnValue(token),
-    }));
-  });
+        jest.mock("../../src/__middleware__/authenticate", () => ({
+            ...jest.requireActual("../../src/__middleware__/authenticate"),
+            getAccessToken: jest.fn().mockReturnValue(token),
+        }));
+    });
 
-  afterEach(() => {
-    jest.resetAllMocks();
-  });
+    afterEach(() => {
+        jest.resetAllMocks();
+    });
 
-  it("should authenticate the user if the token is valid", async () => {
-    const mockUserId = new Types.ObjectId();
-    const mockDecodedToken = { userId: mockUserId, name: "validName" };
-    const mockPayload = mockDecodedToken as TokenPayload;
-    const mockPayloadUserId = mockPayload.userId;
+    it("should authenticate the user if the token is valid", async () => {
+        const mockUserId = new Types.ObjectId();
+        const mockDecodedToken = { userId: mockUserId, name: "validName" };
+        const mockPayload = mockDecodedToken as TokenPayload;
+        const mockPayloadUserId = mockPayload.userId;
 
-    const mockUser = {
-      _id: mockUserId,
-      username: "validUsername",
-      password: "validPassword",
-      isActive: true,
-    } as IUser;
+        const mockUser = {
+            _id: mockUserId,
+            username: "validUsername",
+            password: "validPassword",
+            isActive: true,
+        } as IUser;
 
-    JWTUtil.verify = jest.fn().mockResolvedValue(mockDecodedToken);
-    UserModel.findById = jest.fn().mockResolvedValue(mockUser);
+        JWTUtil.verify = jest.fn().mockResolvedValue(mockDecodedToken);
+        UserModel.findById = jest.fn().mockResolvedValue(mockUser);
 
-    const req = mockRequest({ authorization: "Bearer validToken" });
-    const res = mockResponse();
+        const req = mockRequest({ authorization: "Bearer validToken" });
+        const res = mockResponse();
 
-    await authenticate(req, res, next);
+        await authenticate(req, res, next);
 
-    expect(JWTUtil.verify).toHaveBeenCalledWith(token, process.env.SECRET_CODE);
-    expect(UserModel.findById).toHaveBeenCalledWith(mockPayloadUserId);
-    expect(next).toHaveBeenCalled();
-    expect(req.user).toEqual(mockUser);
-  });
+        expect(JWTUtil.verify).toHaveBeenCalledWith(
+            token,
+            process.env.SECRET_CODE,
+        );
+        expect(UserModel.findById).toHaveBeenCalledWith(mockPayloadUserId);
+        expect(next).toHaveBeenCalled();
+        expect(req.user).toEqual(mockUser);
+    });
 
-  it("should throw an UnauthorizedError if the token is invalid", async () => {
-    const mockUserId = new Types.ObjectId();
-    const mockDecodedToken = { userId: mockUserId, name: "validName" };
-    const mockPayload = mockDecodedToken as TokenPayload;
-    const mockInvalidToken = "invalidToken";
+    it("should throw an UnauthorizedError if the token is invalid", async () => {
+        const mockUserId = new Types.ObjectId();
+        const mockDecodedToken = { userId: mockUserId, name: "validName" };
+        const mockPayload = mockDecodedToken as TokenPayload;
+        const mockInvalidToken = "invalidToken";
 
-    const error = new jwt.JsonWebTokenError("Invalid token");
-    JWTUtil.verify = jest.fn().mockRejectedValue(error);
+        const error = new jwt.JsonWebTokenError("Invalid token");
+        JWTUtil.verify = jest.fn().mockRejectedValue(error);
 
-    const req = mockRequest({ authorization: "Bearer validToken" });
-    const res = mockResponse();
+        const req = mockRequest({ authorization: "Bearer validToken" });
+        const res = mockResponse();
 
-    try {
-      await authenticate(req, res, next);
+        try {
+            await authenticate(req, res, next);
 
-      expect(JWTUtil.verify).toHaveBeenCalledWith(
-        mockInvalidToken,
-        process.env.SECRET_CODE
-      );
-    } catch (error) {
-      console.log("Error: ", error);
-      const err = error as UnauthorizedError;
-      expect(err.message).toEqual("Invalid token");
-      expect(err).toBeInstanceOf(UnauthorizedError);
-      expect(err.statusCode).toEqual(401);
-    }
-  });
+            expect(JWTUtil.verify).toHaveBeenCalledWith(
+                mockInvalidToken,
+                process.env.SECRET_CODE,
+            );
+        } catch (error) {
+            console.log("Error: ", error);
+            const err = error as UnauthorizedError;
+            expect(err.message).toEqual("Invalid token");
+            expect(err).toBeInstanceOf(UnauthorizedError);
+            expect(err.statusCode).toEqual(401);
+        }
+    });
 
-  it("should throw a ResourceNotFoundError if the user is not found", async () => {
-    const mockUserId = new Types.ObjectId();
-    const mockDecodedToken = { userId: mockUserId, name: "validName" };
-    const mockPayload = mockDecodedToken as TokenPayload;
-    const mockPayloadUserId = mockPayload.userId;
+    it("should throw a ResourceNotFoundError if the user is not found", async () => {
+        const mockUserId = new Types.ObjectId();
+        const mockDecodedToken = { userId: mockUserId, name: "validName" };
+        const mockPayload = mockDecodedToken as TokenPayload;
+        const mockPayloadUserId = mockPayload.userId;
 
-    JWTUtil.verify = jest.fn().mockResolvedValue(mockDecodedToken);
-    UserModel.findById = jest.fn().mockResolvedValue(null);
+        JWTUtil.verify = jest.fn().mockResolvedValue(mockDecodedToken);
+        UserModel.findById = jest.fn().mockResolvedValue(null);
 
-    const req = mockRequest({ authorization: "Bearer validToken" });
-    const res = mockResponse();
+        const req = mockRequest({ authorization: "Bearer validToken" });
+        const res = mockResponse();
 
-    try {
-      await authenticate(req, res, next);
-    } catch (error) {
-      const err = error as ResourceNotFoundError;
-      expect(err.message).toEqual("User is not found");
-      expect(err).toBeInstanceOf(ResourceNotFoundError);
-      expect(err.statusCode).toEqual(404);
-    }
-  });
+        try {
+            await authenticate(req, res, next);
+        } catch (error) {
+            const err = error as ResourceNotFoundError;
+            expect(err.message).toEqual("User is not found");
+            expect(err).toBeInstanceOf(ResourceNotFoundError);
+            expect(err.statusCode).toEqual(404);
+        }
+    });
 });
