@@ -6,265 +6,275 @@ import FollowDAO from "../dataAccess/FollowDAO";
 import { FollowModel } from "../models/followModel";
 import UserGroupsDAO from "../dataAccess/UserGroupsDAO";
 import { UserGroupsModel } from "../models/userGroups";
-import { Types } from "mongoose";
+import { Types, ObjectId } from "mongoose";
 
-const userProfileService = new UserProfileService(
-    new UserProfileDAO(UserProfileModel),
-    new FollowDAO(FollowModel),
-    new UserGroupsDAO(UserGroupsModel),
-);
+import { StatusCodes as HttpStatusCode } from "http-status-codes";
+import {
+    FetchUserGroupsRequest,
+    UpdateUserProfileRequest,
+} from "../dtos/userProfileDTO";
+import { plainToClass } from "class-transformer";
+import { DTOValidatorService } from "../validators/validator";
 
-export const fetchUserGroups = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-) => {
-    const { userId } = req.params;
-    const userID = new Types.ObjectId(userId);
+class UserProfileController {
+    private userProfileService: UserProfileService;
+    private dtoValidatorService: DTOValidatorService;
 
-    try {
-        const result = await userProfileService.fetchUserGroups(userID);
-        return res.status(201).json(result);
-    } catch (error) {
-        next(error);
+    constructor(
+        dtoValidatorService: DTOValidatorService,
+        userProfileService: UserProfileService,
+    ) {
+        this.dtoValidatorService = dtoValidatorService;
+        this.userProfileService = userProfileService;
     }
-};
 
-export const updateUserProfile = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-) => {
-    const { userId } = req.params;
-    const userID = new Types.ObjectId(userId);
-    const { name, userBio, accountType } = req.body;
+    fetchUserGroups = async (
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        try {
+            const fetchUserGroupsRequest = plainToClass(
+                FetchUserGroupsRequest,
+                req.params,
+            );
 
-    try {
-        await userProfileService.updateUserProfile(
-            userID,
-            userBio,
-            name,
-            accountType,
-        );
-        return res.status(201).json({ success: true });
-    } catch (error) {
-        next(error);
+            const errors = await this.dtoValidatorService.validateRequest(
+                fetchUserGroupsRequest,
+            );
+
+            if (errors) {
+                return res.status(HttpStatusCode.BAD_REQUEST).json(errors);
+            }
+
+            const result = await this.userProfileService.fetchUserGroups(
+                fetchUserGroupsRequest,
+            );
+
+            return res.status(HttpStatusCode.OK).json(result);
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    updateUserProfile = async (
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        try {
+            const updateUserProfileRequest = plainToClass(
+                UpdateUserProfileRequest,
+                { ...req.body, userId: req.params.userId },
+            );
+
+            const errors = await this.dtoValidatorService.validateRequest(
+                updateUserProfileRequest,
+            );
+
+            if (errors) {
+                console.log(errors);
+                return res.status(HttpStatusCode.BAD_REQUEST).json(errors);
+            }
+
+            await this.userProfileService.updateUserProfile(
+                updateUserProfileRequest,
+            );
+            return res.status(HttpStatusCode.OK).json({ success: true });
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    fetchUserData = async (
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ) =>  {
+        const { userId } = req.params;
+        // const userID = new Types.ObjectId(userId);
+
+        try {
+            const result = await this.userProfileService.fetchUserData(userId);
+            return res.status(HttpStatusCode.OK).json(result);
+        } catch (error) {
+            next(error);
+        }
     }
-};
 
-export const updateAccountType = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-) => {
-    const { accountType } = req.body;
-    const { userId } = req.params;
-    const userID = new Types.ObjectId(userId);
-
-    try {
-        await userProfileService.updateAccountType(userID, accountType);
-        return res.status(201).json({ success: true });
-    } catch (error) {
-        next(error);
+    fetchUserProfile = async (
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        const { userId } = req.params;
+        let id = new Types.ObjectId(userId);
+        try {
+            const userProfile =
+                await this.userProfileService.fetchUserProfile(id);
+            return res.status(HttpStatusCode.OK).json(userProfile);
+        } catch (error) {
+            next(error);
+        }
     }
-};
 
-export const updateUserBio = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-) => {
-    const { userBio } = req.body;
-    const { userId } = req.params;
-    try {
-        await userProfileService.updateUserBio(userId, userBio);
-        return res.status(201).json({ success: true });
-    } catch (error) {
-        next(error);
+    fetchFollowData = async (
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        const { userId } = req.params;
+        const userID = new Types.ObjectId(userId);
+
+        try {
+            const followData =
+                await this.userProfileService.fetchFollowData(userID);
+            return res.status(HttpStatusCode.OK).json(followData);
+        } catch (error) {
+            next(error);
+        }
     }
-};
 
-export const updateUsersFullName = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-) => {
-    const { name } = req.body;
-    const { userId } = req.params;
-    try {
-        await userProfileService.updateUsersFullName(userId, name);
-        return res.status(201).json({ success: true });
-    } catch (error) {
-        next(error);
+    // Get followers and following
+
+    getFollowers = async (req: Request, res: Response, next: NextFunction) => {
+        const { userId } = req.params;
+        const userID = new Types.ObjectId(userId);
+
+        try {
+            const followers =
+                await this.userProfileService.getFollowers(userID);
+            return res.status(HttpStatusCode.OK).json(followers);
+        } catch (error) {
+            next(error);
+        }
     }
-};
 
-export const fetchUserProfile = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-) => {
-    const { userId } = req.params;
-    let id = new Types.ObjectId(userId);
-    try {
-        const userProfile = await userProfileService.fetchUserProfile(id);
-        return res.status(201).json(userProfile);
-    } catch (error) {
-        next(error);
+    getFollowing = async (req: Request, res: Response, next: NextFunction) => {
+        const { userId } = req.params;
+        const userID = new Types.ObjectId(userId);
+
+        try {
+            const following =
+                await this.userProfileService.getFollowing(userID);
+            return res.status(HttpStatusCode.OK).json(following);
+        } catch (error) {
+            next(error);
+        }
     }
-};
 
-export const fetchFollowData = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-) => {
-    const { userId } = req.params;
-    let id = new Types.ObjectId(userId);
-    try {
-        const followData = await userProfileService.fetchFollowData(id);
-        return res.status(201).json(followData);
-    } catch (error) {
-        next(error);
+
+    followUser = async (req: Request, res: Response, next: NextFunction) => {
+        const { followeeId } = req.params;
+
+        const followeeID = new Types.ObjectId(followeeId);
+        const followerId = new Types.ObjectId(req.user._id);
+
+        try {
+            await this.userProfileService.followUser(followerId, followeeID);
+            return res.status(HttpStatusCode.OK).json({ success: true });
+        } catch (error) {
+            next(error);
+        }
     }
-};
 
-export const getFollowers = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-) => {
-    const { userId } = req.params;
-    const userID = new Types.ObjectId(userId);
+    requestToFollowUser = async (
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        const { followeeId } = req.params;
 
-    try {
-        const followers = await userProfileService.getFollowers(userID);
-        return res.status(201).json(followers);
-    } catch (error) {
-        next(error);
+        const followeeID = new Types.ObjectId(followeeId);
+        const followerId = req.user._id;
+
+        try {
+            await this.userProfileService.requestToFollowUser(
+                followerId,
+                followeeID,
+            );
+            return res.status(HttpStatusCode.OK).json({ success: true });
+        } catch (error) {
+            next(error);
+        }
     }
-};
 
-export const getFollowing = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-) => {
-    const { userId } = req.params;
-    const userID = new Types.ObjectId(userId);
+    acceptFollowRequest = async (
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        const { followerId } = req.body;
 
-    try {
-        const following = await userProfileService.getFollowing(userID);
-        return res.status(201).json(following);
-    } catch (error) {
-        next(error);
+        const followeeID = req.user._id;
+        const followerID = new Types.ObjectId(followerId);
+
+        try {
+            await this.userProfileService.acceptFollowRequest(
+                followeeID,
+                followerID,
+            );
+            return res.status(HttpStatusCode.OK).json({ success: true });
+        } catch (error) {
+            next(error);
+        }
     }
-};
 
-export const followUser = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-) => {
-    const { followeeId } = req.params;
+    rejectFollowRequest = async (
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        const { followerId } = req.body;
 
-    const followeeID = new Types.ObjectId(followeeId);
-    const followerId = new Types.ObjectId(req.user._id);
+        const followeeID = req.user._id;
+        const followerID = new Types.ObjectId(followerId);
 
-    try {
-        await userProfileService.followUser(followerId, followeeID);
-        return res.status(201).json({ success: true });
-    } catch (error) {
-        next(error);
+        try {
+            await this.userProfileService.rejectFollowRequest(
+                followeeID,
+                followerID,
+            );
+            return res.status(HttpStatusCode.OK).json({ success: true });
+        } catch (error) {
+            next(error);
+        }
     }
-};
 
-export const requestToFollowUser = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-) => {
-    const { followeeId } = req.params;
+    removeFollower = async (
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        const { followerId } = req.body;
 
-    const followeeID = new Types.ObjectId(followeeId);
-    const followerId = new Types.ObjectId(req.user._id);
+        const followeeID = req.user._id;
+        const followerID = new Types.ObjectId(followerId);
 
-    try {
-        await userProfileService.requestToFollowUser(followerId, followeeID);
-        return res.status(201).json({ success: true });
-    } catch (error) {
-        next(error);
+        try {
+            await this.userProfileService.removeFollower(
+                followeeID,
+                followerID,
+            );
+            return res.status(HttpStatusCode.OK).json({ success: true });
+        } catch (error) {
+            next(error);
+        }
     }
-};
 
-export const acceptFollowRequest = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-) => {
-    const { followerId } = req.body;
+    unfollowUser = async (req: Request, res: Response, next: NextFunction) => {
+        const { followeeId } = req.body;
 
-    const followeeID = req.user._id;
-    const followerID = new Types.ObjectId(followerId);
+        const followeeID = new Types.ObjectId(followeeId);
+        const followerId = req.user._id;
 
-    try {
-        await userProfileService.acceptFollowRequest(followeeID, followerID);
-        return res.status(201).json({ success: true });
-    } catch (error) {
-        next(error);
+        try {
+            await this.userProfileService.unfollowUser(followerId, followeeID);
+            return res.status(HttpStatusCode.OK).json({ success: true });
+        } catch (error) {
+            next(error);
+        }
     }
-};
+}
 
-export const rejectFollowRequest = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-) => {
-    const { followerId } = req.body;
-
-    const followeeID = req.user._id;
-    const followerID = new Types.ObjectId(followerId);
-
-    try {
-        await userProfileService.rejectFollowRequest(followeeID, followerID);
-        return res.status(201).json({ success: true });
-    } catch (error) {
-        next(error);
-    }
-};
-
-export const removeFollower = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-) => {
-    const { followerId } = req.body;
-
-    const followeeID = req.user._id;
-    const followerID = new Types.ObjectId(followerId);
-
-    try {
-        await userProfileService.removeFollower(followeeID, followerID);
-        return res.status(201).json({ success: true });
-    } catch (error) {
-        next(error);
-    }
-};
-
-export const unfollowUser = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-) => {
-    const { followeeId } = req.body;
-
-    const followeeID = new Types.ObjectId(followeeId);
-    const followerId = req.user._id;
-
-    try {
-        await userProfileService.unfollowUser(followerId, followeeID);
-        return res.status(201).json({ success: true });
-    } catch (error) {
-        next(error);
-    }
-};
+export default UserProfileController;
