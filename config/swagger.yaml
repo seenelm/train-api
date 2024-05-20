@@ -6,19 +6,21 @@ info:
 servers:
     - url: http://localhost:3000/api
 paths:
-    /{userId}:
+    /users:
         get:
             summary: Fetch user by Id
             description: Retrieve data for a specific user
             security:
                 - bearerAuth: []
             parameters:
-                - in: path
-                  name: userId
+                - in: query
+                  name: userIds
                   required: true
                   schema:
-                      type: string
-                  description: The user ID
+                      type: array
+                      items:
+                          type: string
+                  description: Comma-separated list of user IDs
             responses:
                 200:
                     description: User data retrieved successfully

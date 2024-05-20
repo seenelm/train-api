@@ -17,12 +17,13 @@ class UserDAO extends BaseDAO<IUser> {
     this.logger = new CustomLogger(this.constructor.name);
   }
 
-  public async findUserById(
-    userId: Types.ObjectId,
-    field: string
-  ): Promise<IUser | null> {
-    return await this.userModel.findById(userId).select(field).exec();
+  public async findUsersByIds(
+    userIds: Types.ObjectId[],
+    fields: string
+  ): Promise<IUser[]> {
+    return await this.userModel.find({ _id: { $in: userIds } }).select(fields).exec();
   }
+  
 
   public async fetchUserData(
     userId: Types.ObjectId

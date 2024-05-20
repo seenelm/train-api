@@ -23,11 +23,17 @@ export const addGroup = async (
         const userID = new Types.ObjectId(userId);
 
         const group = await groupService.addGroup(groupName, userID);
-        return res.status(HttpStatusCode.CREATED).json(group);
+
+        if (!group || !group._id) {
+            throw new Error("Failed to create group");
+        }
+
+        return res.status(HttpStatusCode.CREATED).json({ groupId: group._id });
     } catch (error) {
         next(error);
     }
 };
+
 
 export const fetchGroup = async (
     req: Request,

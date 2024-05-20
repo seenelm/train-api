@@ -53,6 +53,7 @@ class SearchDAO {
       },
     ]);
 
+<<<<<<< Updated upstream
     const groups = await this.groupModel.aggregate([
       {
         $match: {
@@ -81,6 +82,36 @@ class SearchDAO {
         },
       },
     ]);
+=======
+        const groups = await this.groupModel.aggregate([
+            {
+              $match: {
+                groupName: { $regex: query, $options: "i" },
+              },
+            },
+            {
+              $addFields: {
+                isMember: {
+                  $or: [
+                    {
+                      $in: [userId, "$users"],
+                    },
+                    {
+                      $in: [userId, "$owners"],
+                    },
+                  ],
+                },
+              },
+            },
+            {
+              $project: {
+                groupName: 1,
+                isMember: 1,
+                accountType: 1,
+              },
+            },
+          ]);
+>>>>>>> Stashed changes
 
     return users.concat(groups);
   }
