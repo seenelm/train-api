@@ -86,11 +86,11 @@ class UserProfileController {
         }
     };
 
-    public async fetchUserData(
+    fetchUserData = async (
         req: Request,
         res: Response,
         next: NextFunction,
-    ) {
+    ) =>  {
         const { userId } = req.params;
         // const userID = new Types.ObjectId(userId);
 
@@ -102,11 +102,11 @@ class UserProfileController {
         }
     }
 
-    public async fetchUserProfile(
+    fetchUserProfile = async (
         req: Request,
         res: Response,
         next: NextFunction,
-    ) {
+    ) => {
         const { userId } = req.params;
         let id = new Types.ObjectId(userId);
         try {
@@ -118,11 +118,11 @@ class UserProfileController {
         }
     }
 
-    public async fetchFollowData(
+    fetchFollowData = async (
         req: Request,
         res: Response,
         next: NextFunction,
-    ) {
+    ) => {
         const { userId } = req.params;
         const userID = new Types.ObjectId(userId);
 
@@ -137,7 +137,7 @@ class UserProfileController {
 
     // Get followers and following
 
-    public async getFollowers(req: Request, res: Response, next: NextFunction) {
+    getFollowers = async (req: Request, res: Response, next: NextFunction) => {
         const { userId } = req.params;
         const userID = new Types.ObjectId(userId);
 
@@ -150,7 +150,7 @@ class UserProfileController {
         }
     }
 
-    public async getFollowing(req: Request, res: Response, next: NextFunction) {
+    getFollowing = async (req: Request, res: Response, next: NextFunction) => {
         const { userId } = req.params;
         const userID = new Types.ObjectId(userId);
 
@@ -163,8 +163,8 @@ class UserProfileController {
         }
     }
 
-};
-    public async followUser(req: Request, res: Response, next: NextFunction) {
+
+    followUser = async (req: Request, res: Response, next: NextFunction) => {
         const { followeeId } = req.params;
 
         const followeeID = new Types.ObjectId(followeeId);
@@ -178,11 +178,11 @@ class UserProfileController {
         }
     }
 
-    public async requestToFollowUser(
+    requestToFollowUser = async (
         req: Request,
         res: Response,
         next: NextFunction,
-    ) {
+    ) => {
         const { followeeId } = req.params;
 
         const followeeID = new Types.ObjectId(followeeId);
@@ -199,11 +199,11 @@ class UserProfileController {
         }
     }
 
-    public async acceptFollowRequest(
+    acceptFollowRequest = async (
         req: Request,
         res: Response,
         next: NextFunction,
-    ) {
+    ) => {
         const { followerId } = req.body;
 
         const followeeID = req.user._id;
@@ -220,11 +220,11 @@ class UserProfileController {
         }
     }
 
-    public async rejectFollowRequest(
+    rejectFollowRequest = async (
         req: Request,
         res: Response,
         next: NextFunction,
-    ) {
+    ) => {
         const { followerId } = req.body;
 
         const followeeID = req.user._id;
@@ -241,11 +241,11 @@ class UserProfileController {
         }
     }
 
-    public async removeFollower(
+    removeFollower = async (
         req: Request,
         res: Response,
         next: NextFunction,
-    ) {
+    ) => {
         const { followerId } = req.body;
 
         const followeeID = req.user._id;
@@ -262,7 +262,7 @@ class UserProfileController {
         }
     }
 
-    public async unfollowUser(req: Request, res: Response, next: NextFunction) {
+    unfollowUser = async (req: Request, res: Response, next: NextFunction) => {
         const { followeeId } = req.body;
 
         const followeeID = new Types.ObjectId(followeeId);

@@ -119,20 +119,6 @@ class UserProfileService {
 
         return followData;
     }
-
-    public async fetchFollowData(userId: Types.ObjectId) {
-        const followData = await this.followDAO.getFollowData(userId);
-
-        if (!followData) {
-            throw new Errors.ResourceNotFoundError("User not found", {
-                userId,
-            });
-        }
-
-        this.logger.logInfo("Fetch Follow Data", { followData });
-
-        return followData;
-    }
     
     /**
      * Follow a users public account

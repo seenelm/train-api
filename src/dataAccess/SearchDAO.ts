@@ -2,7 +2,6 @@ import { Model, Types } from "mongoose";
 import { IUser } from "../models/userModel";
 import { IGroup } from "../models/groupModel";
 import { IUserProfile } from "../models/userProfile";
-import { Types } from "mongoose";
 
 class SearchDAO {
     private userModel: Model<IUser>;
