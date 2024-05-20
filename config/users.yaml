@@ -64,7 +64,7 @@ paths:
                     description: Unauthorized - Token not provided or invalid
                 500:
                     description: Internal server error
-    /users/{userId}:
+    /{userId}:
         get:
             tags:
                 - Users

@@ -52,6 +52,67 @@ class SearchDAO {
             },
         ]);
 
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+    const groups = await this.groupModel.aggregate([
+      {
+        $match: {
+          groupName: { $regex: query, $options: "i" },
+        },
+      },
+      {
+        $addFields: {
+          isMember: {
+            $or: [
+              {
+                $in: [userId, "$users"],
+              },
+              {
+                $in: [userId, "$owners"],
+              },
+            ],
+          },
+        },
+      },
+      {
+        $project: {
+          groupName: 1,
+          isMember: 1,
+          accountType: 1,
+        },
+      },
+    ]);
+=======
+        const groups = await this.groupModel.aggregate([
+            {
+              $match: {
+                groupName: { $regex: query, $options: "i" },
+              },
+            },
+            {
+              $addFields: {
+                isMember: {
+                  $or: [
+                    {
+                      $in: [userId, "$users"],
+                    },
+                    {
+                      $in: [userId, "$owners"],
+                    },
+                  ],
+                },
+              },
+            },
+            {
+              $project: {
+                groupName: 1,
+                isMember: 1,
+                accountType: 1,
+              },
+            },
+          ]);
+>>>>>>> Stashed changes
+=======
         const groups = await this.groupModel.aggregate([
             {
                 $match: {
@@ -75,6 +136,7 @@ class SearchDAO {
                 },
             },
         ]);
+>>>>>>> 5c4818d2c1977bcc70f66b3d2d1e8f1147d1e7ba
 
         return users.concat(groups);
     }

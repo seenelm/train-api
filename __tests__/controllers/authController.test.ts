@@ -1,13 +1,14 @@
 import request from "supertest";
-import { app, server } from "../../src/app";
-import UserModel from "../../src/models/userModel";
+import { app } from "../../src/app";
+import { server } from "../../src/server";
+import {UserModel} from "../../src/models/userModel";
 import BcryptUtil from "../../src/utils/BcryptUtil";
-import AuthService from "../../src/services/AuthService";
+import UserService from "../../src/services/UserService";
 import * as Errors from "../../src/utils/errors";
 
 import { connectDB, disconnectDB, cleanData } from "../../src/database";
 
-jest.mock("../../src/services/AuthService");
+jest.mock("../../src/services/UserService");
 
 describe("AuthController", () => {
   
@@ -28,7 +29,7 @@ describe("AuthController", () => {
   describe("register", () => {
     it("should register user and send username, userId and token back to user", async () => {
 
-      AuthService.registerUser = jest.fn().mockResolvedValue({
+      UserService.registerUser = jest.fn().mockResolvedValue({
         username: "username",
         userId: "userId",
         token: "token"
@@ -51,7 +52,7 @@ describe("AuthController", () => {
     });
     it("should throw a Conflict Error when username already exists", async () => {
 
-      AuthService.registerUser = jest.fn().mockImplementation(() => {
+      UserService.registerUser = jest.fn().mockImplementation(() => {
         let errors = { username: "username already taken" };
         throw new Errors.ConflictError("Conflict Error", errors);
       });
@@ -173,7 +174,7 @@ describe("AuthController", () => {
   describe("login", () => {
     it("should login user", async () => {
 
-      AuthService.loginUser = jest.fn().mockResolvedValue({
+      UserService.loginUser = jest.fn().mockResolvedValue({
         userId: "userId",
         token: "token",
         username: "username"
@@ -202,7 +203,7 @@ describe("AuthController", () => {
         expect(response.body.errors.password).toBe("Password is required");
       });
       it("when username is incorrect", async () => {
-        AuthService.loginUser = jest.fn().mockImplementation(() => {
+        UserService.loginUser = jest.fn().mockImplementation(() => {
           let errors = { message: "Incorrect Username or Password" };
           const error = new Errors.CustomError(errors, 400);
           throw error
@@ -226,7 +227,7 @@ describe("AuthController", () => {
           password: hashedPassword,
         });
         
-        AuthService.loginUser = jest.fn().mockImplementation(() => {
+        UserService.loginUser = jest.fn().mockImplementation(() => {
           let errors = { message: "Incorrect Username or Password" };
           throw new Errors.CustomError(errors, 400);
         });
