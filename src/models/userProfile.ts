@@ -9,30 +9,33 @@ interface IUserProfile extends Document {
   accountType: number;
 }
 
-const userProfileSchema = new Schema({
-  userId: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
+const userProfileSchema = new Schema(
+  {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    username: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    bio: {
+      type: String,
+    },
+    accountType: {
+      type: Number,
+      enum: [ProfileAccess.Public, ProfileAccess.Private],
+      default: ProfileAccess.Public,
+    },
   },
-  username: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  name: {
-    type: String,
-    required: true,
-  },
-  bio: {
-    type: String,
-  },
-  accountType: {
-    type: Number,
-    enum: [ProfileAccess.Public, ProfileAccess.Private],
-    default: ProfileAccess.Public,
-  },
-});
+  { timestamps: true }
+);
 
 const UserProfileModel = model<IUserProfile>("UserProfile", userProfileSchema);
 

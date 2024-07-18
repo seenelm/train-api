@@ -11,6 +11,9 @@ import FollowDAO from "../dataAccess/FollowDAO";
 import CustomLogger from "../common/logger";
 import { Types } from "mongoose";
 
+import { UserRegisterRequest, UserLoginRequest } from "../dtos/request/userRequest";
+import { UserRegisterResponse, UserLoginResponse } from "../dtos/response/userResponse";
+
 export interface TokenPayload {
     name: string;
     userId: Types.ObjectId;
@@ -37,10 +40,10 @@ class UserService {
     }
 
     public async registerUser(
-        username: string,
-        password: string,
-        name: string,
-    ) {
+        userRegisterRequest: UserRegisterRequest,
+    ): Promise<UserRegisterResponse> {
+        const { username, password, name } = userRegisterRequest;
+
         const existingUser = await this.userDAO.findOne({ username });
         if (existingUser) {
             throw new Errors.ConflictError("username already taken");
@@ -58,33 +61,17 @@ class UserService {
                 throw error;
             });
 
-        this.logger.logInfo(`User ${username} was added to database: `, {
-            newUser,
-        });
-
         const newUserProfile = await this.userProfileDAO.create({
             userId: newUser._id,
             name,
             username,
         });
-        this.logger.logInfo(`User profile was created: `, {
-            username,
-            newUserProfile,
-        });
 
         const userGroups = await this.userGroupsDAO.create({
             userId: newUser._id,
         });
-        this.logger.logInfo(`User Group document was created: `, {
-            username,
-            userGroups,
-        });
 
         const follow = await this.followDAO.create({ userId: newUser._id });
-        this.logger.logInfo("User follow document was created", {
-            username,
-            follow,
-        });
 
         const payload: TokenPayload = {
             name: newUserProfile.name,
@@ -101,10 +88,15 @@ class UserService {
             );
         });
 
-        return { userId: newUser._id, token, username };
+        const userRegisterResponse: UserRegisterResponse = {
+            userId: newUser._id, token, username, name
+        }
+
+        return userRegisterResponse;
     }
 
-    public async loginUser(username: string, password: string) {
+    public async loginUser(userLoginRequest: UserLoginRequest): Promise<UserLoginResponse> {
+        const { username, password } = userLoginRequest;
         const user = await this.userDAO.findOne({ username });
         let errors = {};
 
@@ -149,11 +141,11 @@ class UserService {
 
         this.logger.logInfo("User logged in", { username, userId: user._id });
 
-        return {
-            userId: user._id,
-            token: token,
-            username: username,
-        };
+        const userLoginResponse: UserLoginResponse = {
+            userId: user._id, token, username, name: userProfile.name
+        }
+
+        return userLoginResponse;
     }
 
     public async findUserById(userId: Types.ObjectId): Promise<IUser | null> {

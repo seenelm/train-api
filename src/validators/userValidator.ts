@@ -65,6 +65,8 @@ export const validateRegistration = (
             errors[err.context.key] = err.message;
         });
 
+        console.error(errors);
+
         return res.status(400).json({ errors });
     } else {
         next();
