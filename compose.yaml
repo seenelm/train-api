@@ -1,0 +1,10 @@
+services:
+    mymongo:
+        image: mongo
+        ports:
+            - "27017:27017"
+
+    trainapi:
+    build:
+        context: .
+        dockerfile: Dockerfile

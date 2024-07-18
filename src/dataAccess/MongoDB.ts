@@ -24,6 +24,7 @@ class MongoDB {
     const db = mongoose.connection;
     db.on("error", err => {
       console.log("Error connecting to Database: ", err);
+      // process.exit();
     });
     db.once("open", () => {
       console.log("Database connected");

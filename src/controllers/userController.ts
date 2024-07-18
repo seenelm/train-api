@@ -9,6 +9,8 @@ import { UserProfileModel } from "../models/userProfile";
 import { UserGroupsModel } from "../models/userGroups";
 import { FollowModel } from "../models/followModel";
 import { Types } from "mongoose";
+import { UserRegisterRequest, UserLoginRequest } from "../dtos/request/userRequest";
+import { UserLoginResponse, UserRegisterResponse } from "../dtos/response/userResponse";
 
 const userService = new UserService(
     new UserDAO(UserModel),
@@ -23,15 +25,11 @@ export const register = async (
     next: NextFunction,
 ) => {
     try {
-        const { username, password, name } = req.body;
+        const userRegisterRequest: UserRegisterRequest = req.body;
 
-        const result = await userService.registerUser(username, password, name);
+        const userRegisterResponse: UserRegisterResponse = await userService.registerUser(userRegisterRequest);
 
-        return res.status(201).json({
-            userId: result.userId,
-            token: result.token,
-            username: result.username,
-        });
+        return res.status(201).json(userRegisterResponse);
     } catch (error) {
         next(error);
     }
@@ -43,14 +41,10 @@ export const login = async (
     next: NextFunction,
 ) => {
     try {
-        const { username, password } = req.body;
+        const userLoginRequest: UserLoginRequest = req.body;
 
-        const result = await userService.loginUser(username, password);
-        return res.status(201).json({
-            userId: result.userId,
-            token: result.token,
-            username: result.username,
-        });
+        const userLoginResponse: UserLoginResponse = await userService.loginUser(userLoginRequest);
+        return res.status(201).json(userLoginResponse);
     } catch (error) {
         next(error);
     }
