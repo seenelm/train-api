@@ -11,6 +11,9 @@ import {
     UpdateUserProfileRequest,
 } from "../dtos/userProfileDTO";
 
+import { UserGroupsResponse, GroupResponse } from "../dtos/response/userProfileResponse";
+import { IGroup } from "../models/groupModel";
+
 class UserProfileService {
     private userProfileDAO: UserProfileDAO;
     private followDAO: FollowDAO;
@@ -30,21 +33,23 @@ class UserProfileService {
 
     public async fetchUserGroups(
         fetchUserGroupsRequest: FetchUserGroupsRequest,
-    ) {
+    ): Promise<UserGroupsResponse> {
         const { userId } = fetchUserGroupsRequest;
-        const user = await this.userGroupsDAO.findOneAndPopulate(
-            { userId },
-            "groups",
-        );
-        const userGroups = user.groups;
 
-        if (!user) {
+        const groups: GroupResponse[] = await this.userGroupsDAO.findUserGroups(userId);
+        console.log("Groups: ", groups);
+
+        const userGroupsResponse: UserGroupsResponse = {
+            userId,
+            groups
+        };
+
+
+        if (!groups) {
             throw new Errors.ResourceNotFoundError("User not found");
         }
 
-        this.logger.logInfo(`User "${userId}" Groups: `, userGroups);
-
-        return userGroups;
+        return userGroupsResponse;
     }
 
     public async updateUserProfile(
