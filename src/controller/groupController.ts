@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from "express";
-import GroupService from "../services/GroupService";
-import GroupDAO from "../dataAccess/GroupDAO";
-import { GroupModel } from "../models/groupModel";
-import UserGroupsDAO from "../dataAccess/UserGroupsDAO";
-import { UserGroupsModel } from "../models/userGroups";
+import GroupService from "../service/GroupService";
+import GroupDAO from "../dao/GroupDAO";
+import { GroupModel } from "../model/groupModel";
+import UserGroupsDAO from "../dao/UserGroupsDAO";
+import { UserGroupsModel } from "../model/userGroups";
 import { Types } from "mongoose";
-import { StatusCodes as HttpStatusCode, TOO_MANY_REQUESTS } from "http-status-codes";
+import { StatusCodes as HttpStatusCode } from "http-status-codes";
 
 const groupDAO = new GroupDAO(GroupModel);
 const userGroupsDAO = new UserGroupsDAO(UserGroupsModel);
@@ -79,7 +79,6 @@ export const joinGroup = async (
     const groupID = new Types.ObjectId(groupId);
     const userId = new Types.ObjectId(req.user.id);
 
-
     try {
         await groupService.joinGroup(userId, groupID);
         return res.status(HttpStatusCode.OK).json({ success: true });
@@ -104,7 +103,7 @@ export const requestToJoinGroup = async (
     } catch (error) {
         next(error);
     }
-}
+};
 
 export const getJoinRequests = async (
     req: Request,
@@ -121,7 +120,7 @@ export const getJoinRequests = async (
     } catch (error) {
         next(error);
     }
-}
+};
 
 export const getJoinRequestsByUser = async (
     req: Request,
@@ -136,4 +135,4 @@ export const getJoinRequestsByUser = async (
     } catch (error) {
         next(error);
     }
-}
+};

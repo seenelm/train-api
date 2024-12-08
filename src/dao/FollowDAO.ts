@@ -1,7 +1,7 @@
 import BaseDAO from "./BaseDAO";
-import { IFollow } from "../models/followModel";
+import { IFollow } from "../model/followModel";
 import { Model, FilterQuery, Types } from "mongoose";
-import { IUserProfile } from "../models/userProfile";
+import { IUserProfile } from "../model/userProfile";
 import { InternalServerError } from "../utils/errors";
 
 class FollowDAO extends BaseDAO<IFollow> {
@@ -55,7 +55,7 @@ class FollowDAO extends BaseDAO<IFollow> {
             throw new InternalServerError(error.toString());
         }
     }
-  
+
     public async getFollowData(
         userId: Types.ObjectId,
     ): Promise<IFollow[] | null> {
@@ -79,9 +79,8 @@ class FollowDAO extends BaseDAO<IFollow> {
             },
             {
                 $addFields: {
-
-                    followingCount: { $ifNull: [ { $size: "$following" }, 0 ] },
-                    followersCount: { $ifNull: [ { $size: "$followers" }, 0 ] },
+                    followingCount: { $ifNull: [{ $size: "$following" }, 0] },
+                    followersCount: { $ifNull: [{ $size: "$followers" }, 0] },
                 },
             },
             {

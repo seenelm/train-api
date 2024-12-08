@@ -1,18 +1,18 @@
 import { Request, Response, NextFunction } from "express";
-import UserProfileService from "../services/UserProfileService";
-import UserProfileDAO from "../dataAccess/UserProfileDAO";
-import { UserProfileModel } from "../models/userProfile";
-import FollowDAO from "../dataAccess/FollowDAO";
-import { FollowModel } from "../models/followModel";
-import UserGroupsDAO from "../dataAccess/UserGroupsDAO";
-import { UserGroupsModel } from "../models/userGroups";
+import UserProfileService from "../service/UserProfileService";
+import UserProfileDAO from "../dao/UserProfileDAO";
+import { UserProfileModel } from "../model/userProfile";
+import FollowDAO from "../dao/FollowDAO";
+import { FollowModel } from "../model/followModel";
+import UserGroupsDAO from "../dao/UserGroupsDAO";
+import { UserGroupsModel } from "../model/userGroups";
 import { Types, ObjectId } from "mongoose";
 
 import { StatusCodes as HttpStatusCode } from "http-status-codes";
 import {
     FetchUserGroupsRequest,
     UpdateUserProfileRequest,
-} from "../dtos/userProfileDTO";
+} from "../dto/userProfileDTO";
 import { plainToClass } from "class-transformer";
 import { DTOValidatorService } from "../validators/validator";
 
@@ -86,11 +86,7 @@ class UserProfileController {
         }
     };
 
-    fetchUserData = async (
-        req: Request,
-        res: Response,
-        next: NextFunction,
-    ) =>  {
+    fetchUserData = async (req: Request, res: Response, next: NextFunction) => {
         const { userId } = req.params;
         // const userID = new Types.ObjectId(userId);
 
@@ -100,7 +96,7 @@ class UserProfileController {
         } catch (error) {
             next(error);
         }
-    }
+    };
 
     fetchUserProfile = async (
         req: Request,
@@ -116,7 +112,7 @@ class UserProfileController {
         } catch (error) {
             next(error);
         }
-    }
+    };
 
     fetchFollowData = async (
         req: Request,
@@ -133,7 +129,7 @@ class UserProfileController {
         } catch (error) {
             next(error);
         }
-    }
+    };
 
     // Get followers and following
 
@@ -148,7 +144,7 @@ class UserProfileController {
         } catch (error) {
             next(error);
         }
-    }
+    };
 
     getFollowing = async (req: Request, res: Response, next: NextFunction) => {
         const { userId } = req.params;
@@ -161,8 +157,7 @@ class UserProfileController {
         } catch (error) {
             next(error);
         }
-    }
-
+    };
 
     followUser = async (req: Request, res: Response, next: NextFunction) => {
         const { followeeId } = req.params;
@@ -176,7 +171,7 @@ class UserProfileController {
         } catch (error) {
             next(error);
         }
-    }
+    };
 
     requestToFollowUser = async (
         req: Request,
@@ -197,7 +192,7 @@ class UserProfileController {
         } catch (error) {
             next(error);
         }
-    }
+    };
 
     acceptFollowRequest = async (
         req: Request,
@@ -218,7 +213,7 @@ class UserProfileController {
         } catch (error) {
             next(error);
         }
-    }
+    };
 
     rejectFollowRequest = async (
         req: Request,
@@ -239,7 +234,7 @@ class UserProfileController {
         } catch (error) {
             next(error);
         }
-    }
+    };
 
     removeFollower = async (
         req: Request,
@@ -260,7 +255,7 @@ class UserProfileController {
         } catch (error) {
             next(error);
         }
-    }
+    };
 
     unfollowUser = async (req: Request, res: Response, next: NextFunction) => {
         const { followeeId } = req.body;
@@ -274,7 +269,7 @@ class UserProfileController {
         } catch (error) {
             next(error);
         }
-    }
+    };
 }
 
 export default UserProfileController;

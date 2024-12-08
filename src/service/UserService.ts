@@ -1,18 +1,24 @@
-import UserDAO from "../dataAccess/UserDAO";
+import UserDAO from "../dao/UserDAO";
 import * as Errors from "../utils/errors";
 import JWTUtil from "../utils/JWTUtil";
 import BcryptUtil from "../utils/BcryptUtil";
-import { IUser } from "../models/userModel";
-import UserProfileDAO from "../dataAccess/UserProfileDAO";
-import { IUserProfile } from "../models/userProfile";
-import UserGroupsDAO from "../dataAccess/UserGroupsDAO";
-import { IUserGroups } from "../models/userGroups";
-import FollowDAO from "../dataAccess/FollowDAO";
+import { IUser } from "../model/userModel";
+import UserProfileDAO from "../dao/UserProfileDAO";
+import { IUserProfile } from "../model/userProfile";
+import UserGroupsDAO from "../dao/UserGroupsDAO";
+import { IUserGroups } from "../model/userGroups";
+import FollowDAO from "../dao/FollowDAO";
 import CustomLogger from "../common/logger";
 import { Types } from "mongoose";
 
-import { UserRegisterRequest, UserLoginRequest } from "../dtos/request/userRequest";
-import { UserRegisterResponse, UserLoginResponse } from "../dtos/response/userResponse";
+import {
+    UserRegisterRequest,
+    UserLoginRequest,
+} from "../dto/request/userRequest";
+import {
+    UserRegisterResponse,
+    UserLoginResponse,
+} from "../dto/response/userResponse";
 
 export interface TokenPayload {
     name: string;
@@ -89,13 +95,18 @@ class UserService {
         });
 
         const userRegisterResponse: UserRegisterResponse = {
-            userId: newUser._id, token, username, name
-        }
+            userId: newUser._id,
+            token,
+            username,
+            name,
+        };
 
         return userRegisterResponse;
     }
 
-    public async loginUser(userLoginRequest: UserLoginRequest): Promise<UserLoginResponse> {
+    public async loginUser(
+        userLoginRequest: UserLoginRequest,
+    ): Promise<UserLoginResponse> {
         const { username, password } = userLoginRequest;
         const user = await this.userDAO.findOne({ username });
         let errors = {};
@@ -142,8 +153,11 @@ class UserService {
         this.logger.logInfo("User logged in", { username, userId: user._id });
 
         const userLoginResponse: UserLoginResponse = {
-            userId: user._id, token, username, name: userProfile.name
-        }
+            userId: user._id,
+            token,
+            username,
+            name: userProfile.name,
+        };
 
         return userLoginResponse;
     }

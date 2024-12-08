@@ -1,7 +1,7 @@
-import UserProfileDAO from "../dataAccess/UserProfileDAO";
-import { IUserProfile } from "../models/userProfile";
-import UserGroupsDAO from "../dataAccess/UserGroupsDAO";
-import FollowDAO from "../dataAccess/FollowDAO";
+import UserProfileDAO from "../dao/UserProfileDAO";
+import { IUserProfile } from "../model/userProfile";
+import UserGroupsDAO from "../dao/UserGroupsDAO";
+import FollowDAO from "../dao/FollowDAO";
 import * as Errors from "../utils/errors";
 import { Types } from "mongoose";
 import CustomLogger from "../common/logger";
@@ -9,10 +9,13 @@ import { ProfileAccess } from "../common/constants";
 import {
     FetchUserGroupsRequest,
     UpdateUserProfileRequest,
-} from "../dtos/userProfileDTO";
+} from "../dto/userProfileDTO";
 
-import { UserGroupsResponse, GroupResponse } from "../dtos/response/userProfileResponse";
-import { IGroup } from "../models/groupModel";
+import {
+    UserGroupsResponse,
+    GroupResponse,
+} from "../dto/response/userProfileResponse";
+import { IGroup } from "../model/groupModel";
 
 class UserProfileService {
     private userProfileDAO: UserProfileDAO;
@@ -36,14 +39,14 @@ class UserProfileService {
     ): Promise<UserGroupsResponse> {
         const { userId } = fetchUserGroupsRequest;
 
-        const groups: GroupResponse[] = await this.userGroupsDAO.findUserGroups(userId);
+        const groups: GroupResponse[] =
+            await this.userGroupsDAO.findUserGroups(userId);
         console.log("Groups: ", groups);
 
         const userGroupsResponse: UserGroupsResponse = {
             userId,
-            groups
+            groups,
         };
-
 
         if (!groups) {
             throw new Errors.ResourceNotFoundError("User not found");
@@ -124,7 +127,7 @@ class UserProfileService {
 
         return followData;
     }
-    
+
     /**
      * Follow a users public account
      * @param followerId

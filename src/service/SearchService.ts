@@ -1,6 +1,6 @@
-import SearchDAO from "../dataAccess/SearchDAO";
-import { UserModel } from "../models/userModel";
-import { GroupModel } from "../models/groupModel";
+import SearchDAO from "../dao/SearchDAO";
+import { UserModel } from "../model/userModel";
+import { GroupModel } from "../model/groupModel";
 import * as Errors from "../utils/errors";
 import CustomLogger from "../common/logger";
 import { Types } from "mongoose";

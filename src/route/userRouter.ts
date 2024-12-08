@@ -4,7 +4,7 @@ import {
     validateLogin,
     validateRegistration,
 } from "../validators/userValidator";
-import * as userController from "../controllers/userController";
+import * as userController from "../controller/userController";
 import { authenticate } from "../__middleware__/authenticate";
 
 userRouter.post("/register", validateRegistration, userController.register);
