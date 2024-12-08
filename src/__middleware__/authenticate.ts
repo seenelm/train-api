@@ -5,9 +5,9 @@ import {
     ResourceNotFoundError,
     UnauthorizedError,
 } from "../utils/errors";
-import { UserModel, IUser } from "../models/userModel";
+import { UserModel, IUser } from "../model/userModel";
 import { Types } from "mongoose";
-import { TokenPayload } from "../services/UserService";
+import { TokenPayload } from "../service/UserService";
 
 import * as jwt from "jsonwebtoken";
 import CustomLogger from "../common/logger";

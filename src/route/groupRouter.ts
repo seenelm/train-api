@@ -1,6 +1,6 @@
 import express from "express";
 const groupRouter = express.Router();
-import * as groupController from "../controllers/groupController";
+import * as groupController from "../controller/groupController";
 import { authenticate } from "../__middleware__/authenticate";
 
 groupRouter.get("/:groupId", authenticate, groupController.fetchGroup);
@@ -8,21 +8,21 @@ groupRouter.get("/:groupId", authenticate, groupController.fetchGroup);
 groupRouter.post("/", authenticate, groupController.addGroup);
 
 groupRouter.post(
-  "/:groupId/request",
-  authenticate,
-  groupController.requestToJoinGroup
+    "/:groupId/request",
+    authenticate,
+    groupController.requestToJoinGroup,
 );
 
 groupRouter.get(
     "/:groupId/request/profiles",
     authenticate,
-    groupController.getJoinRequests
+    groupController.getJoinRequests,
 );
 
 groupRouter.get(
-  "/:userId/requests",
-  authenticate,
-  groupController.getJoinRequestsByUser
+    "/:userId/requests",
+    authenticate,
+    groupController.getJoinRequestsByUser,
 );
 
 groupRouter.put(

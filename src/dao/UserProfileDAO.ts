@@ -1,8 +1,8 @@
 import BaseDAO from "./BaseDAO";
-import { IUserProfile } from "../models/userProfile";
-import { IUserGroups } from "../models/userGroups";
-import { IFollow } from "../models/followModel";
-import { IGroup } from "../models/groupModel";
+import { IUserProfile } from "../model/userProfile";
+import { IUserGroups } from "../model/userGroups";
+import { IFollow } from "../model/followModel";
+import { IGroup } from "../model/groupModel";
 import { Model, Types } from "mongoose";
 
 class UserProfileDAO extends BaseDAO<IUserProfile> {

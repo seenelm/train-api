@@ -1,11 +1,11 @@
-import GroupDAO from "../dataAccess/GroupDAO";
+import GroupDAO from "../dao/GroupDAO";
 import * as Errors from "../utils/errors";
 import { Types, startSession } from "mongoose";
-import { IGroup } from "../models/groupModel";
-import UserGroupsDAO from "../dataAccess/UserGroupsDAO";
+import { IGroup } from "../model/groupModel";
+import UserGroupsDAO from "../dao/UserGroupsDAO";
 import CustomLogger from "../common/logger";
 import { ProfileAccess } from "../common/constants";
-import { IUserProfile } from "../models/userProfile";
+import { IUserProfile } from "../model/userProfile";
 
 class GroupService {
     private groupDAO: GroupDAO;
@@ -22,7 +22,6 @@ class GroupService {
         groupName: string,
         userId: Types.ObjectId,
     ): Promise<IGroup> {
-
         const ownerId = userId;
 
         const group = await this.groupDAO.create({
@@ -268,15 +267,15 @@ class GroupService {
         userId: Types.ObjectId,
     ): Promise<IUserProfile[]> {
         const joinRequests = await this.groupDAO.getJoinRequestsByUser(userId);
-    
+
         this.logger.logInfo("User fetched join requests", {
             userId,
             joinRequests,
         });
-    
+
         return joinRequests;
     }
-    
+
     public async acceptGroupRequest(
         userId: Types.ObjectId,
         ownerId: Types.ObjectId,

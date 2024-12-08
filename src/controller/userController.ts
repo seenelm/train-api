@@ -1,16 +1,22 @@
 import { NextFunction, Request, Response } from "express";
-import UserService from "../services/UserService";
-import UserDAO from "../dataAccess/UserDAO";
-import UserProfileDAO from "../dataAccess/UserProfileDAO";
-import UserGroupsDAO from "../dataAccess/UserGroupsDAO";
-import FollowDAO from "../dataAccess/FollowDAO";
-import { UserModel } from "../models/userModel";
-import { UserProfileModel } from "../models/userProfile";
-import { UserGroupsModel } from "../models/userGroups";
-import { FollowModel } from "../models/followModel";
+import UserService from "../service/UserService";
+import UserDAO from "../dao/UserDAO";
+import UserProfileDAO from "../dao/UserProfileDAO";
+import UserGroupsDAO from "../dao/UserGroupsDAO";
+import FollowDAO from "../dao/FollowDAO";
+import { UserModel } from "../model/userModel";
+import { UserProfileModel } from "../model/userProfile";
+import { UserGroupsModel } from "../model/userGroups";
+import { FollowModel } from "../model/followModel";
 import { Types } from "mongoose";
-import { UserRegisterRequest, UserLoginRequest } from "../dtos/request/userRequest";
-import { UserLoginResponse, UserRegisterResponse } from "../dtos/response/userResponse";
+import {
+    UserRegisterRequest,
+    UserLoginRequest,
+} from "../dto/request/userRequest";
+import {
+    UserLoginResponse,
+    UserRegisterResponse,
+} from "../dto/response/userResponse";
 
 const userService = new UserService(
     new UserDAO(UserModel),
@@ -27,7 +33,8 @@ export const register = async (
     try {
         const userRegisterRequest: UserRegisterRequest = req.body;
 
-        const userRegisterResponse: UserRegisterResponse = await userService.registerUser(userRegisterRequest);
+        const userRegisterResponse: UserRegisterResponse =
+            await userService.registerUser(userRegisterRequest);
 
         return res.status(201).json(userRegisterResponse);
     } catch (error) {
@@ -43,7 +50,8 @@ export const login = async (
     try {
         const userLoginRequest: UserLoginRequest = req.body;
 
-        const userLoginResponse: UserLoginResponse = await userService.loginUser(userLoginRequest);
+        const userLoginResponse: UserLoginResponse =
+            await userService.loginUser(userLoginRequest);
         return res.status(201).json(userLoginResponse);
     } catch (error) {
         next(error);

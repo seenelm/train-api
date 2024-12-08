@@ -2,21 +2,21 @@ import express from "express";
 const userProfileRouter = express.Router();
 import { authenticate } from "../__middleware__/authenticate";
 // import * as userProfileController from "../controllers/userProfileController";
-import UserProfileController from "../controllers/userProfileController";
+import UserProfileController from "../controller/userProfileController";
 import { validateRequest } from "../validators/validator";
 import {
     FetchUserGroupsRequest,
     UpdateUserProfileRequest,
     FetchUserDataRequest,
-} from "../dtos/userProfileDTO";
+} from "../dto/userProfileDTO";
 
-import UserProfileService from "../services/UserProfileService";
-import UserProfileDAO from "../dataAccess/UserProfileDAO";
-import { UserProfileModel } from "../models/userProfile";
-import FollowDAO from "../dataAccess/FollowDAO";
-import { FollowModel } from "../models/followModel";
-import UserGroupsDAO from "../dataAccess/UserGroupsDAO";
-import { UserGroupsModel } from "../models/userGroups";
+import UserProfileService from "../service/UserProfileService";
+import UserProfileDAO from "../dao/UserProfileDAO";
+import { UserProfileModel } from "../model/userProfile";
+import FollowDAO from "../dao/FollowDAO";
+import { FollowModel } from "../model/followModel";
+import UserGroupsDAO from "../dao/UserGroupsDAO";
+import { UserGroupsModel } from "../model/userGroups";
 import { DTOValidatorService } from "../validators/validator";
 
 const dtoValidatorService = new DTOValidatorService();

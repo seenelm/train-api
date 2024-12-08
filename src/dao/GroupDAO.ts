@@ -1,7 +1,7 @@
-import { IGroup } from "../models/groupModel";
+import { IGroup } from "../model/groupModel";
 import BaseDAO from "./BaseDAO";
 import { Model, Types } from "mongoose";
-import { IUserProfile } from "../models/userProfile";
+import { IUserProfile } from "../model/userProfile";
 
 class GroupDAO extends BaseDAO<IGroup> {
     private groupModel: Model<IGroup>;
@@ -46,12 +46,13 @@ class GroupDAO extends BaseDAO<IGroup> {
 
     public async getJoinRequestsByUser(
         userId: Types.ObjectId,
-    ): Promise<any[] | null> { // Return type changed to any[] as it now includes group information
+    ): Promise<any[] | null> {
+        // Return type changed to any[] as it now includes group information
         return await this.groupModel.aggregate([
             {
                 $match: {
-                    owners: userId
-                }
+                    owners: userId,
+                },
             },
             {
                 $lookup: {
@@ -59,7 +60,7 @@ class GroupDAO extends BaseDAO<IGroup> {
                     localField: "requests",
                     foreignField: "userId",
                     as: "joinRequests",
-                }
+                },
             },
             {
                 $unwind: "$joinRequests",
@@ -68,21 +69,19 @@ class GroupDAO extends BaseDAO<IGroup> {
                 $group: {
                     _id: "$_id", // Group by groupId
                     groupName: { $first: "$groupName" }, // Collect groupName
-                    joinRequests: { $push: "$joinRequests" } // Collect all join requests for this group
-                }
+                    joinRequests: { $push: "$joinRequests" }, // Collect all join requests for this group
+                },
             },
             {
                 $project: {
                     _id: 0,
                     groupId: "$_id",
                     groupName: 1,
-                    joinRequests: 1
-                }
-            }
+                    joinRequests: 1,
+                },
+            },
         ]);
     }
-    
-    
 }
 
 export default GroupDAO;
