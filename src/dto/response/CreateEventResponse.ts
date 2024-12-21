@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+import { IEvent } from "../../model/eventModel";
 
 export class CreateEventResponse {
     private id: ObjectId;
@@ -33,17 +34,17 @@ export class CreateEventResponse {
         this.description = description;
     }
 
-    static fromDocument(document: any): CreateEventResponse {
+    static from(event: IEvent): CreateEventResponse {
         return new CreateEventResponse(
-            document._id,
-            document.name,
-            document.admin,
-            document.invitees,
-            document.date,
-            document.startTime,
-            document.endTime,
-            document.location,
-            document.description,
+            event._id,
+            event.name,
+            event.admin,
+            event.invitees,
+            event.date,
+            event.startTime,
+            event.endTime,
+            event.location,
+            event.description,
         );
     }
 }
