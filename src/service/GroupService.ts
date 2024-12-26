@@ -4,7 +4,7 @@ import { Types, startSession } from "mongoose";
 import { IGroup } from "../model/groupModel";
 import UserGroupsDAO from "../dao/UserGroupsDAO";
 import CustomLogger from "../common/logger";
-import { ProfileAccess } from "../common/constants";
+import { ProfileAccess } from "../common/enums";
 import { IUserProfile } from "../model/userProfile";
 
 class GroupService {

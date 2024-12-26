@@ -1,5 +1,5 @@
 import { Schema, model, Types, Document } from "mongoose";
-import { ProfileAccess } from "../common/constants";
+import { ProfileAccess } from "../common/enums";
 
 interface IGroup extends Document {
     groupName: string;
@@ -18,7 +18,7 @@ const groupSchema = new Schema({
     bio: {
         type: String,
     },
-    
+
     owners: [
         {
             type: Schema.Types.ObjectId,

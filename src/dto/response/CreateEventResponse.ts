@@ -34,6 +34,42 @@ export class CreateEventResponse {
         this.description = description;
     }
 
+    public getId(): ObjectId {
+        return this.id;
+    }
+
+    public getName(): string {
+        return this.name;
+    }
+
+    public getAdmin(): ObjectId[] {
+        return this.admin;
+    }
+
+    public getInvitees(): ObjectId[] {
+        return this.invitees;
+    }
+
+    public getDate(): Date {
+        return this.date;
+    }
+
+    public getStartTime(): Date {
+        return this.startTime;
+    }
+
+    public getEndTime(): Date {
+        return this.endTime;
+    }
+
+    public getLocation(): string | undefined {
+        return this.location;
+    }
+
+    public getDescription(): string | undefined {
+        return this.description;
+    }
+
     static from(event: IEvent): CreateEventResponse {
         return new CreateEventResponse(
             event._id,

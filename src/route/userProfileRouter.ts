@@ -1,6 +1,6 @@
 import express from "express";
 const userProfileRouter = express.Router();
-import { authenticate } from "../__middleware__/authenticate";
+import { authenticate } from "../middleware/authenticate";
 // import * as userProfileController from "../controllers/userProfileController";
 import UserProfileController from "../controller/userProfileController";
 import { validateRequest } from "../validators/validator";

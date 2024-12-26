@@ -158,7 +158,6 @@ export class CreateEventRequest {
 
         public build(): CreateEventRequest {
             const createEventRequest = new CreateEventRequest();
-            createEventRequest.validate();
             createEventRequest.name = this.name;
             createEventRequest.admin = this.admin;
             createEventRequest.invitees = this.invitees;

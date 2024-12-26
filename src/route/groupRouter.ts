@@ -1,7 +1,7 @@
 import express from "express";
 const groupRouter = express.Router();
 import * as groupController from "../controller/groupController";
-import { authenticate } from "../__middleware__/authenticate";
+import { authenticate } from "../middleware/authenticate";
 
 groupRouter.get("/:groupId", authenticate, groupController.fetchGroup);
 
