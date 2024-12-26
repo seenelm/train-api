@@ -5,7 +5,7 @@ import FollowDAO from "../dao/FollowDAO";
 import * as Errors from "../utils/errors";
 import { Types } from "mongoose";
 import CustomLogger from "../common/logger";
-import { ProfileAccess } from "../common/constants";
+import { ProfileAccess } from "../common/enums";
 import {
     FetchUserGroupsRequest,
     UpdateUserProfileRequest,

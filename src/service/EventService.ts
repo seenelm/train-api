@@ -3,7 +3,6 @@ import { UserEventDAO } from "../dao/UserEventDAO";
 import { CreateEventRequest } from "../dto/request/CreateEventRequest";
 import { CreateEventResponse } from "../dto/response/CreateEventResponse";
 import { IEvent } from "../model/eventModel";
-import { IUserEvent } from "../model/userEventModel";
 import { ObjectId } from "mongodb";
 import { InternalServerError } from "../utils/errors";
 import mongoose from "mongoose";

@@ -5,7 +5,7 @@ import cors from "cors";
 import config from "config";
 
 import MongoDB from "./dao/MongoDB";
-import { errorController } from "./controller/errorController";
+import { errorHandler } from "./middleware/errorHandler";
 
 import userRouter from "./route/userRouter";
 import groupRouter from "./route/groupRouter";
@@ -64,6 +64,6 @@ app.use("/api/groups", groupRouter);
 app.use("/api/events", eventRouter);
 app.use("/api", searchRouter);
 
-app.use(errorController);
+app.use(errorHandler);
 
 export { app, db };

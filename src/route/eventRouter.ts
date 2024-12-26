@@ -3,7 +3,7 @@ const eventRouter = express.Router();
 import { EventController } from "../controller/EventController";
 import { EventService } from "../service/EventService";
 import { EventDAO } from "../dao/EventDAO";
-import { authenticate } from "../__middleware__/authenticate";
+import { authenticate } from "../middleware/authenticate";
 import { Event } from "../model/eventModel";
 import { UserEventDAO } from "../dao/UserEventDAO";
 import { UserEvent } from "../model/userEventModel";

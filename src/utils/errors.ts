@@ -1,4 +1,64 @@
 import { StatusCodes as HttpStatusCode } from "http-status-codes";
+import { Error as MongooseError } from "mongoose";
+import { MongoServerError } from "mongodb";
+import { MongoServerErrorType } from "../common/enums";
+
+export class DatabaseError extends Error {
+    public code: string;
+    public statusCode: number = HttpStatusCode.INTERNAL_SERVER_ERROR;
+
+    constructor(message: string, code: string, statusCode: number) {
+        super(message);
+        this.name = "DatabaseError";
+        this.code = code;
+        this.statusCode = statusCode;
+    }
+}
+
+export const handleMongoDBError = (error: unknown): DatabaseError => {
+    if (error instanceof MongooseError.ValidationError) {
+        return new DatabaseError(
+            error.message,
+            MongoServerErrorType.ValidationError,
+            HttpStatusCode.BAD_REQUEST,
+        );
+    }
+    if (error instanceof MongooseError.CastError) {
+        return new DatabaseError(
+            error.message,
+            MongoServerErrorType.CastError,
+            HttpStatusCode.BAD_REQUEST,
+        );
+    }
+    if (error instanceof MongooseError.DocumentNotFoundError) {
+        return new DatabaseError(
+            error.message,
+            MongoServerErrorType.DocumentNotFoundError,
+            HttpStatusCode.NOT_FOUND,
+        );
+    }
+    if (error instanceof MongoServerError) {
+        if (error.code === 11000) {
+            return new DatabaseError(
+                error.message,
+                MongoServerErrorType.DuplicateKeyError,
+                HttpStatusCode.CONFLICT,
+            );
+        }
+        return new DatabaseError(
+            error.message,
+            MongoServerErrorType.MongoServerError,
+            HttpStatusCode.SERVICE_UNAVAILABLE,
+        );
+    }
+
+    console.log("Unexpected error: ", error);
+    return new DatabaseError(
+        "Unknown database error occurred",
+        "UNEXPECTED_ERROR",
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+    );
+};
 
 export class AuthError extends Error {
     public statusCode: number;

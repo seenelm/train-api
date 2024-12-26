@@ -1,5 +1,5 @@
 import { Schema, model, Types, Document } from "mongoose";
-import { EventStatus } from "../common/constants";
+import { EventStatus } from "../common/enums";
 
 interface IEvent {
     eventId: Types.ObjectId;
@@ -9,6 +9,8 @@ interface IEvent {
 export interface IUserEvent extends Document {
     userId: Types.ObjectId;
     events: IEvent[];
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 const userEventSchema: Schema = new Schema(
