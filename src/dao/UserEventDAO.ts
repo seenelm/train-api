@@ -2,7 +2,6 @@ import BaseDAO from "./BaseDAO";
 import { IUserEvent } from "../model/userEventModel";
 import { Model } from "mongoose";
 import { ObjectId } from "mongodb";
-import { IEvent } from "../model/eventModel";
 import { UserEventEntity } from "../entity/UserEventEntity";
 
 export default class UserEventDAO extends BaseDAO<IUserEvent> {
