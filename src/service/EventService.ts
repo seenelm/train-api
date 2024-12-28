@@ -1,13 +1,16 @@
-import { EventDAO } from "../dao/EventDAO";
-import { UserEventDAO } from "../dao/UserEventDAO";
-import { CreateEventRequest } from "../dto/request/CreateEventRequest";
-import { CreateEventResponse } from "../dto/response/CreateEventResponse";
+import EventDAO from "../dao/EventDAO";
+import UserEventDAO from "../dao/UserEventDAO";
+import { CreateEventRequest } from "../dto/CreateEventRequest";
+import { CreateEventResponse } from "../dto/CreateEventResponse";
 import { IEvent } from "../model/eventModel";
 import { ObjectId } from "mongodb";
-import { InternalServerError } from "../utils/errors";
+import { InternalServerError, handleMongoDBError } from "../utils/errors";
 import mongoose from "mongoose";
+import { UserEventEntity } from "../entity/UserEventEntity";
+import { ResourceNotFoundError } from "../utils/errors";
+import { UserEventResponse } from "../dto/UserEventResponse";
 
-export class EventService {
+export default class EventService {
     private eventDAO: EventDAO;
     private userEventDAO: UserEventDAO;
 
@@ -24,37 +27,53 @@ export class EventService {
 
         try {
             // Check if event already exists
-            const event: IEvent = await this.eventDAO
-                .create(createEventRequest, { session })
-                .catch((error) => {
-                    // add logging - detailed error message returned from mongoDB
-                    throw new InternalServerError("Failed to create event");
-                });
+            const event: IEvent = await this.eventDAO.create(
+                createEventRequest,
+                { session },
+            );
 
             // Add event into user's event list
-            this.upsertAdminEvents(
-                createEventRequest.getAdmin(),
-                event,
-                session,
-            );
+            await Promise.all([
+                this.upsertAdminEvents(
+                    createEventRequest.getAdmin(),
+                    event,
+                    session,
+                ),
 
-            this.upsertInviteeEvents(
-                createEventRequest.getInvitees(),
-                event,
-                session,
-            );
+                this.upsertInviteeEvents(
+                    createEventRequest.getInvitees(),
+                    event,
+                    session,
+                ),
+            ]);
 
             await session.commitTransaction();
             session.endSession();
 
-            const createEventResponse: CreateEventResponse =
-                CreateEventResponse.from(event);
-            return createEventResponse;
+            return CreateEventResponse.from(event);
         } catch (error) {
             await session.abortTransaction();
             session.endSession();
-            console.error("Error adding event: ", error);
-            throw new InternalServerError("Failed to add event");
+            // console.error("Error adding event: ", error);
+            throw handleMongoDBError(error);
+        }
+    }
+
+    public async getEvent(
+        userId: ObjectId,
+        eventId: ObjectId,
+    ): Promise<UserEventResponse> {
+        try {
+            const userEventEntity: UserEventEntity =
+                await this.userEventDAO.findUserEvent(userId, eventId);
+
+            if (!userEventEntity) {
+                throw new ResourceNotFoundError("Event not found");
+            }
+
+            return UserEventResponse.from(userEventEntity);
+        } catch (error) {
+            throw handleMongoDBError(error);
         }
     }
 
@@ -63,19 +82,21 @@ export class EventService {
         event: IEvent,
         session: mongoose.ClientSession,
     ): Promise<void> {
-        for (const admin of admins) {
-            try {
-                await this.userEventDAO.findOneAndUpdate(
+        try {
+            const promises = admins.map((admin) => {
+                this.userEventDAO.findOneAndUpdate(
                     { userId: admin },
                     { $push: { events: { eventId: event._id } } },
                     { upsert: true, session },
                 );
-            } catch (error) {
-                // add logging - detailed error message returned from mongoDB
-                throw new InternalServerError(
-                    "Failed to add event to admin's event list",
-                );
-            }
+            });
+            await Promise.all(promises);
+        } catch (error) {
+            // add logging - detailed error message returned from mongoDB
+            console.error("Failed to add event to admin's event list: ", error);
+            throw new InternalServerError(
+                "Failed to add event to admin's event list",
+            );
         }
     }
 
@@ -84,19 +105,24 @@ export class EventService {
         event: IEvent,
         session: mongoose.ClientSession,
     ): Promise<void> {
-        for (const invitee of invitees) {
-            try {
-                await this.userEventDAO.findOneAndUpdate(
+        try {
+            const promises = invitees.map((invitee) => {
+                this.userEventDAO.findOneAndUpdate(
                     { userId: invitee },
                     { $push: { events: { eventId: event._id } } },
                     { upsert: true, session },
                 );
-            } catch (error) {
-                // add logging - detailed error message returned from mongoDB
-                throw new InternalServerError(
-                    "Failed to add event to invitee's event list",
-                );
-            }
+            });
+            await Promise.all(promises);
+        } catch (error) {
+            // add logging - detailed error message returned from mongoDB
+            console.error(
+                "Failed to add event to invitee's event list: ",
+                error,
+            );
+            throw new InternalServerError(
+                "Failed to add event to invitee's event list",
+            );
         }
     }
 }

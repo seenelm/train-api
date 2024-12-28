@@ -1,8 +1,10 @@
-import { EventService } from "../service/EventService";
-import { CreateEventRequest } from "../dto/request/CreateEventRequest";
-import { CreateEventResponse } from "../dto/response/CreateEventResponse";
+import EventService from "../service/EventService";
+import { CreateEventRequest } from "../dto/CreateEventRequest";
+import { CreateEventResponse } from "../dto/CreateEventResponse";
 import { Request, Response, NextFunction } from "express";
 import { StatusCodes as HttpStatusCode } from "http-status-codes";
+import { UserEventResponse } from "../dto/UserEventResponse";
+import { ObjectId } from "mongodb";
 
 export class EventController {
     private eventService: EventService;
@@ -32,6 +34,19 @@ export class EventController {
             const createEventResponse: CreateEventResponse =
                 await this.eventService.addEvent(createEventRequest);
             res.status(HttpStatusCode.CREATED).json(createEventResponse);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    public async getEvent(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId: ObjectId = new ObjectId(req.params.userId);
+            const eventId: ObjectId = new ObjectId(req.params.eventId);
+
+            const userEventResponse: UserEventResponse =
+                await this.eventService.getEvent(userId, eventId);
+            res.status(HttpStatusCode.OK).json(userEventResponse);
         } catch (error) {
             next(error);
         }

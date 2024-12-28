@@ -3,7 +3,7 @@ import { Schema, model, Document, Types } from "mongoose";
 export interface IEvent extends Document {
     name: string;
     admin: Types.ObjectId[];
-    invitees: Types.ObjectId[];
+    invitees: Types.ObjectId[]; // Make optional
     date: Date;
     startTime: Date;
     endTime: Date;
@@ -22,13 +22,13 @@ const EventSchema: Schema = new Schema(
         admin: [
             {
                 type: Schema.Types.ObjectId,
-                ref: "User",
+                ref: "UserProfile",
             },
         ],
         invitees: [
             {
                 type: Schema.Types.ObjectId,
-                ref: "User",
+                ref: "UserProfile",
             },
         ],
         date: {

@@ -1,5 +1,5 @@
 import { Types } from "mongoose";
-import { EventStatus } from "../../src/common/constants";
+import { EventStatus } from "../../src/common/enums";
 import { IUserEvent } from "../../src/model/userEventModel";
 
 export const userEventMockData: IUserEvent[] = [

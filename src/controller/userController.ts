@@ -9,14 +9,8 @@ import { UserProfileModel } from "../model/userProfile";
 import { UserGroupsModel } from "../model/userGroups";
 import { FollowModel } from "../model/followModel";
 import { Types } from "mongoose";
-import {
-    UserRegisterRequest,
-    UserLoginRequest,
-} from "../dto/request/userRequest";
-import {
-    UserLoginResponse,
-    UserRegisterResponse,
-} from "../dto/response/userResponse";
+import { UserRegisterRequest, UserLoginRequest } from "../dto/userRequest";
+import { UserLoginResponse, UserRegisterResponse } from "../dto/userResponse";
 
 const userService = new UserService(
     new UserDAO(UserModel),

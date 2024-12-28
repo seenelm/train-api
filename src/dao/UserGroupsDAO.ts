@@ -2,10 +2,7 @@ import BaseDAO from "./BaseDAO";
 import { IUserGroups } from "../model/userGroups";
 import { Model, FilterQuery } from "mongoose";
 import { ObjectId } from "mongodb";
-import {
-    UserGroupsResponse,
-    GroupResponse,
-} from "../dto/response/userProfileResponse";
+import { UserGroupsResponse, GroupResponse } from "../dto/userProfileResponse";
 
 class UserGroupsDAO extends BaseDAO<IUserGroups> {
     private userGroups: Model<IUserGroups>;
