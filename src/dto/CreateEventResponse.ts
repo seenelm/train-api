@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-import { IEvent } from "../../model/eventModel";
+import { IEvent } from "../model/eventModel";
 
 export class CreateEventResponse {
     private id: ObjectId;

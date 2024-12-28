@@ -17,6 +17,7 @@ export class DatabaseError extends Error {
 
 export const handleMongoDBError = (error: unknown): DatabaseError => {
     if (error instanceof MongooseError.ValidationError) {
+        console.error("Error: ", error.message);
         return new DatabaseError(
             error.message,
             MongoServerErrorType.ValidationError,

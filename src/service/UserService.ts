@@ -11,14 +11,8 @@ import FollowDAO from "../dao/FollowDAO";
 import CustomLogger from "../common/logger";
 import { Types } from "mongoose";
 
-import {
-    UserRegisterRequest,
-    UserLoginRequest,
-} from "../dto/request/userRequest";
-import {
-    UserRegisterResponse,
-    UserLoginResponse,
-} from "../dto/response/userResponse";
+import { UserRegisterRequest, UserLoginRequest } from "../dto/userRequest";
+import { UserRegisterResponse, UserLoginResponse } from "../dto/userResponse";
 
 export interface TokenPayload {
     name: string;

@@ -1,0 +1,65 @@
+openapi: 3.0.0
+info:
+    title: Train API
+    version: 1.0.0
+    description: Train API documentation
+servers:
+    - url: http://localhost:3000/api
+
+tags:
+    - name: Events
+      description: Operations related to events
+
+paths:
+    /events:
+        post:
+            tags:
+                - Events
+            summary: Create a new event
+            description: Creates a new event
+            security:
+                - bearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                groupName:
+                                    type: string
+                                    description: The name of the group to be created
+                                userId:
+                                    type: string
+                                    description: The unique identifier of the user creating the group
+                            required:
+                                - groupName
+                                - userId
+            responses:
+                200:
+                    description: Group created successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    groupId:
+                                        type: string
+                                        description: The unique identifier of the created group
+                                    groupName:
+                                        type: string
+                                        description: The name of the created group
+                                    # Add more properties as required by your group model
+                404:
+                    description: User not found
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                500:
+                    description: Internal server error
+
+components:
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT

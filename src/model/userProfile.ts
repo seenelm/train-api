@@ -7,6 +7,8 @@ interface IUserProfile extends Document {
     name: string;
     bio: string;
     accountType: number;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 const userProfileSchema = new Schema(

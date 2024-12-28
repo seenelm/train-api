@@ -38,6 +38,7 @@
     "devDependencies": {
         "@babel/core": "^7.23.2",
         "@babel/preset-env": "^7.23.2",
+        "@faker-js/faker": "^9.3.0",
         "@shelf/jest-mongodb": "^4.1.7",
         "@types/bcrypt": "^5.0.1",
         "@types/config": "^3.3.2",

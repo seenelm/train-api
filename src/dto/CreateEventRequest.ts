@@ -1,10 +1,10 @@
-import { Types } from "mongoose";
-import { RequestValidationError } from "../../utils/errors";
+import { ObjectId } from "mongodb";
+import { RequestValidationError } from "../utils/errors";
 
 export class CreateEventRequest {
     private name!: string;
-    private admin!: Types.ObjectId[];
-    private invitees!: Types.ObjectId[];
+    private admin!: ObjectId[];
+    private invitees!: ObjectId[];
     private date!: Date;
     private startTime!: Date;
     private endTime!: Date;
@@ -21,11 +21,11 @@ export class CreateEventRequest {
         return this.name;
     }
 
-    public getAdmin(): Types.ObjectId[] {
+    public getAdmin(): ObjectId[] {
         return this.admin;
     }
 
-    public getInvitees(): Types.ObjectId[] {
+    public getInvitees(): ObjectId[] {
         return this.invitees;
     }
 
@@ -108,8 +108,8 @@ export class CreateEventRequest {
 
     static Builder = class {
         private name!: string;
-        private admin!: Types.ObjectId[];
-        private invitees!: Types.ObjectId[];
+        private admin!: ObjectId[];
+        private invitees!: ObjectId[];
         private date!: Date;
         private startTime!: Date;
         private endTime!: Date;
@@ -121,12 +121,12 @@ export class CreateEventRequest {
             return this;
         }
 
-        public setAdmin(admin: Types.ObjectId[]): this {
+        public setAdmin(admin: ObjectId[]): this {
             this.admin = admin;
             return this;
         }
 
-        public setInvitees(invitees: Types.ObjectId[]): this {
+        public setInvitees(invitees: ObjectId[]): this {
             this.invitees = invitees;
             return this;
         }

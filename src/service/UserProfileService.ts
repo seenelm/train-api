@@ -11,10 +11,7 @@ import {
     UpdateUserProfileRequest,
 } from "../dto/userProfileDTO";
 
-import {
-    UserGroupsResponse,
-    GroupResponse,
-} from "../dto/response/userProfileResponse";
+import { UserGroupsResponse, GroupResponse } from "../dto/userProfileResponse";
 import { IGroup } from "../model/groupModel";
 
 class UserProfileService {
