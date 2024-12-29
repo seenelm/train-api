@@ -39,14 +39,17 @@ export class EventController {
         }
     }
 
-    public async getEvent(req: Request, res: Response, next: NextFunction) {
+    public async getUserEvents(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ) {
         try {
             const userId: ObjectId = new ObjectId(req.params.userId);
-            const eventId: ObjectId = new ObjectId(req.params.eventId);
 
-            const userEventResponse: UserEventResponse =
-                await this.eventService.getEvent(userId, eventId);
-            res.status(HttpStatusCode.OK).json(userEventResponse);
+            const userEventResponseList: UserEventResponse[] =
+                await this.eventService.getUserEvents(userId);
+            res.status(HttpStatusCode.OK).json(userEventResponseList);
         } catch (error) {
             next(error);
         }

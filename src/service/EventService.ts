@@ -19,6 +19,11 @@ export default class EventService {
         this.userEventDAO = userEventDAO;
     }
 
+    /**
+     *
+     * @param createEventRequest
+     * @returns CreateEventResponse
+     */
     public async addEvent(
         createEventRequest: CreateEventRequest,
     ): Promise<CreateEventResponse> {
@@ -59,19 +64,26 @@ export default class EventService {
         }
     }
 
-    public async getEvent(
-        userId: ObjectId,
-        eventId: ObjectId,
-    ): Promise<UserEventResponse> {
+    /**
+     *
+     * @param userId
+     * @param eventId
+     * @returns all user events
+     */
+    public async getUserEvents(userId: ObjectId): Promise<UserEventResponse[]> {
         try {
-            const userEventEntity: UserEventEntity =
-                await this.userEventDAO.findUserEvent(userId, eventId);
+            // add local cache for events
+            // if user doesn't have any of the events in cache, fetch all events for the user
+            // if user has some events in cache, fetch only the events not in cache
+            // if event is updated or deleted, update the cache and return the updated events
+            const userEventEntityList: UserEventEntity[] =
+                await this.userEventDAO.getUserEvents(userId);
 
-            if (!userEventEntity) {
+            if (!userEventEntityList) {
                 throw new ResourceNotFoundError("Event not found");
             }
 
-            return UserEventResponse.from(userEventEntity);
+            return UserEventResponse.from(userEventEntityList);
         } catch (error) {
             throw handleMongoDBError(error);
         }
