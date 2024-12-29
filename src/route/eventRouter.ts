@@ -14,10 +14,6 @@ const eventService = new EventService(eventDAO, userEventDAO);
 const eventController = new EventController(eventService);
 
 eventRouter.post("/", authenticate, eventController.addEvent);
-eventRouter.get(
-    "/:eventId/users/:userId",
-    authenticate,
-    eventController.getEvent,
-);
+eventRouter.get("/users/:userId", authenticate, eventController.getUserEvents);
 
 export default eventRouter;

@@ -12,19 +12,20 @@ export default class UserEventDAO extends BaseDAO<IUserEvent> {
         this.userEvent = userEvent;
     }
 
-    public async findUserEvent(
-        userId: ObjectId,
-        eventId: ObjectId,
-    ): Promise<UserEventEntity> {
-        const event = await this.userEvent.aggregate([
+    /**
+     *
+     * @param userId
+     * @returns all user events
+     */
+    public async getUserEvents(userId: ObjectId): Promise<UserEventEntity[]> {
+        const userEvents = await this.userEvent.aggregate([
             {
                 $match: {
-                    userId: userId,
-                    "events.eventId": eventId,
+                    userId,
                 },
             },
             {
-                $unwind: "$event",
+                $unwind: "$events",
             },
             {
                 $lookup: {
@@ -39,18 +40,16 @@ export default class UserEventDAO extends BaseDAO<IUserEvent> {
             },
             {
                 $project: {
-                    _id: 1,
-                    userId: 1,
-                    "event.status": 1,
+                    _id: 0,
+                    status: "$events.status",
                     event: 1,
                 },
             },
         ]);
 
-        return new UserEventEntity(
-            event[0].userId,
-            event[0].events.status,
-            event[0].event,
+        return userEvents.map(
+            (userEvent) =>
+                new UserEventEntity(userEvent.status, userEvent.event),
         );
     }
 }
