@@ -13,28 +13,35 @@ export class EventController {
         this.eventService = eventService;
     }
 
-    public async addEvent(
+    addEvent = async (
         req: Request,
         res: Response,
         next: NextFunction,
-    ): Promise<void> {
+    ): Promise<void> => {
+        console.log("AddEvent", req.body);
         try {
-            const createEventRequest: CreateEventRequest =
+            const createEventRequest: CreateEventRequest = 
                 new CreateEventRequest.Builder()
                     .setName(req.body.name)
                     .setAdmin(req.body.admin)
                     .setInvitees(req.body.invitees)
-                    .setDate(req.body.date)
-                    .setStartTime(req.body.startTime)
-                    .setEndTime(req.body.endTime)
+                    .setDate(new Date(req.body.date))
+                    .setStartTime(
+                        new Date(`${req.body.date}T${req.body.startTime}:00`) // Combine date and time
+                    )
+                    .setEndTime(
+                        new Date(`${req.body.date}T${req.body.endTime}:00`) // Combine date and time
+                    )
                     .setLocation(req.body.location)
                     .setDescription(req.body.description)
                     .build();
 
+            console.log("CreateEventRequest: ", createEventRequest);
             const createEventResponse: CreateEventResponse =
                 await this.eventService.addEvent(createEventRequest);
             res.status(HttpStatusCode.CREATED).json(createEventResponse);
         } catch (error) {
+            console.log("Error: ", error);
             next(error);
         }
     }

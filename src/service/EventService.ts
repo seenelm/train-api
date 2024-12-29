@@ -27,15 +27,20 @@ export default class EventService {
     public async addEvent(
         createEventRequest: CreateEventRequest,
     ): Promise<CreateEventResponse> {
+        
         const session = await mongoose.startSession();
         session.startTransaction();
-
+        
         try {
             // Check if event already exists
+            console.log("Request: ", createEventRequest);
+            
             const event: IEvent = await this.eventDAO.create(
                 createEventRequest,
                 { session },
             );
+
+            console.log("Event created: ", event);
 
             // Add event into user's event list
             await Promise.all([
