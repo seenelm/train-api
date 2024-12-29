@@ -34,7 +34,7 @@ export default class EventService {
         try {
             // Check if event already exists
             console.log("Request: ", createEventRequest);
-            
+
             const event: IEvent = await this.eventDAO.create(
                 createEventRequest,
                 { session },
@@ -83,7 +83,7 @@ export default class EventService {
             // if event is updated or deleted, update the cache and return the updated events
             const userEventEntityList: UserEventEntity[] =
                 await this.userEventDAO.getUserEvents(userId);
-
+            console.log("UserEventEntityList: ", userEventEntityList);
             if (!userEventEntityList) {
                 throw new ResourceNotFoundError("Event not found");
             }

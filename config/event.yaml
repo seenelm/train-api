@@ -115,6 +115,33 @@ paths:
                     description: Invalid request parameters
                 500:
                     description: Internal server error
+    /events/users/{userId}:
+        get:
+            tags:
+                - Events
+            summary: Get events for a user
+            description: Endpoint to get events for a user.
+            operationId: getUserEvents
+            parameters:
+                - in: path
+                  name: userId
+                  required: true
+                  schema:
+                      type: string
+                  description: The ID of the user
+            responses:
+                200:
+                    description: Events retrieved successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/CreateEventResponse"
+                404:
+                    description: User not found
+                500:
+                    description: Internal server error
 
 components:
     securitySchemes:

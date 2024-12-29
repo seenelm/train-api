@@ -1,12 +1,12 @@
 import { Schema, model, Document, Types } from "mongoose";
 
 export interface IEvent extends Document {
-    name: string;
-    admin: Types.ObjectId[];
-    invitees: Types.ObjectId[]; // Make optional
+    name: string; // required
+    admin: Types.ObjectId[]; // required
+    invitees?: Types.ObjectId[]; // Make optional
     date: Date;
     startTime: Date;
-    endTime: Date;
+    endTime?: Date;
     location?: string;
     description?: string;
     createdAt: Date;

@@ -46,14 +46,15 @@ export class EventController {
         }
     }
 
-    public async getUserEvents(
+    getUserEvents = async (
         req: Request,
         res: Response,
         next: NextFunction,
-    ) {
+    ) => {
         try {
+            console.log("params: ", req.params);
             const userId: ObjectId = new ObjectId(req.params.userId);
-
+            console.log("UserId: ", userId);
             const userEventResponseList: UserEventResponse[] =
                 await this.eventService.getUserEvents(userId);
             res.status(HttpStatusCode.OK).json(userEventResponseList);
