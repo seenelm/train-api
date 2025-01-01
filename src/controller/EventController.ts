@@ -13,11 +13,11 @@ export class EventController {
         this.eventService = eventService;
     }
 
-    public async addEvent(
+    addEvent = async (
         req: Request,
         res: Response,
         next: NextFunction,
-    ): Promise<void> {
+    ): Promise<void> => {
         try {
             const createEventRequest: CreateEventRequest =
                 new CreateEventRequest.Builder()
@@ -25,8 +25,12 @@ export class EventController {
                     .setAdmin(req.body.admin)
                     .setInvitees(req.body.invitees)
                     .setDate(req.body.date)
-                    .setStartTime(req.body.startTime)
-                    .setEndTime(req.body.endTime)
+                    .setStartTime(
+                        new Date(`${req.body.date}T${req.body.startTime}:00`),
+                    )
+                    .setEndTime(
+                        new Date(`${req.body.date}T${req.body.endTime}:00`),
+                    )
                     .setLocation(req.body.location)
                     .setDescription(req.body.description)
                     .build();
@@ -37,13 +41,9 @@ export class EventController {
         } catch (error) {
             next(error);
         }
-    }
+    };
 
-    public async getUserEvents(
-        req: Request,
-        res: Response,
-        next: NextFunction,
-    ) {
+    getUserEvents = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const userId: ObjectId = new ObjectId(req.params.userId);
 
@@ -53,5 +53,5 @@ export class EventController {
         } catch (error) {
             next(error);
         }
-    }
+    };
 }
