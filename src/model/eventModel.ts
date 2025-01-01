@@ -1,12 +1,13 @@
 import { Schema, model, Document, Types } from "mongoose";
 
+// Remove date
 export interface IEvent extends Document {
     name: string;
     admin: Types.ObjectId[];
     invitees: Types.ObjectId[]; // Make optional
-    date: Date;
+    date: Date; // Remove
     startTime: Date;
-    endTime: Date;
+    endTime: Date; // Make optional
     location?: string;
     description?: string;
     createdAt: Date;
