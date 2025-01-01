@@ -11,6 +11,8 @@ export class CreateEventResponse {
     private endTime: Date;
     private location?: string;
     private description?: string;
+    private createdAt?: Date;
+    private updatedAt?: Date;
 
     constructor(
         id: ObjectId,
@@ -22,6 +24,8 @@ export class CreateEventResponse {
         endTime: Date,
         location?: string,
         description?: string,
+        createdAt?: Date,
+        updatedAt?: Date,
     ) {
         this.id = id;
         this.name = name;
@@ -32,6 +36,8 @@ export class CreateEventResponse {
         this.endTime = endTime;
         this.location = location;
         this.description = description;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     public getId(): ObjectId {
@@ -81,6 +87,8 @@ export class CreateEventResponse {
             event.endTime,
             event.location,
             event.description,
+            event.createdAt,
+            event.updatedAt,
         );
     }
 }

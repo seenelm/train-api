@@ -23,30 +23,32 @@ jest.mock("../../src/dao/UserEventDAO");
 
 describe("EventService", () => {
     let eventService: EventService;
-    let eventDAO: jest.Mocked<EventDAO>;
-    let userEventDAO: jest.Mocked<UserEventDAO>;
-    let session: jest.Mocked<ClientSession>;
+    let mockEventDAO: jest.Mocked<EventDAO>;
+    let mockUserEventDAO: jest.Mocked<UserEventDAO>;
+    let mockSession: jest.Mocked<ClientSession>;
 
     beforeEach(() => {
-        eventDAO = new EventDAO(Event) as jest.Mocked<EventDAO>;
-        userEventDAO = new UserEventDAO(UserEvent) as jest.Mocked<UserEventDAO>;
-        eventService = new EventService(eventDAO, userEventDAO);
+        mockEventDAO = new EventDAO(Event) as jest.Mocked<EventDAO>;
+        mockUserEventDAO = new UserEventDAO(
+            UserEvent,
+        ) as jest.Mocked<UserEventDAO>;
+        eventService = new EventService(mockEventDAO, mockUserEventDAO);
 
-        session = {
+        mockSession = {
             startTransaction: jest.fn(),
             commitTransaction: jest.fn(),
             abortTransaction: jest.fn(),
             endSession: jest.fn(),
         } as unknown as jest.Mocked<ClientSession>;
 
-        jest.spyOn(mongoose, "startSession").mockResolvedValue(session);
+        jest.spyOn(mongoose, "startSession").mockResolvedValue(mockSession);
     });
 
     afterEach(() => {
         jest.clearAllMocks();
     });
 
-    it("should successfully create a new event", async () => {
+    it("should successfully create a new event and update user events", async () => {
         // Arrange
         const admin1 = createMockUser();
         const invitee1 = createMockUser();
@@ -62,20 +64,21 @@ describe("EventService", () => {
             );
         const mockEvent = createMockEvent(createEventRequest);
 
-        eventDAO.create.mockResolvedValue(mockEvent);
-        userEventDAO.findOneAndUpdate.mockResolvedValue(null);
+        mockEventDAO.create.mockResolvedValue(mockEvent);
+        mockUserEventDAO.findOneAndUpdate.mockResolvedValue(null);
 
         // Act
         const createEventResponse: CreateEventResponse =
             await eventService.addEvent(createEventRequest);
 
         // Assert
-        expect(eventDAO.create).toHaveBeenCalledWith(createEventRequest, {
-            session,
+        expect(mockEventDAO.create).toHaveBeenCalledWith(createEventRequest, {
+            session: mockSession,
         });
-        expect(userEventDAO.findOneAndUpdate).toHaveBeenCalledTimes(3);
-        expect(session.commitTransaction).toHaveBeenCalled();
-        expect(session.endSession).toHaveBeenCalled();
+        expect(mockUserEventDAO.findOneAndUpdate).toHaveBeenCalledTimes(3);
+        expect(mockSession.startTransaction).toHaveBeenCalled();
+        expect(mockSession.commitTransaction).toHaveBeenCalled();
+        expect(mockSession.endSession).toHaveBeenCalled();
         expect(createEventResponse.getId()).toEqual(mockEvent._id);
         expect(createEventResponse.getName()).toEqual(
             createEventRequest.getName(),
