@@ -28,7 +28,9 @@ export default class EventService {
         createEventRequest: CreateEventRequest,
     ): Promise<CreateEventResponse> {
         const session = await mongoose.startSession();
+        console.debug("Session started: ", session.id);
         session.startTransaction();
+        console.debug("Transaction started for session: ", session.id);
 
         try {
             // Check if event already exists
@@ -36,6 +38,7 @@ export default class EventService {
                 createEventRequest,
                 { session },
             );
+            console.debug("Event created: ", event);
 
             // Add event into user's event list
             await Promise.all([
@@ -53,14 +56,16 @@ export default class EventService {
             ]);
 
             await session.commitTransaction();
-            session.endSession();
-
+            console.debug("Transaction committed for session: ", session.id);
             return CreateEventResponse.from(event);
         } catch (error) {
+            console.error("Error during transaction, aborting: ", error);
             await session.abortTransaction();
-            session.endSession();
-            // console.error("Error adding event: ", error);
+            console.debug("Transaction aborted for session: ", session.id);
             throw handleMongoDBError(error);
+        } finally {
+            session.endSession();
+            console.debug("Session ended: ", session.id);
         }
     }
 
@@ -94,22 +99,18 @@ export default class EventService {
         event: IEvent,
         session: mongoose.ClientSession,
     ): Promise<void> {
-        try {
-            const promises = admins.map((admin) => {
-                this.userEventDAO.findOneAndUpdate(
-                    { userId: admin },
-                    { $push: { events: { eventId: event._id } } },
-                    { upsert: true, session },
-                );
-            });
-            await Promise.all(promises);
-        } catch (error) {
-            // add logging - detailed error message returned from mongoDB
-            console.error("Failed to add event to admin's event list: ", error);
-            throw new InternalServerError(
-                "Failed to add event to admin's event list",
+        console.debug("Starting to upsert admin events for event: ", event._id);
+
+        const promises = admins.map(async (admin) => {
+            console.debug("Upserting event for admin: ", admin);
+            await this.userEventDAO.findOneAndUpdate(
+                { userId: admin },
+                { $push: { events: { eventId: event._id } } },
+                { upsert: true, session },
             );
-        }
+            console.debug("Successfully upserted event for admin: ", admin);
+        });
+        await Promise.all(promises);
     }
 
     private async upsertInviteeEvents(
@@ -117,24 +118,20 @@ export default class EventService {
         event: IEvent,
         session: mongoose.ClientSession,
     ): Promise<void> {
-        try {
-            const promises = invitees.map((invitee) => {
-                this.userEventDAO.findOneAndUpdate(
-                    { userId: invitee },
-                    { $push: { events: { eventId: event._id } } },
-                    { upsert: true, session },
-                );
-            });
-            await Promise.all(promises);
-        } catch (error) {
-            // add logging - detailed error message returned from mongoDB
-            console.error(
-                "Failed to add event to invitee's event list: ",
-                error,
+        console.debug(
+            "Starting to upsert invitee events for event: ",
+            event._id,
+        );
+
+        const promises = invitees.map(async (invitee) => {
+            console.debug("Upserting event for invitee: ", invitee);
+            await this.userEventDAO.findOneAndUpdate(
+                { userId: invitee },
+                { $push: { events: { eventId: event._id } } },
+                { upsert: true, session },
             );
-            throw new InternalServerError(
-                "Failed to add event to invitee's event list",
-            );
-        }
+            console.debug("Successfully upserted event for invitee: ", invitee);
+        });
+        await Promise.all(promises);
     }
 }

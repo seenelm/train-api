@@ -16,9 +16,8 @@ paths:
             tags:
                 - Events
             summary: Create a new event
-            description: Creates a new event
-            security:
-                - bearerAuth: []
+            description: Endpoint to create a new event.
+            operationId: addEvent
             requestBody:
                 required: true
                 content:
@@ -26,34 +25,121 @@ paths:
                         schema:
                             type: object
                             properties:
-                                groupName:
+                                name:
                                     type: string
-                                    description: The name of the group to be created
-                                userId:
+                                    example: "Team Meeting"
+                                    description: "The name of the event."
+                                admin:
+                                    type: array
+                                    items:
+                                        type: string
+                                        example: "60d0fe4f5311236168a109ca"
+                                    description: "List of admin user IDs."
+                                invitees:
+                                    type: array
+                                    items:
+                                        type: string
+                                        example: "60d0fe4f5311236168a109cb"
+                                    description: "List of invitee user IDs."
+                                date:
                                     type: string
-                                    description: The unique identifier of the user creating the group
+                                    format: date
+                                    example: "2024-01-15"
+                                    description: "Date of the event."
+                                startTime:
+                                    type: string
+                                    format: time
+                                    example: "14:00"
+                                    description: "Start time of the event."
+                                endTime:
+                                    type: string
+                                    format: time
+                                    example: "16:00"
+                                    description: "End time of the event."
+                                location:
+                                    type: string
+                                    example: "Conference Room 1"
+                                    description: "Location of the event."
+                                description:
+                                    type: string
+                                    example: "Monthly review meeting."
+                                    description: "A short description of the event."
                             required:
-                                - groupName
-                                - userId
+                                - name
+                                - admin
+                                - invitees
+                                - date
+                                - startTime
+                                - endTime
             responses:
-                200:
-                    description: Group created successfully
+                201:
+                    description: Event created successfully
                     content:
                         application/json:
                             schema:
                                 type: object
                                 properties:
-                                    groupId:
+                                    id:
                                         type: string
-                                        description: The unique identifier of the created group
-                                    groupName:
+                                        example: "60d0fe4f5311236168a109c8"
+                                        description: "The unique ID of the created event."
+                                    name:
                                         type: string
-                                        description: The name of the created group
-                                    # Add more properties as required by your group model
+                                        example: "Team Meeting"
+                                    admin:
+                                        type: array
+                                        items:
+                                            type: string
+                                        example: ["60d0fe4f5311236168a109ca"]
+                                    invitees:
+                                        type: array
+                                        items:
+                                            type: string
+                                        example: ["60d0fe4f5311236168a109cb"]
+                                    date:
+                                        type: string
+                                        example: "2024-01-15"
+                                    startTime:
+                                        type: string
+                                        example: "14:00"
+                                    endTime:
+                                        type: string
+                                        example: "16:00"
+                                    location:
+                                        type: string
+                                        example: "Conference Room 1"
+                                    description:
+                                        type: string
+                                        example: "Monthly review meeting."
+                400:
+                    description: Invalid request parameters
+                500:
+                    description: Internal server error
+    /events/users/{userId}:
+        get:
+            tags:
+                - Events
+            summary: Get events for a user
+            description: Endpoint to get events for a user.
+            operationId: getUserEvents
+            parameters:
+                - in: path
+                  name: userId
+                  required: true
+                  schema:
+                      type: string
+                  description: The ID of the user
+            responses:
+                200:
+                    description: Events retrieved successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/CreateEventResponse"
                 404:
                     description: User not found
-                401:
-                    description: Unauthorized - Token not provided or invalid
                 500:
                     description: Internal server error
 
@@ -63,3 +149,62 @@ components:
             type: http
             scheme: bearer
             bearerFormat: JWT
+    schemas:
+        CreateEventRequest:
+            type: object
+            properties:
+                name:
+                    type: string
+                admin:
+                    type: array
+                    items:
+                        type: string
+                invitees:
+                    type: array
+                    items:
+                        type: string
+                date:
+                    type: string
+                    format: date
+                startTime:
+                    type: string
+                    format: time
+                endTime:
+                    type: string
+                    format: time
+                location:
+                    type: string
+                description:
+                    type: string
+            required:
+                - name
+                - admin
+                - invitees
+                - date
+                - startTime
+                - endTime
+        CreateEventResponse:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                admin:
+                    type: array
+                    items:
+                        type: string
+                invitees:
+                    type: array
+                    items:
+                        type: string
+                date:
+                    type: string
+                startTime:
+                    type: string
+                endTime:
+                    type: string
+                location:
+                    type: string
+                description:
+                    type: string
