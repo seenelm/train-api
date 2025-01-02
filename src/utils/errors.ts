@@ -16,8 +16,8 @@ export class DatabaseError extends Error {
 }
 
 export const handleMongoDBError = (error: unknown): DatabaseError => {
+    console.error("Error: ", error);
     if (error instanceof MongooseError.ValidationError) {
-        console.error("Error: ", error.message);
         return new DatabaseError(
             error.message,
             MongoServerErrorType.ValidationError,
@@ -53,7 +53,6 @@ export const handleMongoDBError = (error: unknown): DatabaseError => {
         );
     }
 
-    console.log("Unexpected error: ", error);
     return new DatabaseError(
         "Unknown database error occurred",
         "UNEXPECTED_ERROR",
