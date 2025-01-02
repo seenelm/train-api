@@ -10,9 +10,9 @@ export enum EventStatus {
 }
 
 export enum MongoServerErrorType {
-    ValidationError = "VALIDATION_ERROR",
-    CastError = "CAST_ERROR",
-    DocumentNotFoundError = "DOCUMENT_NOT_FOUND",
-    DuplicateKeyError = "DUPLICATE_KEY",
-    MongoServerError = "MONGO_SERVER_ERROR",
+    ValidationError = "ValidationError",
+    CastError = "CastError",
+    DocumentNotFoundError = "DocumentNotFoundError",
+    DuplicateKeyError = "DuplicateKeyError",
+    MongoServerError = "MongoServerError",
 }
