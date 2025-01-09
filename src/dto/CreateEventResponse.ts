@@ -6,7 +6,6 @@ export class CreateEventResponse {
     private name: string;
     private admin: ObjectId[];
     private invitees: ObjectId[];
-    private date: Date;
     private startTime: Date;
     private endTime: Date;
     private location?: string;
@@ -19,7 +18,6 @@ export class CreateEventResponse {
         name: string,
         admin: ObjectId[],
         invitees: ObjectId[],
-        date: Date,
         startTime: Date,
         endTime: Date,
         location?: string,
@@ -31,7 +29,6 @@ export class CreateEventResponse {
         this.name = name;
         this.admin = admin;
         this.invitees = invitees;
-        this.date = date;
         this.startTime = startTime;
         this.endTime = endTime;
         this.location = location;
@@ -56,10 +53,6 @@ export class CreateEventResponse {
         return this.invitees;
     }
 
-    public getDate(): Date {
-        return this.date;
-    }
-
     public getStartTime(): Date {
         return this.startTime;
     }
@@ -82,7 +75,6 @@ export class CreateEventResponse {
             event.name,
             event.admin,
             event.invitees,
-            event.date,
             event.startTime,
             event.endTime,
             event.location,
