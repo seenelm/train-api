@@ -5,7 +5,6 @@ export class CreateEventRequest {
     private name!: string;
     private admin!: ObjectId[];
     private invitees!: ObjectId[];
-    private date!: Date;
     private startTime!: Date;
     private endTime!: Date;
     private location?: string;
@@ -27,10 +26,6 @@ export class CreateEventRequest {
 
     public getInvitees(): ObjectId[] {
         return this.invitees;
-    }
-
-    public getDate(): Date {
-        return this.date;
     }
 
     public getStartTime(): Date {
@@ -74,10 +69,6 @@ export class CreateEventRequest {
             errors.push("Invitees must be an array of ObjectIds.");
         }
 
-        if (!(this.date instanceof Date) || isNaN(this.date.getTime())) {
-            errors.push("Date is required and must be a valid Date object.");
-        }
-
         if (
             !(this.startTime instanceof Date) ||
             isNaN(this.startTime.getTime())
@@ -110,7 +101,6 @@ export class CreateEventRequest {
         private name!: string;
         private admin!: ObjectId[];
         private invitees!: ObjectId[];
-        private date!: Date;
         private startTime!: Date;
         private endTime!: Date;
         private location?: string;
@@ -128,11 +118,6 @@ export class CreateEventRequest {
 
         public setInvitees(invitees: ObjectId[]): this {
             this.invitees = invitees;
-            return this;
-        }
-
-        public setDate(date: Date): this {
-            this.date = date;
             return this;
         }
 
@@ -161,7 +146,6 @@ export class CreateEventRequest {
             createEventRequest.name = this.name;
             createEventRequest.admin = this.admin;
             createEventRequest.invitees = this.invitees;
-            createEventRequest.date = this.date;
             createEventRequest.startTime = this.startTime;
             createEventRequest.endTime = this.endTime;
             createEventRequest.location = this.location;
