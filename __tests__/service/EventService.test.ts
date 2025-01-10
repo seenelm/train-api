@@ -96,9 +96,6 @@ describe("EventService", () => {
             expect(createEventResponse.getInvitees()).toEqual(
                 createEventRequest.getInvitees(),
             );
-            expect(createEventResponse.getDate()).toEqual(
-                createEventRequest.getDate(),
-            );
             expect(createEventResponse.getStartTime()).toEqual(
                 createEventRequest.getStartTime(),
             );

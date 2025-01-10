@@ -5,36 +5,42 @@ export class CreateEventResponse {
     private id: ObjectId;
     private name: string;
     private admin: ObjectId[];
-    private invitees: ObjectId[];
+    private invitees?: ObjectId[];
     private startTime: Date;
-    private endTime: Date;
+    private endTime?: Date;
     private location?: string;
     private description?: string;
     private createdAt?: Date;
     private updatedAt?: Date;
 
-    constructor(
-        id: ObjectId,
-        name: string,
-        admin: ObjectId[],
-        invitees: ObjectId[],
-        startTime: Date,
-        endTime: Date,
-        location?: string,
-        description?: string,
-        createdAt?: Date,
-        updatedAt?: Date,
-    ) {
-        this.id = id;
-        this.name = name;
-        this.admin = admin;
-        this.invitees = invitees;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.location = location;
-        this.description = description;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+    private constructor() {}
+
+    // constructor(
+    //     id: ObjectId,
+    //     name: string,
+    //     admin: ObjectId[],
+    //     invitees: ObjectId[],
+    //     startTime: Date,
+    //     endTime: Date,
+    //     location?: string,
+    //     description?: string,
+    //     createdAt?: Date,
+    //     updatedAt?: Date,
+    // ) {
+    //     this.id = id;
+    //     this.name = name;
+    //     this.admin = admin;
+    //     this.invitees = invitees;
+    //     this.startTime = startTime;
+    //     this.endTime = endTime;
+    //     this.location = location;
+    //     this.description = description;
+    //     this.createdAt = createdAt;
+    //     this.updatedAt = updatedAt;
+    // }
+
+    static builder() {
+        return new this.Builder();
     }
 
     public getId(): ObjectId {
@@ -69,18 +75,104 @@ export class CreateEventResponse {
         return this.description;
     }
 
-    static from(event: IEvent): CreateEventResponse {
-        return new CreateEventResponse(
-            event._id,
-            event.name,
-            event.admin,
-            event.invitees,
-            event.startTime,
-            event.endTime,
-            event.location,
-            event.description,
-            event.createdAt,
-            event.updatedAt,
-        );
+    public getCreatedAt(): Date | undefined {
+        return this.createdAt;
     }
+
+    public getUpdatedAt(): Date | undefined {
+        return this.updatedAt;
+    }
+
+    static from(event: IEvent): CreateEventResponse {
+        return CreateEventResponse.builder()
+            .setId(event._id)
+            .setName(event.name)
+            .setAdmin(event.admin)
+            .setInvitees(event.invitees)
+            .setStartTime(event.startTime)
+            .setEndTime(event.endTime)
+            .setLocation(event.location)
+            .setDescription(event.description)
+            .setCreatedAt(event.createdAt)
+            .setUpdatedAt(event.updatedAt)
+            .build();
+    }
+
+    static Builder = class {
+        private id: ObjectId;
+        private name: string;
+        private admin: ObjectId[];
+        private invitees?: ObjectId[];
+        private startTime: Date;
+        private endTime?: Date;
+        private location?: string;
+        private description?: string;
+        private createdAt?: Date;
+        private updatedAt?: Date;
+
+        public setId(id: ObjectId): this {
+            this.id = id;
+            return this;
+        }
+
+        public setName(name: string): this {
+            this.name = name;
+            return this;
+        }
+
+        public setAdmin(admin: ObjectId[]): this {
+            this.admin = admin;
+            return this;
+        }
+
+        public setInvitees(invitees?: ObjectId[]): this {
+            this.invitees = invitees;
+            return this;
+        }
+
+        public setStartTime(startTime: Date): this {
+            this.startTime = startTime;
+            return this;
+        }
+
+        public setEndTime(endTime?: Date): this {
+            this.endTime = endTime;
+            return this;
+        }
+
+        public setLocation(location?: string): this {
+            this.location = location;
+            return this;
+        }
+
+        public setDescription(description?: string): this {
+            this.description = description;
+            return this;
+        }
+
+        public setCreatedAt(createdAt?: Date): this {
+            this.createdAt = createdAt;
+            return this;
+        }
+
+        public setUpdatedAt(updatedAt?: Date): this {
+            this.updatedAt = updatedAt;
+            return this;
+        }
+
+        public build(): CreateEventResponse {
+            const createEventResponse = new CreateEventResponse();
+            createEventResponse.id = this.id;
+            createEventResponse.name = this.name;
+            createEventResponse.admin = this.admin;
+            createEventResponse.invitees = this.invitees;
+            createEventResponse.startTime = this.startTime;
+            createEventResponse.endTime = this.endTime;
+            createEventResponse.location = this.location;
+            createEventResponse.description = this.description;
+            createEventResponse.createdAt = this.createdAt;
+            createEventResponse.updatedAt = this.updatedAt;
+            return createEventResponse;
+        }
+    };
 }
