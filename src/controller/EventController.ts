@@ -24,13 +24,8 @@ export class EventController {
                     .setName(req.body.name)
                     .setAdmin(req.body.admin)
                     .setInvitees(req.body.invitees)
-                    .setDate(req.body.date)
-                    .setStartTime(
-                        new Date(`${req.body.date}T${req.body.startTime}:00`),
-                    )
-                    .setEndTime(
-                        new Date(`${req.body.date}T${req.body.endTime}:00`),
-                    )
+                    .setStartTime(req.body.startTime)
+                    .setEndTime(req.body.endTime)
                     .setLocation(req.body.location)
                     .setDescription(req.body.description)
                     .build();

@@ -9,6 +9,10 @@ import { Event } from "../../src/model/eventModel";
 import { UserEvent } from "../../src/model/userEventModel";
 import { Request, Response, NextFunction } from "express";
 import { StatusCodes as HttpStatusCode } from "http-status-codes";
+import { IEvent } from "../../src/model/eventModel";
+import { UserEventResponse } from "../../src/dto/UserEventResponse";
+import { EventStatus } from "../../src/common/enums";
+import { mock } from "node:test";
 
 jest.mock("../../src/service/EventService");
 
@@ -48,18 +52,18 @@ describe("EventController", () => {
     describe("addEvent", () => {
         it("should return 201 and the created event", async () => {
             // Arrange
-            const date = "2024-12-25";
-            const startTime = "12:00";
-            const endTime = "14:00";
+            const startTime = new Date();
+            const endTime = new Date(
+                startTime.getTime() + 7 * 24 * 60 * 60 * 1000,
+            );
 
             const mockRequest = {
                 body: {
                     name: "Soccer Practice",
                     admin: [new ObjectId()],
                     invitees: [new ObjectId(), new ObjectId()],
-                    date: date,
-                    startTime: startTime,
-                    endTime: endTime,
+                    startTime,
+                    endTime,
                     location: "Loudon Soccer Park",
                     description: "Bring your own soccer ball",
                 },
@@ -69,24 +73,22 @@ describe("EventController", () => {
                 .setName(mockRequest.body.name)
                 .setAdmin(mockRequest.body.admin)
                 .setInvitees(mockRequest.body.invitees)
-                .setDate(new Date(mockRequest.body.date))
-                .setStartTime(new Date(mockRequest.body.startTime))
-                .setEndTime(new Date(mockRequest.body.endTime))
+                .setStartTime(mockRequest.body.startTime)
+                .setEndTime(mockRequest.body.endTime)
                 .setLocation(mockRequest.body.location)
                 .setDescription(mockRequest.body.description)
                 .build();
 
-            const createEventResponse = new CreateEventResponse(
-                new ObjectId(),
-                createEventRequest.getName(),
-                createEventRequest.getAdmin(),
-                createEventRequest.getInvitees(),
-                createEventRequest.getDate(),
-                createEventRequest.getStartTime(),
-                createEventRequest.getEndTime(),
-                createEventRequest.getLocation(),
-                createEventRequest.getDescription(),
-            );
+            const createEventResponse = CreateEventResponse.builder()
+                .setId(new ObjectId())
+                .setName(createEventRequest.getName())
+                .setAdmin(createEventRequest.getAdmin())
+                .setInvitees(createEventRequest.getInvitees())
+                .setStartTime(createEventRequest.getStartTime())
+                .setEndTime(createEventRequest.getEndTime())
+                .setLocation(createEventRequest.getLocation())
+                .setDescription(createEventRequest.getDescription())
+                .build();
 
             mockEventService.addEvent.mockResolvedValue(createEventResponse);
 
@@ -105,6 +107,82 @@ describe("EventController", () => {
                 HttpStatusCode.CREATED,
             );
             expect(mockResponse.json).toHaveBeenCalledWith(createEventResponse);
+        });
+    });
+
+    describe("getUserEvents", () => {
+        it("should return the user's events", async () => {
+            const mockUserId = new ObjectId().toString();
+            const startTime = new Date();
+            const endTime = new Date(
+                startTime.getTime() + 7 * 24 * 60 * 60 * 1000,
+            );
+
+            const mockRequest = {
+                params: {
+                    userId: mockUserId,
+                },
+            } as Partial<Request>;
+
+            const mockEvents: IEvent[] = [
+                {
+                    _id: new ObjectId(),
+                    name: "Soccer Practice",
+                    admin: [new ObjectId()],
+                    invitees: [new ObjectId(), new ObjectId()],
+                    startTime,
+                    endTime,
+                    location: "Loudoun Soccer Park",
+                    description: "Bring your own soccer ball",
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                } as IEvent,
+                {
+                    _id: new ObjectId(),
+                    name: "Basketball Practice",
+                    admin: [new ObjectId()],
+                    invitees: [new ObjectId(), new ObjectId()],
+                    startTime,
+                    endTime,
+                    location: "Duke University",
+                    description: "Practice for upcoming tournament",
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                } as IEvent,
+            ];
+
+            const mockUserEvent1 = new UserEventResponse(
+                EventStatus.Pending,
+                mockEvents[0],
+            );
+            const mockUserEvent2 = new UserEventResponse(
+                EventStatus.Accepted,
+                mockEvents[1],
+            );
+            const mockUserEventResponseList: UserEventResponse[] = [
+                mockUserEvent1,
+                mockUserEvent2,
+            ];
+
+            mockEventService.getUserEvents.mockResolvedValue(
+                mockUserEventResponseList,
+            );
+
+            // Act
+            await eventController.getUserEvents(
+                mockRequest as Request,
+                mockResponse as Response,
+                mockNextFunction as NextFunction,
+            );
+
+            // Assert
+            expect(mockEventService.getUserEvents).toHaveBeenCalledWith(
+                new ObjectId(mockUserId),
+            );
+            expect(mockResponse.status).toHaveBeenCalledWith(HttpStatusCode.OK);
+            expect(mockResponse.json).toHaveBeenCalledWith(
+                mockUserEventResponseList,
+            );
         });
     });
 });
