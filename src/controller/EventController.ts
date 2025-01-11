@@ -6,7 +6,7 @@ import { StatusCodes as HttpStatusCode } from "http-status-codes";
 import { UserEventResponse } from "../dto/UserEventResponse";
 import { ObjectId } from "mongodb";
 
-export class EventController {
+export default class EventController {
     private eventService: EventService;
 
     constructor(eventService: EventService) {

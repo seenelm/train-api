@@ -1,5 +1,4 @@
 import { ObjectId } from "mongodb";
-import { RequestValidationError } from "../utils/errors";
 
 export class CreateEventRequest {
     private name!: string;
