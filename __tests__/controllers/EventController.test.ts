@@ -12,7 +12,6 @@ import { StatusCodes as HttpStatusCode } from "http-status-codes";
 import { IEvent } from "../../src/model/eventModel";
 import { UserEventResponse } from "../../src/dto/UserEventResponse";
 import { EventStatus } from "../../src/common/enums";
-import { mock } from "node:test";
 
 jest.mock("../../src/service/EventService");
 

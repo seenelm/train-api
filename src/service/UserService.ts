@@ -87,6 +87,10 @@ class UserService {
                 error,
             );
         });
+        // TODO: FIX THIS.
+        if (!token) {
+            throw new Errors.InternalServerError("Error signing JWT");
+        }
 
         const userRegisterResponse: UserRegisterResponse = {
             userId: newUser._id,
@@ -143,6 +147,11 @@ class UserService {
                 error,
             );
         });
+
+        // TODO: FIX THIS.
+        if (!token) {
+            throw new Errors.InternalServerError("Error signing JWT");
+        }
 
         this.logger.logInfo("User logged in", { username, userId: user._id });
 

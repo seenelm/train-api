@@ -44,59 +44,6 @@ export class CreateEventRequest {
         return this.description;
     }
 
-    public validate(): void {
-        const errors: string[] = [];
-
-        if (
-            !this.name ||
-            typeof this.name !== "string" ||
-            this.name.trim().length === 0
-        ) {
-            errors.push("Name is required and must be a non-empty string.");
-        }
-
-        if (
-            !this.admin ||
-            !Array.isArray(this.admin) ||
-            this.admin.length === 0
-        ) {
-            errors.push(
-                "Admin is required and must be a non-empty array of ObjectIds.",
-            );
-        }
-
-        if (!this.invitees || !Array.isArray(this.invitees)) {
-            errors.push("Invitees must be an array of ObjectIds.");
-        }
-
-        if (
-            !(this.startTime instanceof Date) ||
-            isNaN(this.startTime.getTime())
-        ) {
-            errors.push(
-                "Start time is required and must be a valid Date object.",
-            );
-        }
-
-        if (!(this.endTime instanceof Date) || isNaN(this.endTime.getTime())) {
-            errors.push(
-                "End time is required and must be a valid Date object.",
-            );
-        }
-
-        if (this.location && typeof this.location !== "string") {
-            errors.push("Location must be a string.");
-        }
-
-        if (this.description && typeof this.description !== "string") {
-            errors.push("Description must be a string.");
-        }
-
-        if (errors.length > 0) {
-            throw new RequestValidationError(errors);
-        }
-    }
-
     static Builder = class {
         private name!: string;
         private admin!: ObjectId[];
