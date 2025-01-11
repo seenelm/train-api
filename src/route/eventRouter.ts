@@ -1,6 +1,6 @@
 import express from "express";
 const eventRouter = express.Router();
-import { EventController } from "../controller/EventController";
+import EventController from "../controller/EventController";
 import EventService from "../service/EventService";
 import EventDAO from "../dao/EventDAO";
 import { authenticate } from "../middleware/authenticate";

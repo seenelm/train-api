@@ -15,7 +15,7 @@ export class DatabaseError extends Error {
     }
 }
 
-export const handleMongoDBError = (error: unknown): DatabaseError => {
+export const handleDatabaseError = (error: unknown): DatabaseError => {
     console.error("Error: ", error);
     if (error instanceof MongooseError.ValidationError) {
         return new DatabaseError(
@@ -67,17 +67,6 @@ export class AuthError extends Error {
     constructor(errors: object = {}, statusCode: number) {
         super();
         this.statusCode = statusCode;
-        this.errors = errors;
-    }
-}
-
-export class RequestValidationError extends Error {
-    public errors: string[];
-    public statusCode: number;
-
-    constructor(errors: string[]) {
-        super();
-        this.statusCode = HttpStatusCode.BAD_REQUEST;
         this.errors = errors;
     }
 }

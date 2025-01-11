@@ -4,7 +4,7 @@ import { CreateEventRequest } from "../dto/CreateEventRequest";
 import { CreateEventResponse } from "../dto/CreateEventResponse";
 import { IEvent } from "../model/eventModel";
 import { ObjectId } from "mongodb";
-import { InternalServerError, handleMongoDBError } from "../utils/errors";
+import { InternalServerError, handleDatabaseError } from "../utils/errors";
 import mongoose from "mongoose";
 import { UserEventEntity } from "../entity/UserEventEntity";
 import { ResourceNotFoundError } from "../utils/errors";
@@ -62,7 +62,7 @@ export default class EventService {
             console.error("Error during transaction, aborting: ", error);
             await session.abortTransaction();
             console.debug("Transaction aborted for session: ", session.id);
-            throw handleMongoDBError(error);
+            throw handleDatabaseError(error);
         } finally {
             session.endSession();
             console.debug("Session ended: ", session.id);
@@ -90,7 +90,7 @@ export default class EventService {
 
             return UserEventResponse.from(userEventEntityList);
         } catch (error) {
-            throw handleMongoDBError(error);
+            throw handleDatabaseError(error);
         }
     }
 

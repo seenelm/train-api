@@ -1,6 +1,5 @@
 import { Event, IEvent } from "../../src/model/eventModel";
 import { ObjectId } from "mongodb";
-import { soccerPracticeEvent as mockEvent } from "../mocks/eventMockData";
 import mongoose from "mongoose";
 
 describe("EventModel Unit Tests", () => {
