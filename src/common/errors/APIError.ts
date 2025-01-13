@@ -1,7 +1,7 @@
-import { BaseError } from "./BaseError";
+import { ServerError } from "./ServerError";
 import { StatusCodes as HttpStatusCode } from "http-status-codes";
 
-export class APIError extends BaseError {
+export class APIError extends ServerError {
     static BadRequest(message: string, details?: unknown): APIError {
         return new APIError(
             message,

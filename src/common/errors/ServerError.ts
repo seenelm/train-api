@@ -1,10 +1,10 @@
 import { ErrorResponse } from "./types";
 
-export abstract class BaseError extends Error {
+export abstract class ServerError extends Error {
     constructor(
         public readonly message: string,
         public readonly statusCode: number,
-        public readonly code: string,
+        public readonly errorCode: string,
         public readonly details?: unknown,
     ) {
         super(message);
@@ -15,9 +15,7 @@ export abstract class BaseError extends Error {
     public toJSON(): ErrorResponse {
         return {
             message: this.message,
-            code: this.code,
-            statusCode: this.statusCode,
-            timestamp: new Date().toISOString(),
+            errorCode: this.errorCode,
             details: this.details,
         };
     }
