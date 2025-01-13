@@ -1,17 +1,17 @@
-import { BaseError } from "./BaseError";
+import { ServerError } from "./ServerError";
 import { StatusCodes as HttpStatusCode } from "http-status-codes";
 import { Error as MongooseError } from "mongoose";
 import { MongoServerError } from "mongodb";
 import { MongoServerErrorType } from "../enums";
 
-export class DatabaseError extends BaseError {
+export class DatabaseError extends ServerError {
     constructor(
         message: string,
-        code: string = "DATABASE_ERROR",
+        errorCode: string = "DATABASE_ERROR",
         statusCode: number = HttpStatusCode.INTERNAL_SERVER_ERROR,
         details?: unknown,
     ) {
-        super(message, statusCode, code, details);
+        super(message, statusCode, errorCode, details);
     }
 
     static handleError(error: unknown): DatabaseError {

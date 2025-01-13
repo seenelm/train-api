@@ -1,7 +1,7 @@
-import { BaseError } from "./BaseError";
+import { ServerError } from "./ServerError";
 import { StatusCodes as HttpStatusCode } from "http-status-codes";
 
-export class AuthError extends BaseError {
+export class AuthError extends ServerError {
     static Unauthorized(
         message: string = "Unauthorized",
         details?: unknown,
@@ -22,6 +22,30 @@ export class AuthError extends BaseError {
             message,
             HttpStatusCode.FORBIDDEN,
             "FORBIDDEN",
+            details,
+        );
+    }
+
+    static InvalidToken(
+        message: string = "Invalid token",
+        details?: unknown,
+    ): AuthError {
+        return new AuthError(
+            message,
+            HttpStatusCode.UNAUTHORIZED,
+            "INVALID_TOKEN",
+            details,
+        );
+    }
+
+    static TokenExpired(
+        message: string = "Token expired",
+        details?: unknown,
+    ): AuthError {
+        return new AuthError(
+            message,
+            HttpStatusCode.UNAUTHORIZED,
+            "TOKEN_EXPIRED",
             details,
         );
     }

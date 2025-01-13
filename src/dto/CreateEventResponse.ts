@@ -15,30 +15,6 @@ export class CreateEventResponse {
 
     private constructor() {}
 
-    // constructor(
-    //     id: ObjectId,
-    //     name: string,
-    //     admin: ObjectId[],
-    //     invitees: ObjectId[],
-    //     startTime: Date,
-    //     endTime: Date,
-    //     location?: string,
-    //     description?: string,
-    //     createdAt?: Date,
-    //     updatedAt?: Date,
-    // ) {
-    //     this.id = id;
-    //     this.name = name;
-    //     this.admin = admin;
-    //     this.invitees = invitees;
-    //     this.startTime = startTime;
-    //     this.endTime = endTime;
-    //     this.location = location;
-    //     this.description = description;
-    //     this.createdAt = createdAt;
-    //     this.updatedAt = updatedAt;
-    // }
-
     static builder() {
         return new this.Builder();
     }
