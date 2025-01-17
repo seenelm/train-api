@@ -1,14 +1,14 @@
 import { ObjectId } from "mongodb";
 
 export interface UserRegisterResponse {
-    userId: ObjectId;
+    userId: string;
     token: string;
     username: string;
     name: string;
 }
 
 export interface UserLoginResponse {
-    userId: ObjectId;
+    userId: string;
     token: string;
     username: string;
     name: string;

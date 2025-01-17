@@ -20,6 +20,15 @@ export class APIError extends ServerError {
         );
     }
 
+    static Conflict(message: string, details?: unknown): APIError {
+        return new APIError(
+            message,
+            HttpStatusCode.CONFLICT,
+            "CONFLICT",
+            details,
+        );
+    }
+
     static InternalServerError(message: string, details?: unknown): APIError {
         return new APIError(
             message,
