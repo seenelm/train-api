@@ -13,12 +13,24 @@ export default class UserRegisterRequest {
         return this.username;
     }
 
+    public setUsername(username: string): void {
+        this.username = username;
+    }
+
     public getPassword(): string {
         return this.password;
     }
 
+    public setPassword(password: string): void {
+        this.password = password;
+    }
+
     public getName(): string {
         return this.name;
+    }
+
+    public setName(name: string): void {
+        this.name = name;
     }
 
     static Builder = class {

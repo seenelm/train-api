@@ -36,4 +36,6 @@ describe("CreateEventRequest Unit Tests", () => {
             mockRequest.description,
         );
     });
+
+    it("should update the CreateEventRequest", () => {});
 });

@@ -9,8 +9,11 @@ import FollowDAO from "../dao/FollowDAO";
 import CustomLogger from "../common/logger";
 import { Types } from "mongoose";
 
-import { UserRegisterRequest, UserLoginRequest } from "../dto/userRequest";
+import { UserLoginRequest } from "../dto/userRequest";
 import { UserRegisterResponse, UserLoginResponse } from "../dto/userResponse";
+import UserRegisterRequest from "../dto/UserRegisterRequest";
+import mongoose from "mongoose";
+import { APIError } from "../common/errors/APIError";
 
 export interface TokenPayload {
     name: string;
@@ -40,64 +43,83 @@ class UserService {
     public async registerUser(
         userRegisterRequest: UserRegisterRequest,
     ): Promise<UserRegisterResponse> {
-        const { username, password, name } = userRegisterRequest;
+        const username = userRegisterRequest.getUsername();
+        const password = userRegisterRequest.getPassword();
+        const name = userRegisterRequest.getName();
+        const session = await mongoose.startSession();
+        session.startTransaction();
 
-        const existingUser = await this.userDAO.findOne({ username });
-        if (existingUser) {
-            throw new Errors.ConflictError("username already taken");
-        }
-        const hash = await BcryptUtil.hashPassword(password).catch((error) => {
-            this.logger.logError(
-                `Error hashing password for user ${username}`,
-                error,
-            );
-        });
+        try {
+            const existingUser = await this.userDAO.findOne({ username });
+            if (existingUser) {
+                throw APIError.Conflict("username already taken");
+            }
 
-        const newUser = await this.userDAO
-            .create({ username, password: hash, isActive: true })
-            .catch((error) => {
-                throw error;
+            // Hash password
+            const hash = await BcryptUtil.hashPassword(password);
+
+            const newUser = await this.userDAO.create({
+                username,
+                password: hash,
+                isActive: true,
             });
 
-        const newUserProfile = await this.userProfileDAO.create({
-            userId: newUser._id,
-            name,
-            username,
-        });
+            await Promise.all([
+                this.userProfileDAO.create(
+                    {
+                        userId: newUser._id,
+                        name,
+                        username,
+                    },
+                    { session },
+                ),
+                this.userGroupsDAO.create(
+                    {
+                        userId: newUser._id,
+                    },
+                    { session },
+                ),
+                await this.userGroupsDAO.create(
+                    {
+                        userId: newUser._id,
+                    },
+                    { session },
+                ),
+            ]);
 
-        const userGroups = await this.userGroupsDAO.create({
-            userId: newUser._id,
-        });
+            // const newUserProfile = await this.userProfileDAO.create({
+            //     userId: newUser._id,
+            //     name,
+            //     username,
+            // });
 
-        const follow = await this.followDAO.create({ userId: newUser._id });
+            // const userGroups = await this.userGroupsDAO.create({
+            //     userId: newUser._id,
+            // });
 
-        const payload: TokenPayload = {
-            name: newUserProfile.name,
-            userId: newUser._id,
-        };
+            // const follow = await this.followDAO.create({ userId: newUser._id });
 
-        const token = await JWTUtil.sign(
-            payload,
-            process.env.SECRET_CODE,
-        ).catch((error) => {
-            this.logger.logError(
-                `Error signing JWT for user ${username}`,
-                error,
-            );
-        });
-        // TODO: FIX THIS.
-        if (!token) {
-            throw new Errors.InternalServerError("Error signing JWT");
-        }
+            const payload: TokenPayload = {
+                name,
+                userId: newUser._id,
+            };
 
-        const userRegisterResponse: UserRegisterResponse = {
-            userId: newUser._id,
-            token,
-            username,
-            name,
-        };
+            const token = await JWTUtil.sign(payload, process.env.SECRET_CODE);
 
-        return userRegisterResponse;
+            // TODO: FIX THIS.
+            if (!token) {
+                throw new Errors.InternalServerError("Error signing JWT");
+            }
+
+            const userRegisterResponse: UserRegisterResponse = {
+                userId: newUser._id,
+                token,
+                username,
+                name,
+            };
+
+            return userRegisterResponse;
+        } catch (error) {}
     }
 
     public async loginUser(

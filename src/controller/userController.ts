@@ -1,8 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import UserService from "../service/UserService";
 import { Types } from "mongoose";
-import { UserRegisterRequest, UserLoginRequest } from "../dto/userRequest";
+import { UserLoginRequest } from "../dto/userRequest";
 import { UserLoginResponse, UserRegisterResponse } from "../dto/userResponse";
+import UserRegisterRequest from "../dto/UserRegisterRequest";
 
 export default class UserController {
     private userService: UserService;
@@ -13,7 +14,12 @@ export default class UserController {
 
     register = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const userRegisterRequest: UserRegisterRequest = req.body;
+            const userRegisterRequest: UserRegisterRequest =
+                UserRegisterRequest.builder()
+                    .setUsername(req.body.username)
+                    .setPassword(req.body.password)
+                    .setName(req.body.name)
+                    .build();
 
             const userRegisterResponse: UserRegisterResponse =
                 await this.userService.registerUser(userRegisterRequest);

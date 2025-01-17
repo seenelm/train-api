@@ -49,4 +49,22 @@ export class AuthError extends ServerError {
             details,
         );
     }
+
+    static HashingFailed(details?: unknown) {
+        return new AuthError(
+            "Failed to hash password",
+            HttpStatusCode.INTERNAL_SERVER_ERROR,
+            "PASSWORD_HASHING_FAILED",
+            details,
+        );
+    }
+
+    static TokenGenerationFailed(details?: unknown) {
+        return new AuthError(
+            "Failed to generate authentication token",
+            HttpStatusCode.INTERNAL_SERVER_ERROR,
+            "TOKEN_GENERATION_FAILED",
+            details,
+        );
+    }
 }
