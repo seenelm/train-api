@@ -1,7 +1,6 @@
-import { ObjectId } from "mongodb";
 import { IEvent } from "../model/eventModel";
 
-export class CreateEventResponse {
+export class EventResponse {
     private id: string;
     private name: string;
     private admin: string[];
@@ -59,8 +58,8 @@ export class CreateEventResponse {
         return this.updatedAt;
     }
 
-    static from(event: IEvent): CreateEventResponse {
-        return CreateEventResponse.builder()
+    static from(event: IEvent): EventResponse {
+        return EventResponse.builder()
             .setId(event._id)
             .setName(event.name)
             .setAdmin(event.admin.map((admin) => admin.toString()))
@@ -136,8 +135,8 @@ export class CreateEventResponse {
             return this;
         }
 
-        public build(): CreateEventResponse {
-            const createEventResponse = new CreateEventResponse();
+        public build(): EventResponse {
+            const createEventResponse = new EventResponse();
             createEventResponse.id = this.id;
             createEventResponse.name = this.name;
             createEventResponse.admin = this.admin;

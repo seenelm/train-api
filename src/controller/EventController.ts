@@ -1,6 +1,6 @@
 import EventService from "../service/EventService";
-import { CreateEventRequest } from "../dto/CreateEventRequest";
-import { CreateEventResponse } from "../dto/CreateEventResponse";
+import { EventRequest } from "../dto/EventRequest";
+import { EventResponse } from "../dto/EventResponse";
 import { Request, Response, NextFunction } from "express";
 import { StatusCodes as HttpStatusCode } from "http-status-codes";
 import { UserEventResponse } from "../dto/UserEventResponse";
@@ -19,24 +19,21 @@ export default class EventController {
         next: NextFunction,
     ): Promise<void> => {
         try {
-            const createEventRequest: CreateEventRequest =
-                new CreateEventRequest.Builder()
-                    .setName(req.body.name)
-                    .setAdmin(
-                        req.body.admin.map((id: string) => new ObjectId(id)),
-                    )
-                    .setInvitees(
-                        req.body.invitees.map((id: string) => new ObjectId(id)),
-                    )
-                    .setStartTime(req.body.startTime)
-                    .setEndTime(req.body.endTime)
-                    .setLocation(req.body.location)
-                    .setDescription(req.body.description)
-                    .build();
+            const createEventRequest: EventRequest = new EventRequest.Builder()
+                .setName(req.body.name)
+                .setAdmin(req.body.admin.map((id: string) => new ObjectId(id)))
+                .setInvitees(
+                    req.body.invitees.map((id: string) => new ObjectId(id)),
+                )
+                .setStartTime(req.body.startTime)
+                .setEndTime(req.body.endTime)
+                .setLocation(req.body.location)
+                .setDescription(req.body.description)
+                .build();
 
-            const createEventResponse: CreateEventResponse =
+            const eventResponse: EventResponse =
                 await this.eventService.addEvent(createEventRequest);
-            res.status(HttpStatusCode.CREATED).json(createEventResponse);
+            res.status(HttpStatusCode.CREATED).json(eventResponse);
         } catch (error) {
             next(error);
         }

@@ -1,7 +1,7 @@
 import EventDAO from "../dao/EventDAO";
 import UserEventDAO from "../dao/UserEventDAO";
-import { CreateEventRequest } from "../dto/CreateEventRequest";
-import { CreateEventResponse } from "../dto/CreateEventResponse";
+import { EventRequest } from "../dto/EventRequest";
+import { EventResponse } from "../dto/EventResponse";
 import { IEvent } from "../model/eventModel";
 import { ObjectId } from "mongodb";
 import { InternalServerError, handleDatabaseError } from "../utils/errors";
@@ -25,8 +25,8 @@ export default class EventService {
      * @returns CreateEventResponse
      */
     public async addEvent(
-        createEventRequest: CreateEventRequest,
-    ): Promise<CreateEventResponse> {
+        createEventRequest: EventRequest,
+    ): Promise<EventResponse> {
         const session = await mongoose.startSession();
         console.debug("Session started: ", session.id);
         session.startTransaction();
@@ -57,7 +57,7 @@ export default class EventService {
 
             await session.commitTransaction();
             console.debug("Transaction committed for session: ", session.id);
-            return CreateEventResponse.from(event);
+            return EventResponse.from(event);
         } catch (error) {
             console.error("Error during transaction, aborting: ", error);
             await session.abortTransaction();

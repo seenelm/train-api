@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 
-export class CreateEventRequest {
+export class EventRequest {
     private name: string;
     private admin: ObjectId[];
     private invitees?: ObjectId[];
@@ -87,8 +87,8 @@ export class CreateEventRequest {
             return this;
         }
 
-        public build(): CreateEventRequest {
-            const createEventRequest = new CreateEventRequest();
+        public build(): EventRequest {
+            const createEventRequest = new EventRequest();
             createEventRequest.name = this.name;
             createEventRequest.admin = this.admin;
             createEventRequest.invitees = this.invitees;
