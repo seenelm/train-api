@@ -1,11 +1,11 @@
 import { ObjectId } from "mongodb";
 
 export class CreateEventRequest {
-    private name!: string;
-    private admin!: ObjectId[];
-    private invitees!: ObjectId[];
-    private startTime!: Date;
-    private endTime!: Date;
+    private name: string;
+    private admin: ObjectId[];
+    private invitees?: ObjectId[];
+    private startTime: Date;
+    private endTime?: Date;
     private location?: string;
     private description?: string;
 
@@ -44,11 +44,11 @@ export class CreateEventRequest {
     }
 
     static Builder = class {
-        private name!: string;
-        private admin!: ObjectId[];
-        private invitees!: ObjectId[];
-        private startTime!: Date;
-        private endTime!: Date;
+        private name: string;
+        private admin: ObjectId[];
+        private invitees?: ObjectId[];
+        private startTime: Date;
+        private endTime?: Date;
         private location?: string;
         private description?: string;
 
@@ -62,7 +62,7 @@ export class CreateEventRequest {
             return this;
         }
 
-        public setInvitees(invitees: ObjectId[]): this {
+        public setInvitees(invitees?: ObjectId[]): this {
             this.invitees = invitees;
             return this;
         }
@@ -72,7 +72,7 @@ export class CreateEventRequest {
             return this;
         }
 
-        public setEndTime(endTime: Date): this {
+        public setEndTime(endTime?: Date): this {
             this.endTime = endTime;
             return this;
         }

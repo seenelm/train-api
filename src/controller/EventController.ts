@@ -22,8 +22,12 @@ export default class EventController {
             const createEventRequest: CreateEventRequest =
                 new CreateEventRequest.Builder()
                     .setName(req.body.name)
-                    .setAdmin(req.body.admin)
-                    .setInvitees(req.body.invitees)
+                    .setAdmin(
+                        req.body.admin.map((id: string) => new ObjectId(id)),
+                    )
+                    .setInvitees(
+                        req.body.invitees.map((id: string) => new ObjectId(id)),
+                    )
                     .setStartTime(req.body.startTime)
                     .setEndTime(req.body.endTime)
                     .setLocation(req.body.location)

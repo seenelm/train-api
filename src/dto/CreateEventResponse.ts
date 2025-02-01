@@ -2,10 +2,10 @@ import { ObjectId } from "mongodb";
 import { IEvent } from "../model/eventModel";
 
 export class CreateEventResponse {
-    private id: ObjectId;
+    private id: string;
     private name: string;
-    private admin: ObjectId[];
-    private invitees?: ObjectId[];
+    private admin: string[];
+    private invitees?: string[];
     private startTime: Date;
     private endTime?: Date;
     private location?: string;
@@ -19,7 +19,7 @@ export class CreateEventResponse {
         return new this.Builder();
     }
 
-    public getId(): ObjectId {
+    public getId(): string {
         return this.id;
     }
 
@@ -27,11 +27,11 @@ export class CreateEventResponse {
         return this.name;
     }
 
-    public getAdmin(): ObjectId[] {
+    public getAdmin(): string[] {
         return this.admin;
     }
 
-    public getInvitees(): ObjectId[] {
+    public getInvitees(): string[] {
         return this.invitees;
     }
 
@@ -63,8 +63,8 @@ export class CreateEventResponse {
         return CreateEventResponse.builder()
             .setId(event._id)
             .setName(event.name)
-            .setAdmin(event.admin)
-            .setInvitees(event.invitees)
+            .setAdmin(event.admin.map((admin) => admin.toString()))
+            .setInvitees(event.invitees.map((invitee) => invitee.toString()))
             .setStartTime(event.startTime)
             .setEndTime(event.endTime)
             .setLocation(event.location)
@@ -75,10 +75,10 @@ export class CreateEventResponse {
     }
 
     static Builder = class {
-        private id: ObjectId;
+        private id: string;
         private name: string;
-        private admin: ObjectId[];
-        private invitees?: ObjectId[];
+        private admin: string[];
+        private invitees?: string[];
         private startTime: Date;
         private endTime?: Date;
         private location?: string;
@@ -86,7 +86,7 @@ export class CreateEventResponse {
         private createdAt?: Date;
         private updatedAt?: Date;
 
-        public setId(id: ObjectId): this {
+        public setId(id: string): this {
             this.id = id;
             return this;
         }
@@ -96,12 +96,12 @@ export class CreateEventResponse {
             return this;
         }
 
-        public setAdmin(admin: ObjectId[]): this {
+        public setAdmin(admin: string[]): this {
             this.admin = admin;
             return this;
         }
 
-        public setInvitees(invitees?: ObjectId[]): this {
+        public setInvitees(invitees?: string[]): this {
             this.invitees = invitees;
             return this;
         }
