@@ -13,11 +13,7 @@ export default class EventController {
         this.eventService = eventService;
     }
 
-    addEvent = async (
-        req: Request,
-        res: Response,
-        next: NextFunction,
-    ): Promise<void> => {
+    addEvent = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const createEventRequest: EventRequest = new EventRequest.Builder()
                 .setName(req.body.name)
@@ -33,7 +29,7 @@ export default class EventController {
 
             const eventResponse: EventResponse =
                 await this.eventService.addEvent(createEventRequest);
-            res.status(HttpStatusCode.CREATED).json(eventResponse);
+            return res.status(HttpStatusCode.CREATED).json(eventResponse);
         } catch (error) {
             next(error);
         }
@@ -45,7 +41,8 @@ export default class EventController {
 
             const userEventResponseList: UserEventResponse[] =
                 await this.eventService.getUserEvents(userId);
-            res.status(HttpStatusCode.OK).json(userEventResponseList);
+            console.log("userEventResponseList", userEventResponseList);
+            return res.status(HttpStatusCode.OK).json(userEventResponseList);
         } catch (error) {
             next(error);
         }
