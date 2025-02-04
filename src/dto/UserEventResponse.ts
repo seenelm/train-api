@@ -1,28 +1,28 @@
-import { IEvent } from "../model/eventModel";
 import { UserEventEntity } from "../entity/UserEventEntity";
+import { EventResponse } from "./EventResponse";
 
 export class UserEventResponse {
-    private status: string;
-    private event: IEvent;
+    private status: number;
+    private event: EventResponse;
 
-    constructor(status: string, event: IEvent) {
+    constructor(status: number, event: EventResponse) {
         this.status = status;
         this.event = event;
     }
 
-    public setStatus(status: string): void {
+    public setStatus(status: number): void {
         this.status = status;
     }
 
-    public getStatus(): string {
+    public getStatus(): number {
         return this.status;
     }
 
-    public setEvent(event: IEvent): void {
+    public setEvent(event: EventResponse): void {
         this.event = event;
     }
 
-    public getEvent(): IEvent {
+    public getEvent(): EventResponse {
         return this.event;
     }
 
@@ -33,7 +33,7 @@ export class UserEventResponse {
             (userEventEntity) =>
                 new UserEventResponse(
                     userEventEntity.getStatus(),
-                    userEventEntity.getEvent(),
+                    EventResponse.from(userEventEntity.getEvent()),
                 ),
         );
     }

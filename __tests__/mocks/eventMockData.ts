@@ -4,13 +4,15 @@ import { CreateEventRequest } from "../../src/dto/CreateEventRequest";
 import { IUser } from "../../src/model/userModel";
 import { IUserProfile } from "../../src/model/userProfile";
 import { faker } from "@faker-js/faker";
+import { IUserEvent } from "../../src/model/userEventModel";
+import { UserEventResponse } from "../../src/dto/UserEventResponse";
+import { UserEventEntity } from "../../src/entity/UserEventEntity";
 
 export const soccerPracticeEvent: IEvent = {
     _id: new ObjectId(),
     name: "Soccer Practice",
     admin: [new ObjectId()],
     invitees: [new ObjectId(), new ObjectId()],
-    date: new Date(),
     startTime: new Date(),
     endTime: new Date(),
     location: "Loudoun Soccer Park",
@@ -24,7 +26,6 @@ export const getCreateEventRequest = (): CreateEventRequest => {
         .setName("Soccer Practice")
         .setAdmin([new ObjectId()])
         .setInvitees([new ObjectId(), new ObjectId()])
-        .setDate(new Date())
         .setStartTime(new Date())
         .setEndTime(new Date())
         .setLocation("Loudoun Soccer Park")
@@ -68,7 +69,6 @@ export const createMockCreateEventRequest = (
         .setName(faker.lorem.words())
         .setAdmin(admins)
         .setInvitees(invitees)
-        .setDate(faker.date.future())
         .setStartTime(faker.date.future())
         .setEndTime(faker.date.future())
         .setLocation(faker.location.streetAddress())
@@ -86,7 +86,6 @@ export const createMockEvent = (
         name: createEventRequest.getName(),
         admin: createEventRequest.getAdmin(),
         invitees: createEventRequest.getInvitees(),
-        date: createEventRequest.getDate(),
         startTime: createEventRequest.getStartTime(),
         endTime: createEventRequest.getEndTime(),
         location: createEventRequest.getLocation(),
@@ -96,3 +95,37 @@ export const createMockEvent = (
         ...overrides,
     } as IEvent;
 };
+
+export const createMockUserEvent = (
+    event: IEvent,
+    status: number,
+): UserEventEntity => {
+    return new UserEventEntity(status, event);
+};
+
+export const mockEvents: IEvent[] = [
+    {
+        _id: new ObjectId(),
+        name: "Soccer Practice",
+        admin: [new ObjectId()],
+        invitees: [new ObjectId(), new ObjectId()],
+        startTime: faker.date.recent(),
+        endTime: faker.date.future(),
+        location: faker.location.streetAddress(),
+        description: faker.lorem.sentence(),
+        createdAt: faker.date.recent(),
+        updatedAt: faker.date.recent(),
+    } as IEvent,
+    {
+        _id: new ObjectId(),
+        name: "Basketball Practice",
+        admin: [new ObjectId()],
+        invitees: [new ObjectId(), new ObjectId()],
+        startTime: faker.date.recent(),
+        endTime: faker.date.future(),
+        location: faker.location.streetAddress(),
+        description: faker.lorem.sentence(),
+        createdAt: faker.date.recent(),
+        updatedAt: faker.date.recent(),
+    } as IEvent,
+];

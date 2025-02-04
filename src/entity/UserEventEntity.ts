@@ -1,19 +1,19 @@
 import { IEvent } from "../model/eventModel";
 
 export class UserEventEntity {
-    private status: string;
+    private status: number;
     private event: IEvent;
 
-    constructor(status: string, event: IEvent) {
+    constructor(status: number, event: IEvent) {
         this.status = status;
         this.event = event;
     }
 
-    public setStatus(status: string): void {
+    public setStatus(status: number): void {
         this.status = status;
     }
 
-    public getStatus(): string {
+    public getStatus(): number {
         return this.status;
     }
 
