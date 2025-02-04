@@ -1,43 +1,35 @@
 import EventService from "../service/EventService";
-import { CreateEventRequest } from "../dto/CreateEventRequest";
-import { CreateEventResponse } from "../dto/CreateEventResponse";
+import { EventRequest } from "../dto/EventRequest";
+import { EventResponse } from "../dto/EventResponse";
 import { Request, Response, NextFunction } from "express";
 import { StatusCodes as HttpStatusCode } from "http-status-codes";
 import { UserEventResponse } from "../dto/UserEventResponse";
 import { ObjectId } from "mongodb";
 
-export class EventController {
+export default class EventController {
     private eventService: EventService;
 
     constructor(eventService: EventService) {
         this.eventService = eventService;
     }
 
-    addEvent = async (
-        req: Request,
-        res: Response,
-        next: NextFunction,
-    ): Promise<void> => {
+    addEvent = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const createEventRequest: CreateEventRequest =
-                new CreateEventRequest.Builder()
-                    .setName(req.body.name)
-                    .setAdmin(req.body.admin)
-                    .setInvitees(req.body.invitees)
-                    .setDate(req.body.date)
-                    .setStartTime(
-                        new Date(`${req.body.date}T${req.body.startTime}:00`),
-                    )
-                    .setEndTime(
-                        new Date(`${req.body.date}T${req.body.endTime}:00`),
-                    )
-                    .setLocation(req.body.location)
-                    .setDescription(req.body.description)
-                    .build();
+            const createEventRequest: EventRequest = new EventRequest.Builder()
+                .setName(req.body.name)
+                .setAdmin(req.body.admin.map((id: string) => new ObjectId(id)))
+                .setInvitees(
+                    req.body.invitees.map((id: string) => new ObjectId(id)),
+                )
+                .setStartTime(req.body.startTime)
+                .setEndTime(req.body.endTime)
+                .setLocation(req.body.location)
+                .setDescription(req.body.description)
+                .build();
 
-            const createEventResponse: CreateEventResponse =
+            const eventResponse: EventResponse =
                 await this.eventService.addEvent(createEventRequest);
-            res.status(HttpStatusCode.CREATED).json(createEventResponse);
+            return res.status(HttpStatusCode.CREATED).json(eventResponse);
         } catch (error) {
             next(error);
         }
@@ -49,7 +41,8 @@ export class EventController {
 
             const userEventResponseList: UserEventResponse[] =
                 await this.eventService.getUserEvents(userId);
-            res.status(HttpStatusCode.OK).json(userEventResponseList);
+            console.log("userEventResponseList", userEventResponseList);
+            return res.status(HttpStatusCode.OK).json(userEventResponseList);
         } catch (error) {
             next(error);
         }

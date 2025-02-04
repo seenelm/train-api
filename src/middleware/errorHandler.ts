@@ -1,7 +1,8 @@
-import * as Errors from "../utils/errors";
-import { DatabaseError } from "../utils/errors";
 import { NextFunction, Request, Response } from "express";
 import CustomLogger from "../common/logger";
+import { ServerError } from "../common/errors/ServerError";
+import { APIError } from "../common/errors/APIError";
+import { StatusCodes as HttpStatusCode } from "http-status-codes";
 
 export const errorHandler = (
     error: Error,
@@ -10,35 +11,18 @@ export const errorHandler = (
     next: NextFunction,
 ) => {
     const logger = new CustomLogger("errorController");
+    // log error
 
-    if (error instanceof DatabaseError) {
-        return res.status(error.statusCode).json(error.message);
+    if (error instanceof ServerError) {
+        const errorResponse = error.toJSON();
+        return res.status(error.statusCode).json(errorResponse);
     }
 
-    if (error instanceof Errors.CustomError) {
-        logger.logError(error.message, error, {
-            path: req.path,
-            method: req.method,
-            statusCode: error.statusCode,
-            additionalFields: error.additionalFields,
-        });
-        return res.status(error.statusCode).json(error.message);
-    }
+    const unknownError = APIError.InternalServerError("Unknown error occurred");
+    const errorResponse = unknownError.toJSON();
 
-    if (error instanceof Errors.AuthError) {
-        logger.logError(error.message, error, {
-            path: req.path,
-            method: req.method,
-            statusCode: error.statusCode,
-            errors: error.errors,
-        });
-        return res.status(error.statusCode).json(error.errors);
-    }
-
-    logger.logError(error.message, error, {
-        path: req.path,
-        method: req.method,
-        statusCode: 500,
-    });
-    return res.status(500).json(error.message);
+    return res
+        .status(500)
+        .json(HttpStatusCode.INTERNAL_SERVER_ERROR)
+        .json(errorResponse);
 };

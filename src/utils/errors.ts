@@ -15,9 +15,9 @@ export class DatabaseError extends Error {
     }
 }
 
-export const handleMongoDBError = (error: unknown): DatabaseError => {
+export const handleDatabaseError = (error: unknown): DatabaseError => {
+    console.error("Error: ", error);
     if (error instanceof MongooseError.ValidationError) {
-        console.error("Error: ", error.message);
         return new DatabaseError(
             error.message,
             MongoServerErrorType.ValidationError,
@@ -53,7 +53,6 @@ export const handleMongoDBError = (error: unknown): DatabaseError => {
         );
     }
 
-    console.log("Unexpected error: ", error);
     return new DatabaseError(
         "Unknown database error occurred",
         "UNEXPECTED_ERROR",
@@ -68,17 +67,6 @@ export class AuthError extends Error {
     constructor(errors: object = {}, statusCode: number) {
         super();
         this.statusCode = statusCode;
-        this.errors = errors;
-    }
-}
-
-export class RequestValidationError extends Error {
-    public errors: string[];
-    public statusCode: number;
-
-    constructor(errors: string[]) {
-        super();
-        this.statusCode = HttpStatusCode.BAD_REQUEST;
         this.errors = errors;
     }
 }

@@ -1,13 +1,11 @@
 import { Schema, model, Document, Types } from "mongoose";
 
-// Remove date
 export interface IEvent extends Document {
     name: string;
     admin: Types.ObjectId[];
-    invitees: Types.ObjectId[]; // Make optional
-    date: Date; // Remove
+    invitees?: Types.ObjectId[];
     startTime: Date;
-    endTime: Date; // Make optional
+    endTime?: Date;
     location?: string;
     description?: string;
     createdAt: Date;
@@ -20,29 +18,28 @@ const EventSchema: Schema = new Schema(
             type: String,
             required: true,
         },
-        admin: [
-            {
-                type: Schema.Types.ObjectId,
-                ref: "UserProfile",
-            },
-        ],
+        admin: {
+            type: [
+                {
+                    type: Schema.Types.ObjectId,
+                    ref: "UserProfile",
+                },
+            ],
+            required: true,
+        },
         invitees: [
             {
                 type: Schema.Types.ObjectId,
                 ref: "UserProfile",
             },
         ],
-        date: {
-            type: Date,
-            required: true,
-        },
         startTime: {
             type: Date,
             required: true,
         },
         endTime: {
             type: Date,
-            required: true,
+            required: false,
         },
         location: {
             type: String,
