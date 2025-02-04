@@ -5,8 +5,8 @@ export class EventResponse {
     private name: string;
     private admin: string[];
     private invitees?: string[];
-    private startTime: string;
-    private endTime?: string;
+    private startTime: Date;
+    private endTime?: Date;
     private location?: string;
     private description?: string;
     private createdAt?: Date;
@@ -34,11 +34,11 @@ export class EventResponse {
         return this.invitees;
     }
 
-    public getStartTime(): string {
+    public getStartTime(): Date {
         return this.startTime;
     }
 
-    public getEndTime(): string {
+    public getEndTime(): Date {
         return this.endTime;
     }
 
@@ -64,8 +64,8 @@ export class EventResponse {
             .setName(event.name)
             .setAdmin(event.admin.map((admin) => admin.toString()))
             .setInvitees(event.invitees.map((invitee) => invitee.toString()))
-            .setStartTime(event.startTime.toLocaleString())
-            .setEndTime(event.endTime.toLocaleString())
+            .setStartTime(event.startTime)
+            .setEndTime(event.endTime)
             .setLocation(event.location)
             .setDescription(event.description)
             .setCreatedAt(event.createdAt)
@@ -78,8 +78,8 @@ export class EventResponse {
         private name: string;
         private admin: string[];
         private invitees?: string[];
-        private startTime: string;
-        private endTime?: string;
+        private startTime: Date;
+        private endTime?: Date;
         private location?: string;
         private description?: string;
         private createdAt?: Date;
@@ -105,12 +105,12 @@ export class EventResponse {
             return this;
         }
 
-        public setStartTime(startTime: string): this {
+        public setStartTime(startTime: Date): this {
             this.startTime = startTime;
             return this;
         }
 
-        public setEndTime(endTime?: string): this {
+        public setEndTime(endTime?: Date): this {
             this.endTime = endTime;
             return this;
         }
