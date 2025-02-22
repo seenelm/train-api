@@ -20,7 +20,11 @@ eventRouter.post(
     EventMiddleware.validateAddEvent,
     eventController.addEvent,
 );
-eventRouter.put("/:eventId", authenticate, eventController.updateEvent);
+eventRouter.put(
+    "/:eventId/users/:adminId",
+    authenticate,
+    eventController.updateEvent,
+);
 
 eventRouter.get("/users/:userId", authenticate, eventController.getUserEvents);
 eventRouter.get(

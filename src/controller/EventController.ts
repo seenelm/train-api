@@ -68,6 +68,8 @@ export default class EventController {
     updateEvent = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const eventId: ObjectId = new ObjectId(req.params.eventId);
+            const adminId: ObjectId = new ObjectId(req.body.adminId);
+
             const updateEventRequest: EventRequest = new EventRequest.Builder()
                 .setName(req.body.name)
                 .setAdmin(req.body.admin.map((id: string) => new ObjectId(id)))
@@ -80,7 +82,11 @@ export default class EventController {
                 .setDescription(req.body.description)
                 .build();
 
-            await this.eventService.updateEvent(updateEventRequest, eventId);
+            await this.eventService.updateEvent(
+                updateEventRequest,
+                eventId,
+                adminId,
+            );
             return res.status(HttpStatusCode.OK);
         } catch (error) {
             next(error);
