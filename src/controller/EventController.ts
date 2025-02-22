@@ -68,7 +68,7 @@ export default class EventController {
     updateEvent = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const eventId: ObjectId = new ObjectId(req.params.eventId);
-            const adminId: ObjectId = new ObjectId(req.body.adminId);
+            const adminId: ObjectId = new ObjectId(req.params.adminId);
 
             const updateEventRequest: EventRequest = new EventRequest.Builder()
                 .setName(req.body.name)
@@ -87,7 +87,7 @@ export default class EventController {
                 eventId,
                 adminId,
             );
-            return res.status(HttpStatusCode.OK);
+            return res.status(HttpStatusCode.OK).json({ message: "sucess" });
         } catch (error) {
             next(error);
         }

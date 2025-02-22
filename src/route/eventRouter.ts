@@ -28,7 +28,7 @@ eventRouter.put(
 
 eventRouter.get("/users/:userId", authenticate, eventController.getUserEvents);
 eventRouter.get(
-    "/users/:userId/:eventId",
+    "/:eventId/users/:userId",
     authenticate,
     eventController.getUserEventById,
 );
