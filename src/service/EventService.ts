@@ -118,23 +118,26 @@ export default class EventService {
 
     public async updateEvent(
         eventRequest: EventRequest,
-        id: ObjectId,
+        eventId: ObjectId,
+        adminId: ObjectId,
     ): Promise<void> {
         try {
-            const event = await this.eventDAO.findById(id);
+            const event = await this.eventDAO.findById(eventId);
 
             if (!event) {
                 throw APIError.NotFound("Event not found");
             }
 
-            const isOwner = event.admin.some((admin) => admin._id.equals(id));
+            const isOwner = event.admin.some((admin) =>
+                admin._id.equals(adminId),
+            );
 
             if (!isOwner) {
                 throw AuthError.Forbidden("User is not an admin of the event");
             }
 
             await this.eventDAO.findOneAndUpdate(
-                { _id: id },
+                { _id: eventId },
                 { $set: eventRequest },
                 { new: true },
             );
