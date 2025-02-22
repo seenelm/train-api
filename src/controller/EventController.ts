@@ -47,4 +47,26 @@ export default class EventController {
             next(error);
         }
     };
+
+    updateEvent = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const eventId: ObjectId = new ObjectId(req.params.eventId);
+            const updateEventRequest: EventRequest = new EventRequest.Builder()
+                .setName(req.body.name)
+                .setAdmin(req.body.admin.map((id: string) => new ObjectId(id)))
+                .setInvitees(
+                    req.body.invitees.map((id: string) => new ObjectId(id)),
+                )
+                .setStartTime(req.body.startTime)
+                .setEndTime(req.body.endTime)
+                .setLocation(req.body.location)
+                .setDescription(req.body.description)
+                .build();
+
+            await this.eventService.updateEvent(updateEventRequest, eventId);
+            return res.status(HttpStatusCode.OK);
+        } catch (error) {
+            next(error);
+        }
+    };
 }
