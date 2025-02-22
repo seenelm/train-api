@@ -21,5 +21,6 @@ eventRouter.post(
     eventController.addEvent,
 );
 eventRouter.get("/users/:userId", authenticate, eventController.getUserEvents);
+eventRouter.put("/:eventId", authenticate, eventController.updateEvent);
 
 export default eventRouter;

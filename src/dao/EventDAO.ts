@@ -9,4 +9,6 @@ export default class EventDAO extends BaseDAO<IEvent> {
         super(event);
         this.event = event;
     }
+
+    public async updateEvent(event: IEvent): Promise<void> {}
 }

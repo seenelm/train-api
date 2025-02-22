@@ -9,6 +9,8 @@ import mongoose from "mongoose";
 import { UserEventEntity } from "../entity/UserEventEntity";
 import { ResourceNotFoundError } from "../utils/errors";
 import { UserEventResponse } from "../dto/UserEventResponse";
+import { APIError } from "../common/errors/APIError";
+import { AuthError } from "../common/errors/AuthError";
 
 export default class EventService {
     private eventDAO: EventDAO;
@@ -89,6 +91,33 @@ export default class EventService {
             }
 
             return UserEventResponse.from(userEventEntityList);
+        } catch (error) {
+            throw handleDatabaseError(error);
+        }
+    }
+
+    public async updateEvent(
+        eventRequest: EventRequest,
+        id: ObjectId,
+    ): Promise<void> {
+        try {
+            const event = await this.eventDAO.findById(id);
+
+            if (!event) {
+                throw APIError.NotFound("Event not found");
+            }
+
+            const isOwner = event.admin.some((admin) => admin._id.equals(id));
+
+            if (!isOwner) {
+                throw AuthError.Forbidden("User is not an admin of the event");
+            }
+
+            await this.eventDAO.findOneAndUpdate(
+                { _id: id },
+                { $set: eventRequest },
+                { new: true },
+            );
         } catch (error) {
             throw handleDatabaseError(error);
         }
