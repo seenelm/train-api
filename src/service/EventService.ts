@@ -123,6 +123,22 @@ export default class EventService {
         }
     }
 
+    public async updateUserEventStatus(
+        eventStatus: number,
+        userId: ObjectId,
+        eventId: ObjectId,
+    ): Promise<void> {
+        try {
+            await this.userEventDAO.findOneAndUpdate(
+                { userId, "events.eventId": eventId },
+                { $set: { status: eventStatus } },
+                { new: true },
+            );
+        } catch (error) {
+            throw handleDatabaseError(error);
+        }
+    }
+
     private async upsertAdminEvents(
         admins: ObjectId[],
         event: IEvent,

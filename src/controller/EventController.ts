@@ -69,4 +69,25 @@ export default class EventController {
             next(error);
         }
     };
+
+    updateUserEventStatus = async (
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        try {
+            const eventId: ObjectId = new ObjectId(req.params.eventId);
+            const userId: ObjectId = new ObjectId(req.params.userId);
+            const eventStatus: number = parseInt(req.body.status);
+
+            await this.eventService.updateUserEventStatus(
+                eventStatus,
+                userId,
+                eventId,
+            );
+            return res.status(HttpStatusCode.OK);
+        } catch (error) {
+            next(error);
+        }
+    };
 }
