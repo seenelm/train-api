@@ -48,6 +48,23 @@ export default class EventController {
         }
     };
 
+    getUserEventById = async (
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        try {
+            const userId: ObjectId = new ObjectId(req.params.userId);
+            const eventId: ObjectId = new ObjectId(req.params.eventId);
+
+            const userEventResponse: UserEventResponse =
+                await this.eventService.getUserEventById(userId, eventId);
+            return res.status(HttpStatusCode.OK).json(userEventResponse);
+        } catch (error) {
+            next(error);
+        }
+    };
+
     updateEvent = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const eventId: ObjectId = new ObjectId(req.params.eventId);

@@ -1,5 +1,7 @@
 import { UserEventEntity } from "../entity/UserEventEntity";
+import { IUserEvent } from "../model/userEventModel";
 import { EventResponse } from "./EventResponse";
+import { IEvent } from "../model/eventModel";
 
 export class UserEventResponse {
     private status: number;
@@ -35,6 +37,15 @@ export class UserEventResponse {
                     userEventEntity.getStatus(),
                     EventResponse.from(userEventEntity.getEvent()),
                 ),
+        );
+    }
+
+    public static fromUserEvent(userEvent: IUserEvent): UserEventResponse {
+        const event = userEvent.events[0] as Partial<IEvent>;
+
+        return new UserEventResponse(
+            userEvent.events[0].status,
+            EventResponse.from(event),
         );
     }
 }

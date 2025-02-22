@@ -23,6 +23,11 @@ eventRouter.post(
 eventRouter.put("/:eventId", authenticate, eventController.updateEvent);
 
 eventRouter.get("/users/:userId", authenticate, eventController.getUserEvents);
+eventRouter.get(
+    "/users/:userId/:eventId",
+    authenticate,
+    eventController.getUserEventById,
+);
 eventRouter.put(
     "/:eventId/users/:userId",
     authenticate,

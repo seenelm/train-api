@@ -96,6 +96,26 @@ export default class EventService {
         }
     }
 
+    public async getUserEventById(
+        userId: ObjectId,
+        eventId: ObjectId,
+    ): Promise<UserEventResponse> {
+        try {
+            const userEvent = await this.userEventDAO.findOne({
+                userId,
+                "events.eventId": eventId,
+            });
+
+            if (!userEvent) {
+                throw APIError.NotFound("Event not found");
+            }
+
+            return UserEventResponse.fromUserEvent(userEvent);
+        } catch (error) {
+            throw handleDatabaseError(error);
+        }
+    }
+
     public async updateEvent(
         eventRequest: EventRequest,
         id: ObjectId,

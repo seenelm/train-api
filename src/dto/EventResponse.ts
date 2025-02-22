@@ -58,7 +58,7 @@ export class EventResponse {
         return this.updatedAt;
     }
 
-    static from(event: IEvent): EventResponse {
+    static from(event: IEvent | Partial<IEvent>): EventResponse {
         return EventResponse.builder()
             .setId(event._id)
             .setName(event.name)
