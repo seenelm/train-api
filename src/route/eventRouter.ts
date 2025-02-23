@@ -33,7 +33,7 @@ eventRouter.get(
     eventController.getUserEventById,
 );
 eventRouter.put(
-    "/:eventId/users/:userId",
+    "/:eventId/status/users/:userId",
     authenticate,
     eventController.updateUserEventStatus,
 );
