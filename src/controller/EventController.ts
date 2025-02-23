@@ -5,6 +5,7 @@ import { Request, Response, NextFunction } from "express";
 import { StatusCodes as HttpStatusCode } from "http-status-codes";
 import { UserEventResponse } from "../dto/UserEventResponse";
 import { ObjectId } from "mongodb";
+import UserEventStatusRequest from "../dto/UserEventStatusRequest";
 
 export default class EventController {
     private eventService: EventService;
@@ -100,15 +101,15 @@ export default class EventController {
     ) => {
         try {
             const eventId: ObjectId = new ObjectId(req.params.eventId);
-            const userId: ObjectId = new ObjectId(req.params.userId);
-            const eventStatus: number = req.body.eventStatus;
-
-            console.log("EventID", eventId, "userId", userId, "eventStatus", eventStatus);
+            const userEventStatusRequest: UserEventStatusRequest =
+                new UserEventStatusRequest(
+                    req.body.userId,
+                    req.body.eventStatus,
+                );
 
             await this.eventService.updateUserEventStatus(
-                eventStatus,
                 eventId,
-                userId,
+                userEventStatusRequest,
             );
             return res.status(HttpStatusCode.OK).json({ message: "sucess" });
         } catch (error) {

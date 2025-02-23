@@ -11,6 +11,7 @@ import { ResourceNotFoundError } from "../utils/errors";
 import { UserEventResponse } from "../dto/UserEventResponse";
 import { APIError } from "../common/errors/APIError";
 import { AuthError } from "../common/errors/AuthError";
+import UserEventStatusRequest from "../dto/UserEventStatusRequest";
 
 export default class EventService {
     private eventDAO: EventDAO;
@@ -147,12 +148,13 @@ export default class EventService {
     }
 
     public async updateUserEventStatus(
-        eventStatus: number,
-        userId: ObjectId,
         eventId: ObjectId,
+        userEventStatusRequest: UserEventStatusRequest,
     ): Promise<void> {
         try {
-            console.log("EventID", eventId, "userId", userId, "eventStatus", eventStatus);
+            const userId = new ObjectId(userEventStatusRequest.getUserId());
+            const eventStatus = userEventStatusRequest.getEventStatus();
+
             const response = await this.userEventDAO.findOneAndUpdate(
                 { userId, "events.eventId": eventId },
                 { $set: { "events.$.status": eventStatus } },
