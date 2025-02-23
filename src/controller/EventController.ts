@@ -101,14 +101,16 @@ export default class EventController {
         try {
             const eventId: ObjectId = new ObjectId(req.params.eventId);
             const userId: ObjectId = new ObjectId(req.params.userId);
-            const eventStatus: number = parseInt(req.body.status);
+            const eventStatus: number = req.body.eventStatus;
+
+            console.log("EventID", eventId, "userId", userId, "eventStatus", eventStatus);
 
             await this.eventService.updateUserEventStatus(
                 eventStatus,
-                userId,
                 eventId,
+                userId,
             );
-            return res.status(HttpStatusCode.OK);
+            return res.status(HttpStatusCode.OK).json({ message: "sucess" });
         } catch (error) {
             next(error);
         }

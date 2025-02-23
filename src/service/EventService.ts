@@ -152,12 +152,20 @@ export default class EventService {
         eventId: ObjectId,
     ): Promise<void> {
         try {
-            await this.userEventDAO.findOneAndUpdate(
+            console.log("EventID", eventId, "userId", userId, "eventStatus", eventStatus);
+            const response = await this.userEventDAO.findOneAndUpdate(
                 { userId, "events.eventId": eventId },
-                { $set: { status: eventStatus } },
+                { $set: { "events.$.status": eventStatus } },
                 { new: true },
             );
+
+            if (!response) {
+                throw APIError.NotFound("Event not found");
+            }
+
+            console.log("STATUS**: ", response);
         } catch (error) {
+            console.log("ERROR: ", error);
             throw handleDatabaseError(error);
         }
     }
