@@ -202,20 +202,60 @@ export default class EventService {
         }
     }
 
-    public async deleteUserEvent(
+    public async removeUserFromEvent(
         eventId: ObjectId,
         userId: ObjectId,
+        adminId: ObjectId,
     ): Promise<void> {
+        // TODO: Add transaction
         try {
-            const event = await this.userEventDAO.findOneAndUpdate(
-                { userId },
-                { $pull: { events: { eventId } } },
-                { new: true },
-            );
+            const event = await this.eventDAO.findById(eventId);
 
             if (!event) {
                 throw APIError.NotFound("Event not found");
             }
+
+            const isOwner = event.admin.some((admin) =>
+                admin._id.equals(adminId),
+            );
+
+            if (!isOwner) {
+                throw AuthError.Forbidden("Admin cannot be removed from event");
+            }
+
+            await this.eventDAO.updateOne(
+                { _id: eventId },
+                { $pull: { invitees: userId } },
+            );
+            await this.userEventDAO.updateOne(
+                { userId },
+                { $pull: { events: { eventId } } },
+            );
+        } catch (error) {
+            throw handleDatabaseError(error);
+        }
+    }
+
+    public async deleteUserEvent(
+        eventId: ObjectId,
+        userId: ObjectId,
+    ): Promise<void> {
+        // TODO: Add transaction
+        try {
+            const event = await this.eventDAO.findById(eventId);
+
+            if (!event) {
+                throw APIError.NotFound("Event not found");
+            }
+
+            await this.eventDAO.updateOne(
+                { _id: eventId },
+                { $pull: { invitees: userId } },
+            );
+            await this.userEventDAO.updateOne(
+                { userId },
+                { $pull: { events: { eventId } } },
+            );
         } catch (error) {
             throw handleDatabaseError(error);
         }

@@ -144,4 +144,25 @@ export default class EventController {
             next(error);
         }
     };
+
+    removeUserFromEvent = async (
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        try {
+            const userId: ObjectId = new ObjectId(req.params.userId);
+            const eventId: ObjectId = new ObjectId(req.params.eventId);
+            const adminId = req.user._id;
+
+            await this.eventService.removeUserFromEvent(
+                eventId,
+                userId,
+                adminId,
+            );
+            return res.status(HttpStatusCode.OK).json({ message: "sucess" });
+        } catch (error) {
+            next(error);
+        }
+    };
 }

@@ -53,7 +53,7 @@ export default abstract class BaseDAO<T extends Document> {
     public async updateOne(
         filter: object,
         update: object,
-        options: object,
+        options?: object,
     ): Promise<void> {
         await this.model.updateOne(filter, update, options).exec();
     }

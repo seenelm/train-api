@@ -48,5 +48,10 @@ eventRouter.delete(
     authenticate,
     eventController.deleteUserEvent,
 );
+eventRouter.delete(
+    "/:eventId/users/:userId/remove",
+    authenticate,
+    eventController.removeUserFromEvent,
+);
 
 export default eventRouter;
