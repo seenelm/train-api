@@ -120,7 +120,7 @@ export default class EventController {
     deleteEvent = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const eventId: ObjectId = new ObjectId(req.params.eventId);
-            const adminId: ObjectId = new ObjectId(req.params.adminId);
+            const adminId = req.user._id;
 
             await this.eventService.deleteEvent(eventId, adminId);
             return res.status(HttpStatusCode.OK).json({ message: "sucess" });
