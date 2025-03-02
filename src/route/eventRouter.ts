@@ -38,4 +38,15 @@ eventRouter.put(
     eventController.updateUserEventStatus,
 );
 
+eventRouter.delete(
+    "/:eventId/users/:adminId",
+    authenticate,
+    eventController.deleteEvent,
+);
+eventRouter.delete(
+    "/:eventId/users/:userId",
+    authenticate,
+    eventController.deleteUserEvent,
+);
+
 export default eventRouter;
