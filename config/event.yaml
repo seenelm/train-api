@@ -165,7 +165,7 @@ paths:
                                     }
                 404: { description: User not found }
                 500: { description: Internal server error }
-    /events/{eventId}/status/users/{userId}:
+    /events/{eventId}/status:
         put:
             tags: [Events]
             summary: Update user event status
@@ -178,24 +178,21 @@ paths:
                   required: true
                   schema: { type: string }
                   description: The ID of the event
-                - in: path
-                  name: userId
-                  required: true
-                  schema: { type: string }
-                  description: The ID of the user
             requestBody:
                 required: true
                 content:
                     application/json:
                         schema:
-                            type: object
-                            properties:
-                                eventStatus:
-                                    {
-                                        type: integer,
-                                        description: "The new status of the user for the event",
-                                    }
-                            required: [eventStatus]
+                            UserEventStatusRequest:
+                                type: object
+                                properties:
+                                    userId: { type: string }
+                                    eventStatus:
+                                        {
+                                            type: integer,
+                                            description: "The new status of the user for the event",
+                                        }
+                                required: [userId, eventStatus]
             responses:
                 200:
                     description: Event status updated successfully

@@ -172,6 +172,55 @@ export default class EventService {
         }
     }
 
+    public async deleteEvent(
+        eventId: ObjectId,
+        adminId: ObjectId,
+    ): Promise<void> {
+        // TODO: Add transaction
+        try {
+            const event = await this.eventDAO.findById(eventId);
+
+            if (!event) {
+                throw APIError.NotFound("Event not found");
+            }
+
+            const isOwner = event.admin.some((admin) =>
+                admin._id.equals(adminId),
+            );
+
+            if (!isOwner) {
+                throw AuthError.Forbidden("User is not an admin of the event");
+            }
+
+            await this.eventDAO.findByIdAndDelete(eventId);
+            await this.userEventDAO.updateMany(
+                { "events.eventId": eventId },
+                { $pull: { events: { eventId } } },
+            );
+        } catch (error) {
+            throw handleDatabaseError(error);
+        }
+    }
+
+    public async deleteUserEvent(
+        eventId: ObjectId,
+        userId: ObjectId,
+    ): Promise<void> {
+        try {
+            const event = await this.userEventDAO.findOneAndUpdate(
+                { userId },
+                { $pull: { events: { eventId } } },
+                { new: true },
+            );
+
+            if (!event) {
+                throw APIError.NotFound("Event not found");
+            }
+        } catch (error) {
+            throw handleDatabaseError(error);
+        }
+    }
+
     private async upsertAdminEvents(
         admins: ObjectId[],
         event: IEvent,

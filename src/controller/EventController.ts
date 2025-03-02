@@ -116,4 +116,32 @@ export default class EventController {
             next(error);
         }
     };
+
+    deleteEvent = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const eventId: ObjectId = new ObjectId(req.params.eventId);
+            const adminId: ObjectId = new ObjectId(req.params.adminId);
+
+            await this.eventService.deleteEvent(eventId, adminId);
+            return res.status(HttpStatusCode.OK).json({ message: "sucess" });
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    deleteUserEvent = async (
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        try {
+            const userId: ObjectId = new ObjectId(req.params.userId);
+            const eventId: ObjectId = new ObjectId(req.params.eventId);
+
+            await this.eventService.deleteUserEvent(eventId, userId);
+            return res.status(HttpStatusCode.OK).json({ message: "sucess" });
+        } catch (error) {
+            next(error);
+        }
+    };
 }
