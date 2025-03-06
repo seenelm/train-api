@@ -9,4 +9,4 @@ dist/
 .vscode/
 
 # Ignore logs directory
-logs/
+logs/.DS_Store
