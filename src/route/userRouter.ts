@@ -14,7 +14,7 @@ import { UserModel } from "../model/userModel";
 import { UserProfileModel } from "../model/userProfile";
 import { UserGroupsModel } from "../model/userGroups";
 import { FollowModel } from "../model/followModel";
-import UserController from "../controller/UserController";
+import UserController from "../controller/UserController1";
 
 const userService = new UserService(
     new UserDAO(UserModel),
