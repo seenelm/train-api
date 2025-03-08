@@ -13,6 +13,8 @@ import userProfileRouter from "./route/userProfileRouter";
 import searchRouter from "./route/searchRouter";
 import eventRouter from "./route/eventRouter";
 
+import messaging from "./infrastructure/firebase";
+
 const app = express();
 const dbUri = config.get("MongoDB.dbConfig.host");
 const swaggerJSDoc = require("swagger-jsdoc");
@@ -57,6 +59,25 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Middleware
 app.use(bodyParser.json());
 app.use(cors());
+
+app.post("/api/send-notification", async (req, res) => {
+    const { token, title, body } = req.body;
+    const message = {
+        notification: {
+            title,
+            body,
+        },
+        token,
+    };
+    try {
+        const response = await messaging.send(message);
+        console.log("Notification Sent:", response);
+        return res.status(200).json({ success: true, response });
+    } catch (error) {
+        console.error("Error sending notification:", error);
+        return res.status(500).json({ success: false, error });
+    }
+});
 
 app.use("/api", userRouter);
 app.use("/api/users", userProfileRouter);

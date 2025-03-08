@@ -10,3 +10,6 @@ dist/
 
 # Ignore logs directory
 logs/
+
+config/firebase-config.json
+scripts/test-firebase.sh
