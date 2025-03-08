@@ -15,6 +15,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "@google-cloud/storage": "^7.15.2",
         "axios": "^1.4.0",
         "bcrypt": "^5.1.0",
         "class-transformer": "^0.5.1",
