@@ -12,4 +12,6 @@ dist/
 logs/
 
 config/firebase-config.json
+config/google-cloud-storage.json
 scripts/test-firebase.sh
+test.txt
