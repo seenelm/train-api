@@ -14,4 +14,5 @@ logs/
 config/firebase-config.json
 config/google-cloud-storage.json
 scripts/test-firebase.sh
-test.txt
+test.txt.DS_Store
+.DS_Store??
