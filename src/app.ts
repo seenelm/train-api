@@ -87,7 +87,7 @@ app.use("/api/users", userProfileRouter);
 app.use("/api/groups", groupRouter);
 app.use("/api/events", eventRouter);
 app.use("/api", searchRouter);
-app.use("/api", fileRouter);
+app.use("/api/files", fileRouter);
 
 app.use(errorHandler);
 
