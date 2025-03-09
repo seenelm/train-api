@@ -28,8 +28,20 @@ const storage = new Storage({ projectId, keyFilename });
 
 async function uploadFile(bucketName: string, pathString: string) {
     try {
-        const bucket = storage.bucket(bucketName);
-        return await bucket.upload(pathString);
+        const path = String(pathString);
+        const response = await storage.bucket(bucketName).upload(path);
+        console.log("File uploaded:", response);
+        return response;
+
+        // if (typeof pathString !== "string") {
+        //     console.log("Invalid pathString");
+        //     throw new Error("Invalid pathString");
+        // }
+        // // const absolutePath = path.resolve(pathString);
+        // // absolutePath.toString();
+        // // console.log("absolutePath:", absolutePath);
+        // const bucket = storage.bucket(bucketName);
+        // return await bucket.upload(pathString);
     } catch (error) {
         console.error("Error uploading file:", error);
     }
@@ -96,7 +108,15 @@ app.post("/api/send-notification", async (req, res) => {
 
 app.post("/api/upload-file", async (req, res) => {
     const { pathString } = req.body;
+    console.log("pathString:", pathString);
+    console.log("typeof pathString:", typeof pathString);
     try {
+        if (!pathString || typeof pathString !== "string") {
+            console.log("Invalid pathString");
+            return res
+                .status(400)
+                .json({ success: false, error: "Invalid pathString" });
+        }
         const response = await uploadFile("trainapp-user-profiles", pathString);
         console.log("File uploaded:", response);
         return res.status(200).json({ success: true, response });
