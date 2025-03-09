@@ -12,6 +12,7 @@ import groupRouter from "./route/groupRouter";
 import userProfileRouter from "./route/userProfileRouter";
 import searchRouter from "./route/searchRouter";
 import eventRouter from "./route/eventRouter";
+import fileRouter from "./route/fileRouter";
 
 import messaging from "./infrastructure/firebase";
 import { Storage } from "@google-cloud/storage";
@@ -111,6 +112,7 @@ app.use("/api/users", userProfileRouter);
 app.use("/api/groups", groupRouter);
 app.use("/api/events", eventRouter);
 app.use("/api", searchRouter);
+app.use("/api", fileRouter);
 
 app.use(errorHandler);
 
