@@ -12,40 +12,14 @@ import groupRouter from "./route/groupRouter";
 import userProfileRouter from "./route/userProfileRouter";
 import searchRouter from "./route/searchRouter";
 import eventRouter from "./route/eventRouter";
+import fileRouter from "./route/fileRouter";
 
 import messaging from "./infrastructure/firebase";
-import { Storage } from "@google-cloud/storage";
-
-const keyFilename = require("../config/google-cloud-storage.json");
-const projectId = process.env.PROJECT_ID;
 
 const app = express();
 const dbUri = config.get("MongoDB.dbConfig.host");
 const swaggerJSDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
-
-const storage = new Storage({ projectId, keyFilename });
-
-async function uploadFile(bucketName: string, pathString: string) {
-    try {
-        const path = String(pathString);
-        const response = await storage.bucket(bucketName).upload(path);
-        console.log("File uploaded:", response);
-        return response;
-
-        // if (typeof pathString !== "string") {
-        //     console.log("Invalid pathString");
-        //     throw new Error("Invalid pathString");
-        // }
-        // // const absolutePath = path.resolve(pathString);
-        // // absolutePath.toString();
-        // // console.log("absolutePath:", absolutePath);
-        // const bucket = storage.bucket(bucketName);
-        // return await bucket.upload(pathString);
-    } catch (error) {
-        console.error("Error uploading file:", error);
-    }
-}
 
 const db = new MongoDB(dbUri);
 
@@ -106,31 +80,12 @@ app.post("/api/send-notification", async (req, res) => {
     }
 });
 
-app.post("/api/upload-file", async (req, res) => {
-    const { pathString } = req.body;
-    console.log("pathString:", pathString);
-    console.log("typeof pathString:", typeof pathString);
-    try {
-        if (!pathString || typeof pathString !== "string") {
-            console.log("Invalid pathString");
-            return res
-                .status(400)
-                .json({ success: false, error: "Invalid pathString" });
-        }
-        const response = await uploadFile("trainapp-user-profiles", pathString);
-        console.log("File uploaded:", response);
-        return res.status(200).json({ success: true, response });
-    } catch (error) {
-        console.error("Error uploading file:", error);
-        return res.status(500).json({ success: false, error });
-    }
-});
-
 app.use("/api", userRouter);
 app.use("/api/users", userProfileRouter);
 app.use("/api/groups", groupRouter);
 app.use("/api/events", eventRouter);
 app.use("/api", searchRouter);
+app.use("/api/files", fileRouter);
 
 app.use(errorHandler);
 
