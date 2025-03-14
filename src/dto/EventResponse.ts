@@ -9,6 +9,7 @@ export class EventResponse {
     private endTime?: Date;
     private location?: string;
     private description?: string;
+    private alerts?: string;
     private createdAt?: Date;
     private updatedAt?: Date;
 
@@ -50,6 +51,10 @@ export class EventResponse {
         return this.description;
     }
 
+    public getAlerts(): string | undefined {
+        return this.alerts;
+    }
+
     public getCreatedAt(): Date | undefined {
         return this.createdAt;
     }
@@ -68,6 +73,7 @@ export class EventResponse {
             .setEndTime(event.endTime)
             .setLocation(event.location)
             .setDescription(event.description)
+            .setAlerts(event.alerts.toString())
             .setCreatedAt(event.createdAt)
             .setUpdatedAt(event.updatedAt)
             .build();
@@ -82,6 +88,7 @@ export class EventResponse {
         private endTime?: Date;
         private location?: string;
         private description?: string;
+        private alerts?: string;
         private createdAt?: Date;
         private updatedAt?: Date;
 
@@ -125,6 +132,11 @@ export class EventResponse {
             return this;
         }
 
+        public setAlerts(alerts?: string): this {
+            this.alerts = alerts;
+            return this;
+        }
+
         public setCreatedAt(createdAt?: Date): this {
             this.createdAt = createdAt;
             return this;
@@ -145,6 +157,7 @@ export class EventResponse {
             createEventResponse.endTime = this.endTime;
             createEventResponse.location = this.location;
             createEventResponse.description = this.description;
+            createEventResponse.alerts = this.alerts;
             createEventResponse.createdAt = this.createdAt;
             createEventResponse.updatedAt = this.updatedAt;
             return createEventResponse;
