@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+import AlertRequest from "./AlertRequest";
 
 export class EventRequest {
     private name: string;
@@ -8,6 +9,7 @@ export class EventRequest {
     private endTime?: Date;
     private location?: string;
     private description?: string;
+    private alertRequest?: AlertRequest;
 
     private constructor() {}
 
@@ -43,6 +45,10 @@ export class EventRequest {
         return this.description;
     }
 
+    public getAlertRequest(): AlertRequest {
+        return this.alertRequest;
+    }
+
     static Builder = class {
         private name: string;
         private admin: ObjectId[];
@@ -51,6 +57,7 @@ export class EventRequest {
         private endTime?: Date;
         private location?: string;
         private description?: string;
+        private alertRequest?: AlertRequest;
 
         public setName(name: string): this {
             this.name = name;
@@ -87,6 +94,11 @@ export class EventRequest {
             return this;
         }
 
+        public setAlertRequest(alertRequest?: AlertRequest): this {
+            this.alertRequest = alertRequest;
+            return this;
+        }
+
         public build(): EventRequest {
             const createEventRequest = new EventRequest();
             createEventRequest.name = this.name;
@@ -96,6 +108,7 @@ export class EventRequest {
             createEventRequest.endTime = this.endTime;
             createEventRequest.location = this.location;
             createEventRequest.description = this.description;
+            createEventRequest.alertRequest = this.alertRequest;
             return createEventRequest;
         }
     };

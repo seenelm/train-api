@@ -26,6 +26,7 @@ export default class EventController {
                 .setEndTime(req.body.endTime)
                 .setLocation(req.body.location)
                 .setDescription(req.body.description)
+                .setAlertRequest(req.body.alertRequest)
                 .build();
 
             const eventResponse: EventResponse =

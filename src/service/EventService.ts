@@ -4,7 +4,7 @@ import { EventRequest } from "../dto/EventRequest";
 import { EventResponse } from "../dto/EventResponse";
 import { IEvent } from "../model/eventModel";
 import { ObjectId } from "mongodb";
-import { InternalServerError, handleDatabaseError } from "../utils/errors";
+import { handleDatabaseError } from "../utils/errors";
 import mongoose from "mongoose";
 import { UserEventEntity } from "../entity/UserEventEntity";
 import { ResourceNotFoundError } from "../utils/errors";
@@ -12,12 +12,19 @@ import { UserEventResponse } from "../dto/UserEventResponse";
 import { APIError } from "../common/errors/APIError";
 import { AuthError } from "../common/errors/AuthError";
 import UserEventStatusRequest from "../dto/UserEventStatusRequest";
+import AlertDAO from "../dao/AlertDAO";
 
 export default class EventService {
     private eventDAO: EventDAO;
     private userEventDAO: UserEventDAO;
+    private alertDAO: AlertDAO;
 
-    constructor(eventDAO: EventDAO, userEventDAO: UserEventDAO) {
+    constructor(
+        eventDAO: EventDAO,
+        userEventDAO: UserEventDAO,
+        alertDAO: AlertDAO,
+    ) {
+        this.alertDAO = alertDAO;
         this.eventDAO = eventDAO;
         this.userEventDAO = userEventDAO;
     }
@@ -36,11 +43,32 @@ export default class EventService {
         console.debug("Transaction started for session: ", session.id);
 
         try {
-            // Check if event already exists
-            const event: IEvent = await this.eventDAO.create(
-                createEventRequest,
+            const alert = await this.alertDAO.create(
+                createEventRequest.getAlertRequest(),
                 { session },
             );
+            if (!alert) {
+                console.error("Error creating alert");
+                return;
+            }
+
+            const newEvent: Partial<IEvent> = {
+                name: createEventRequest.getName(),
+                admin: createEventRequest.getAdmin(),
+                invitees: createEventRequest.getInvitees(),
+                startTime: createEventRequest.getStartTime(),
+                endTime: createEventRequest.getEndTime(),
+                location: createEventRequest.getLocation(),
+                description: createEventRequest.getDescription(),
+                alerts: alert._id,
+            };
+
+            console.log("New Event: ", newEvent);
+
+            // Check if event already exists
+            const event: IEvent = await this.eventDAO.create(newEvent, {
+                session,
+            });
             console.debug("Event created: ", event);
 
             // Add event into user's event list

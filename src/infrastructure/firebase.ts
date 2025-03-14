@@ -5,5 +5,4 @@ admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
 });
 
-const messaging = admin.messaging();
-export default messaging;
+export default admin;
