@@ -8,10 +8,13 @@ import { Event } from "../model/eventModel";
 import UserEventDAO from "../dao/UserEventDAO";
 import { UserEvent } from "../model/userEventModel";
 import EventMiddleware from "../middleware/EventMiddleware";
+import AlertDAO from "../dao/AlertDAO";
+import { AlertModel } from "../model/alertModel";
 
 const eventDAO = new EventDAO(Event);
 const userEventDAO = new UserEventDAO(UserEvent);
-const eventService = new EventService(eventDAO, userEventDAO);
+const alertDAO = new AlertDAO(AlertModel);
+const eventService = new EventService(eventDAO, userEventDAO, alertDAO);
 const eventController = new EventController(eventService);
 
 eventRouter.post(
