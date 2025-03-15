@@ -85,23 +85,23 @@ export default class AgendaService {
                     tokens: deviceTokens,
                 };
 
-                const response = await admin
-                    .messaging()
-                    .sendEachForMulticast(message);
-                console.log(
-                    `Sent reminders for event ${event.title}. Success: ${response.successCount}, Failure: ${response.failureCount}`,
-                );
+                // const response = await admin
+                //     .messaging()
+                //     .sendEachForMulticast(message);
+                // console.log(
+                //     `Sent reminders for event ${event.title}. Success: ${response.successCount}, Failure: ${response.failureCount}`,
+                // );
 
-                if (response.failureCount > 0) {
-                    response.responses.forEach((resp, idx) => {
-                        if (!resp.success) {
-                            console.error(
-                                `Failed to send notification to token: ${deviceTokens[idx]}, Error:`,
-                                resp.error,
-                            );
-                        }
-                    });
-                }
+                // if (response.failureCount > 0) {
+                //     response.responses.forEach((resp, idx) => {
+                //         if (!resp.success) {
+                //             console.error(
+                //                 `Failed to send notification to token: ${deviceTokens[idx]}, Error:`,
+                //                 resp.error,
+                //             );
+                //         }
+                //     });
+                // }
             } catch (error) {
                 console.error("Error sending notification:", error);
                 throw error;
