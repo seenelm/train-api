@@ -10,13 +10,16 @@ import { UserGroupsModel } from "../model/userGroups";
 import ProgramService from "../app/programs/services/ProgramService";
 import ProgramRepository from "../infrastructure/database/repositories/ProgramRepository";
 import GroupMiddleware from "../common/middleware/GroupMiddleware";
+import WeekRepository from "../infrastructure/database/repositories/WeekRepository";
+import { group } from "console";
 
 const groupDAO = new GroupDAO(GroupModel);
 const userGroupsDAO = new UserGroupsDAO(UserGroupsModel);
 const programRepository = new ProgramRepository();
+const weekRepository = new WeekRepository();
 
 const groupService = new GroupService(groupDAO, userGroupsDAO);
-const programService = new ProgramService(programRepository);
+const programService = new ProgramService(programRepository, weekRepository);
 const groupController = new GroupController(groupService, programService);
 
 const groupMiddleware = new GroupMiddleware(groupDAO);
@@ -58,6 +61,19 @@ groupRouter.post(
     authenticate,
     groupMiddleware.validateCreateProgram,
     groupController.createProgram,
+);
+groupRouter.put(
+    "/:groupId/programs/:programId",
+    authenticate,
+    groupMiddleware.validateUpdateProgram,
+    groupController.updateProgram,
+);
+
+groupRouter.post(
+    "/:groupId/programs/weeks",
+    authenticate,
+    groupMiddleware.validateAddWeekToProgram,
+    groupController.addWeekToProgram,
 );
 
 export default groupRouter;

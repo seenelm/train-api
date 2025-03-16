@@ -4,6 +4,7 @@ import { Types } from "mongoose";
 import { StatusCodes as HttpStatusCode } from "http-status-codes";
 import ProgramService from "../app/programs/services/ProgramService";
 import { ProgramRequest } from "../app/programs/dto/programDto";
+import { WeekRequest } from "../app/programs/dto/weekDto";
 
 export default class GroupController {
     private groupService: GroupService;
@@ -153,6 +154,41 @@ export default class GroupController {
             const programResponse =
                 await this.programService.createProgram(programRequest);
             return res.status(HttpStatusCode.CREATED).json(programResponse);
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    public updateProgram = async (
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        const { programId } = req.params;
+        const programRequest: ProgramRequest = req.body;
+
+        try {
+            await this.programService.updateProgram(
+                programRequest,
+                new Types.ObjectId(programId),
+            );
+            return res.status(HttpStatusCode.OK).json({ success: true });
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    public addWeekToProgram = async (
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        const weekRequest: WeekRequest = req.body;
+
+        try {
+            const weekResponse =
+                await this.programService.addWeekToProgram(weekRequest);
+            return res.status(HttpStatusCode.CREATED).json(weekResponse);
         } catch (error) {
             next(error);
         }

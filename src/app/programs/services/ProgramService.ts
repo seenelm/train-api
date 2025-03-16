@@ -4,6 +4,8 @@ import Program from "../../../infrastructure/database/entity/Program";
 import { handleDatabaseError } from "../../../utils/errors";
 import WeekRepository from "../../../infrastructure/database/repositories/WeekRepository";
 import { Types } from "mongoose";
+import { WeekRequest, WeekResponse } from "../dto/weekDto";
+import { APIError } from "../../../common/errors/APIError";
 
 export default class ProgramService {
     private programRepository: ProgramRepository;
@@ -32,7 +34,9 @@ export default class ProgramService {
         };
     }
 
-    public async createProgram(programRequest: ProgramRequest) {
+    public async createProgram(
+        programRequest: ProgramRequest,
+    ): Promise<ProgramResponse> {
         try {
             // TODO: Add transaction
             const programDoc =
@@ -66,6 +70,66 @@ export default class ProgramService {
             }
 
             return this.toResponse(program);
+        } catch (error) {
+            throw handleDatabaseError(error);
+        }
+    }
+
+    public async updateProgram(
+        programRequest: ProgramRequest,
+        programId: Types.ObjectId,
+    ): Promise<void> {
+        try {
+            // TODO: Should we check for numWeeks??
+            const programDoc =
+                this.programRepository.toDocument(programRequest);
+
+            await this.programRepository.findByIdAndUpdate(
+                programId,
+                programDoc,
+            );
+        } catch (error) {
+            throw handleDatabaseError(error);
+        }
+    }
+
+    public async deleteProgramById(id: Types.ObjectId): Promise<void> {}
+
+    public async addWeekToProgram(
+        weekRequest: WeekRequest,
+    ): Promise<WeekResponse> {
+        try {
+            // TODO: Add transaction
+            // TODO: Should we update numWeeks??
+            const programId = new Types.ObjectId(weekRequest.programId);
+            const program = await this.programRepository.findById(programId);
+
+            if (!program) {
+                throw APIError.NotFound("Program not found");
+            }
+
+            const weekDoc = this.weekRepository.toDocument(weekRequest);
+            const week = await this.weekRepository.create(weekDoc);
+
+            await this.programRepository.updateOne(
+                { _id: programId },
+                { $addToSet: { weeks: week.getId() } },
+                { new: true },
+            );
+
+            return this.weekRepository.toResponse(week);
+        } catch (error) {
+            throw handleDatabaseError(error);
+        }
+    }
+
+    public async updateWeekInProgram(
+        weekRequest: WeekRequest,
+        weekId: Types.ObjectId,
+    ): Promise<void> {
+        try {
+            const weekDoc = this.weekRepository.toDocument(weekRequest);
+            await this.weekRepository.findByIdAndUpdate(weekId, weekDoc);
         } catch (error) {
             throw handleDatabaseError(error);
         }

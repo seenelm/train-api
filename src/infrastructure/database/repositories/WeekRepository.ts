@@ -3,7 +3,7 @@ import Week from "../entity/Week";
 import { WeekDocument } from "../models/weekModel";
 import { IWeekRepository } from "../interfaces/IWeekRepository";
 import { WeekModel } from "../models/weekModel";
-import { WeekRequest } from "../../../app/programs/dto/weekDto";
+import { WeekRequest, WeekResponse } from "../../../app/programs/dto/weekDto";
 import { Types } from "mongoose";
 
 export default class WeekRepository
@@ -42,6 +42,22 @@ export default class WeekRepository
             workouts: request.workouts.map(
                 (workoutId) => new Types.ObjectId(workoutId),
             ),
+        };
+    }
+
+    toResponse(week: Week): WeekResponse {
+        if (!week) return null;
+
+        return {
+            id: week.getId().toString(),
+            programId: week.getProgramId().toString(),
+            name: week.getName(),
+            description: week.getDescription(),
+            imagePath: week.getImagePath(),
+            weekNumber: week.getWeekNumber(),
+            workouts: week
+                .getWorkouts()
+                .map((workoutId) => workoutId.toString()),
         };
     }
 }
