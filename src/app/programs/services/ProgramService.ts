@@ -79,9 +79,10 @@ export default class ProgramService {
                 await Promise.all(weekPromises);
 
                 program.setWeeks(weekIds);
-                await this.programRepository.updateOne(program.getId(), {
-                    weeks: weekIds,
-                });
+                await this.programRepository.updateOne(
+                    { _id: program.getId() },
+                    { weeks: weekIds }
+                );
             }
 
             return this.toResponse(program);

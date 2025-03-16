@@ -1,0 +1,517 @@
+openapi: 3.0.0
+info:
+  title: Fitness Program API
+  description: API for managing fitness programs, weeks, workouts, exercises, and sets
+  version: 1.0.0
+servers:
+  - url: /api/v1
+    description: Default API server
+tags:
+  - name: Programs
+    description: Operations related to fitness programs
+  
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ProgramRequest:
+      type: object
+      required:
+        - name
+        - createdBy
+        - weeks
+      properties:
+        name:
+          type: string
+          description: Name of the program
+        description:
+          type: string
+          description: Description of the program
+        category:
+          type: string
+          description: Category of the program (e.g., strength, cardio)
+        imagePath:
+          type: string
+          description: Path to program image
+        createdBy:
+          type: string
+          description: ID of the user who created the program
+        numWeeks:
+          type: integer
+          description: Number of weeks in the program
+        weeks:
+          type: array
+          items:
+            type: string
+          description: Array of week IDs
+        difficulty:
+          type: string
+          description: Difficulty level of the program
+    
+    ProgramResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the program
+        name:
+          type: string
+          description: Name of the program
+        description:
+          type: string
+          description: Description of the program
+        category:
+          type: string
+          description: Category of the program
+        imagePath:
+          type: string
+          description: Path to program image
+        createdBy:
+          type: string
+          description: ID of the user who created the program
+        numWeeks:
+          type: integer
+          description: Number of weeks in the program
+        weeks:
+          type: array
+          items:
+            type: string
+          description: Array of week IDs
+        difficulty:
+          type: string
+          description: Difficulty level of the program
+    
+    WeekRequest:
+      type: object
+      required:
+        - programId
+        - name
+        - weekNumber
+        - workouts
+      properties:
+        programId:
+          type: string
+          description: ID of the program this week belongs to
+        name:
+          type: string
+          description: Name of the week
+        description:
+          type: string
+          description: Description of the week
+        imagePath:
+          type: string
+          description: Path to week image
+        weekNumber:
+          type: integer
+          description: Number of the week in the program sequence
+        workouts:
+          type: array
+          items:
+            type: string
+          description: Array of workout IDs
+    
+    WeekResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the week
+        programId:
+          type: string
+          description: ID of the program this week belongs to
+        name:
+          type: string
+          description: Name of the week
+        description:
+          type: string
+          description: Description of the week
+        imagePath:
+          type: string
+          description: Path to week image
+        weekNumber:
+          type: integer
+          description: Number of the week in the program sequence
+        workouts:
+          type: array
+          items:
+            type: string
+          description: Array of workout IDs
+    
+    WorkoutRequest:
+      type: object
+      required:
+        - createdBy
+        - exercises
+      properties:
+        title:
+          type: string
+          description: Title of the workout
+        description:
+          type: string
+          description: Description of the workout
+        imagePath:
+          type: string
+          description: Path to workout image
+        completed:
+          type: boolean
+          description: Whether the workout is completed
+        createdBy:
+          type: string
+          description: ID of the user who created the workout
+        exercises:
+          type: array
+          items:
+            type: string
+          description: Array of exercise IDs
+    
+    WorkoutResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the workout
+        title:
+          type: string
+          description: Title of the workout
+        description:
+          type: string
+          description: Description of the workout
+        imagePath:
+          type: string
+          description: Path to workout image
+        completed:
+          type: boolean
+          description: Whether the workout is completed
+        createdBy:
+          type: string
+          description: ID of the user who created the workout
+        exercises:
+          type: array
+          items:
+            type: string
+          description: Array of exercise IDs
+    
+    ExerciseRequest:
+      type: object
+      required:
+        - createdBy
+        - sets
+      properties:
+        name:
+          type: string
+          description: Name of the exercise
+        group:
+          type: string
+          description: Muscle group targeted by the exercise
+        imagePath:
+          type: string
+          description: Path to exercise image
+        weight:
+          type: string
+          description: Weight used for the exercise
+        targetSets:
+          type: integer
+          description: Target number of sets
+        targetReps:
+          type: integer
+          description: Target number of reps per set
+        notes:
+          type: string
+          description: Notes about the exercise
+        completed:
+          type: boolean
+          description: Whether the exercise is completed
+        createdBy:
+          type: string
+          description: ID of the user who created the exercise
+        sets:
+          type: array
+          items:
+            type: string
+          description: Array of set IDs
+    
+    ExerciseResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the exercise
+        name:
+          type: string
+          description: Name of the exercise
+        group:
+          type: string
+          description: Muscle group targeted by the exercise
+        imagePath:
+          type: string
+          description: Path to exercise image
+        weight:
+          type: string
+          description: Weight used for the exercise
+        targetSets:
+          type: integer
+          description: Target number of sets
+        targetReps:
+          type: integer
+          description: Target number of reps per set
+        notes:
+          type: string
+          description: Notes about the exercise
+        completed:
+          type: boolean
+          description: Whether the exercise is completed
+        createdBy:
+          type: string
+          description: ID of the user who created the exercise
+        sets:
+          type: array
+          items:
+            type: string
+          description: Array of set IDs
+    
+    SetRequest:
+      type: object
+      required:
+        - createdBy
+      properties:
+        weight:
+          type: number
+          description: Weight used for the set
+        reps:
+          type: integer
+          description: Number of repetitions in the set
+        completed:
+          type: boolean
+          description: Whether the set is completed
+        imagePath:
+          type: string
+          description: Path to set image
+        link:
+          type: string
+          description: Link to video demonstration
+        createdBy:
+          type: string
+          description: ID of the user who created the set
+    
+    SetResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the set
+        weight:
+          type: number
+          description: Weight used for the set
+        reps:
+          type: integer
+          description: Number of repetitions in the set
+        completed:
+          type: boolean
+          description: Whether the set is completed
+        imagePath:
+          type: string
+          description: Path to set image
+        link:
+          type: string
+          description: Link to video demonstration
+        createdBy:
+          type: string
+          description: ID of the user who created the set
+    
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message
+        code:
+          type: string
+          description: Error code
+
+paths:
+  /programs:
+    post:
+      tags:
+        - Programs
+      summary: Create a new fitness program
+      description: Creates a new fitness program with optional weeks
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProgramRequest'
+      responses:
+        '201':
+          description: Program created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    get:
+      tags:
+        - Programs
+      summary: Get all programs
+      description: Retrieves a list of all fitness programs
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of programs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProgramResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /programs/{programId}:
+    parameters:
+      - name: programId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: ID of the program
+    
+    get:
+      tags:
+        - Programs
+      summary: Get a program by ID
+      description: Retrieves a specific program by its ID
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Program details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Program not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    put:
+      tags:
+        - Programs
+      summary: Update a program
+      description: Updates an existing program by its ID
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProgramRequest'
+      responses:
+        '200':
+          description: Program updated successfully
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Program not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    delete:
+      tags:
+        - Programs
+      summary: Delete a program
+      description: Deletes a program by its ID
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Program deleted successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Program not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  
