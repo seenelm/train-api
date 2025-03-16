@@ -3,7 +3,10 @@ import Workout from "../entity/Workout";
 import { WorkoutDocument } from "../models/workoutModel";
 import { IWorkoutRepository } from "../interfaces/IWorkoutRepository";
 import { WorkoutModel } from "../models/workoutModel";
-import { WorkoutRequest } from "../../../app/programs/dto/workoutDto";
+import {
+    WorkoutRequest,
+    WorkoutResponse,
+} from "../../../app/programs/dto/workoutDto";
 import { Types } from "mongoose";
 
 export default class WorkoutRepository
@@ -42,6 +45,22 @@ export default class WorkoutRepository
             exercises: request.exercises.map(
                 (exerciseId) => new Types.ObjectId(exerciseId),
             ),
+        };
+    }
+
+    toResponse(workout: Workout): WorkoutResponse {
+        if (!workout) return null;
+
+        return {
+            id: workout.getId().toString(),
+            title: workout.getTitle(),
+            description: workout.getDescription(),
+            imagePath: workout.getImagePath(),
+            completed: workout.isCompleted(),
+            createdBy: workout.getCreatedBy().toString(),
+            exercises: workout
+                .getExercises()
+                .map((exerciseId) => exerciseId.toString()),
         };
     }
 }

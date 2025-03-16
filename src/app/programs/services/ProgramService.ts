@@ -6,17 +6,32 @@ import WeekRepository from "../../../infrastructure/database/repositories/WeekRe
 import { Types } from "mongoose";
 import { WeekRequest, WeekResponse } from "../dto/weekDto";
 import { APIError } from "../../../common/errors/APIError";
+import { WorkoutRequest, WorkoutResponse } from "../dto/workoutDto";
+import WorkoutRepository from "../../../infrastructure/database/repositories/WorkoutRepository";
+import { ExerciseRequest, ExerciseResponse } from "../dto/exerciseDto";
+import ExerciseRepository from "../../../infrastructure/database/repositories/ExerciseRepository";
+import SetRepository from "../../../infrastructure/database/repositories/SetRepository";
+import { SetRequest, SetResponse } from "../dto/setDto";
 
 export default class ProgramService {
     private programRepository: ProgramRepository;
     private weekRepository: WeekRepository;
+    private workoutRepository: WorkoutRepository;
+    private exerciseRepository: ExerciseRepository;
+    private setRepository: SetRepository;
 
     constructor(
         programRepository: ProgramRepository,
         weekRepository: WeekRepository,
+        workoutRepository: WorkoutRepository,
+        exerciseRepository: ExerciseRepository,
+        setRepository: SetRepository,
     ) {
         this.programRepository = programRepository;
         this.weekRepository = weekRepository;
+        this.workoutRepository = workoutRepository;
+        this.exerciseRepository = exerciseRepository;
+        this.setRepository = setRepository;
     }
 
     private toResponse(program: Program): ProgramResponse {
@@ -86,14 +101,15 @@ export default class ProgramService {
 
             await this.programRepository.findByIdAndUpdate(
                 programId,
-                programDoc,
+                { $set: programDoc },
+                { new: true },
             );
         } catch (error) {
             throw handleDatabaseError(error);
         }
     }
 
-    public async deleteProgramById(id: Types.ObjectId): Promise<void> {}
+    public async deleteProgram(id: Types.ObjectId): Promise<void> {}
 
     public async addWeekToProgram(
         weekRequest: WeekRequest,
@@ -129,9 +145,153 @@ export default class ProgramService {
     ): Promise<void> {
         try {
             const weekDoc = this.weekRepository.toDocument(weekRequest);
-            await this.weekRepository.findByIdAndUpdate(weekId, weekDoc);
+            await this.weekRepository.findByIdAndUpdate(
+                weekId,
+                { $set: weekDoc },
+                { new: true },
+            );
         } catch (error) {
             throw handleDatabaseError(error);
         }
     }
+
+    public async deleteWeekInProgram(weekId: Types.ObjectId): Promise<void> {}
+
+    public async addWorkout(
+        weekId: Types.ObjectId,
+        workoutRequest: WorkoutRequest,
+    ): Promise<WorkoutResponse> {
+        try {
+            // TODO: Add transaction
+            const week = await this.weekRepository.findById(weekId);
+
+            if (!week) {
+                throw APIError.NotFound("Week not found");
+            }
+
+            const workoutDoc =
+                this.workoutRepository.toDocument(workoutRequest);
+            const workout = await this.workoutRepository.create(workoutDoc);
+
+            await this.weekRepository.updateOne(
+                { _id: weekId },
+                { $addToSet: { workouts: workout.getId() } },
+                { new: true },
+            );
+            return this.workoutRepository.toResponse(workout);
+        } catch (error) {
+            throw handleDatabaseError(error);
+        }
+    }
+
+    public async updateWorkout(
+        workoutRequest: WorkoutRequest,
+        workoutId: Types.ObjectId,
+    ): Promise<void> {
+        try {
+            const workoutDoc =
+                this.workoutRepository.toDocument(workoutRequest);
+            await this.workoutRepository.findByIdAndUpdate(
+                workoutId,
+                { $set: workoutDoc },
+                { new: true },
+            );
+        } catch (error) {
+            throw handleDatabaseError(error);
+        }
+    }
+
+    public async deleteWorkout(workoutId: Types.ObjectId): Promise<void> {}
+
+    public async addExerciseToWorkout(
+        workoutId: Types.ObjectId,
+        exerciseRequest: ExerciseRequest,
+    ): Promise<ExerciseResponse> {
+        try {
+            // TODO: Add transaction
+            const workout = await this.workoutRepository.findById(workoutId);
+
+            if (!workout) {
+                throw APIError.NotFound("Workout not found");
+            }
+
+            const exerciseDoc =
+                this.exerciseRepository.toDocument(exerciseRequest);
+            const exercise = await this.exerciseRepository.create(exerciseDoc);
+
+            await this.workoutRepository.updateOne(
+                { _id: workoutId },
+                { $addToSet: { exercises: exercise.getId() } },
+                { new: true },
+            );
+            return this.exerciseRepository.toResponse(exercise);
+        } catch (error) {
+            throw handleDatabaseError(error);
+        }
+    }
+
+    public async updateExerciseInWorkout(
+        exerciseRequest: ExerciseRequest,
+        exerciseId: Types.ObjectId,
+    ): Promise<void> {
+        try {
+            const exerciseDoc =
+                this.exerciseRepository.toDocument(exerciseRequest);
+            await this.exerciseRepository.findByIdAndUpdate(
+                exerciseId,
+                { $set: exerciseDoc },
+                { new: true },
+            );
+        } catch (error) {
+            throw handleDatabaseError(error);
+        }
+    }
+
+    public async deleteExerciseInWorkout(
+        exerciseId: Types.ObjectId,
+    ): Promise<void> {}
+
+    public async addSetToExercise(
+        exerciseId: Types.ObjectId,
+        setRequest: SetRequest,
+    ): Promise<SetResponse> {
+        try {
+            // TODO: Add transaction
+            const exercise = await this.exerciseRepository.findById(exerciseId);
+
+            if (!exercise) {
+                throw APIError.NotFound("Exercise not found");
+            }
+
+            const setDoc = this.setRepository.toDocument(setRequest);
+            const set = await this.setRepository.create(setDoc);
+
+            await this.exerciseRepository.updateOne(
+                { _id: exerciseId },
+                { $addToSet: { sets: set.getId() } },
+                { new: true },
+            );
+            return this.setRepository.toResponse(set);
+        } catch (error) {
+            throw handleDatabaseError(error);
+        }
+    }
+
+    public async updateSetInExercise(
+        setRequest: SetRequest,
+        setId: Types.ObjectId,
+    ): Promise<void> {
+        try {
+            const setDoc = this.setRepository.toDocument(setRequest);
+            await this.setRepository.findByIdAndUpdate(
+                setId,
+                { $set: setDoc },
+                { new: true },
+            );
+        } catch (error) {
+            throw handleDatabaseError(error);
+        }
+    }
+
+    public async deleteSetInExercise(setId: Types.ObjectId): Promise<void> {}
 }
