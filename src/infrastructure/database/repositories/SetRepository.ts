@@ -3,7 +3,7 @@ import Set from "../entity/Set";
 import { SetDocument } from "../models/setModel";
 import { ISetRepository } from "../interfaces/ISetRepository";
 import { SetModel } from "../models/setModel";
-import { SetRequest } from "../../../app/programs/dto/setDto";
+import { SetRequest, SetResponse } from "../../../app/programs/dto/setDto";
 import { Types } from "mongoose";
 
 export default class SetRepository
@@ -40,6 +40,20 @@ export default class SetRepository
             imagePath: request.imagePath,
             link: request.link,
             createdBy: new Types.ObjectId(request.createdBy),
+        };
+    }
+
+    toResponse(set: Set): SetResponse {
+        if (!set) return null;
+
+        return {
+            id: set.getId().toString(),
+            weight: set.getWeight(),
+            reps: set.getReps(),
+            completed: set.getCompleted(),
+            imagePath: set.getImagePath(),
+            link: set.getLink(),
+            createdBy: set.getCreatedBy().toString(),
         };
     }
 }

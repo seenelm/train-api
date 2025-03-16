@@ -3,7 +3,10 @@ import Exercise from "../entity/Exercise";
 import { ExerciseDocument } from "../models/exerciseModel";
 import { IExerciseRepository } from "../interfaces/IExerciseRepository";
 import { ExerciseModel } from "../models/exerciseModel";
-import { ExerciseRequest } from "../../../app/programs/dto/exerciseDto";
+import {
+    ExerciseRequest,
+    ExerciseResponse,
+} from "../../../app/programs/dto/exerciseDto";
 import { Types } from "mongoose";
 
 export default class ExerciseRepository
@@ -33,6 +36,7 @@ export default class ExerciseRepository
             .setUpdatedAt(doc.updatedAt)
             .build();
     }
+
     toDocument(request: ExerciseRequest): Partial<ExerciseDocument> {
         if (!request) return null;
 
@@ -47,6 +51,24 @@ export default class ExerciseRepository
             completed: request.completed,
             createdBy: new Types.ObjectId(request.createdBy),
             sets: request.sets.map((setId) => new Types.ObjectId(setId)),
+        };
+    }
+
+    toResponse(exercise: Exercise): ExerciseResponse {
+        if (!exercise) return null;
+
+        return {
+            id: exercise.getId().toString(),
+            name: exercise.getName(),
+            group: exercise.getGroup(),
+            imagePath: exercise.getImagePath(),
+            weight: exercise.getWeight(),
+            targetSets: exercise.getTargetSets(),
+            targetReps: exercise.getTargetReps(),
+            notes: exercise.getNotes(),
+            completed: exercise.isCompleted(),
+            createdBy: exercise.getCreatedBy().toString(),
+            sets: exercise.getSets().map((setId) => setId.toString()),
         };
     }
 }

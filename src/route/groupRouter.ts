@@ -11,15 +11,26 @@ import ProgramService from "../app/programs/services/ProgramService";
 import ProgramRepository from "../infrastructure/database/repositories/ProgramRepository";
 import GroupMiddleware from "../common/middleware/GroupMiddleware";
 import WeekRepository from "../infrastructure/database/repositories/WeekRepository";
-import { group } from "console";
+import WorkoutRepository from "../infrastructure/database/repositories/WorkoutRepository";
+import ExerciseRepository from "../infrastructure/database/repositories/ExerciseRepository";
+import SetRepository from "../infrastructure/database/repositories/SetRepository";
 
 const groupDAO = new GroupDAO(GroupModel);
 const userGroupsDAO = new UserGroupsDAO(UserGroupsModel);
 const programRepository = new ProgramRepository();
 const weekRepository = new WeekRepository();
+const workoutRepository = new WorkoutRepository();
+const exerciseRepository = new ExerciseRepository();
+const setRepository = new SetRepository();
 
 const groupService = new GroupService(groupDAO, userGroupsDAO);
-const programService = new ProgramService(programRepository, weekRepository);
+const programService = new ProgramService(
+    programRepository,
+    weekRepository,
+    workoutRepository,
+    exerciseRepository,
+    setRepository,
+);
 const groupController = new GroupController(groupService, programService);
 
 const groupMiddleware = new GroupMiddleware(groupDAO);
@@ -68,12 +79,81 @@ groupRouter.put(
     groupMiddleware.validateUpdateProgram,
     groupController.updateProgram,
 );
+groupRouter.delete(
+    "/:groupId/programs/:programId",
+    authenticate,
+    groupMiddleware.validateDeleteProgram,
+    groupController.deleteProgram,
+);
 
 groupRouter.post(
     "/:groupId/programs/weeks",
     authenticate,
     groupMiddleware.validateAddWeekToProgram,
     groupController.addWeekToProgram,
+);
+groupRouter.post(
+    "/:groupId/programs/weeks/:weekId",
+    authenticate,
+    groupMiddleware.validateUpdateWeekInProgram,
+    groupController.updateWeekInProgram,
+);
+groupRouter.delete(
+    "/:groupId/programs/weeks/:weekId",
+    authenticate,
+    groupMiddleware.validateDeleteWeekInProgram,
+    groupController.deleteWeekInProgram,
+);
+
+groupRouter.post(
+    "/:groupId/programs/weeks/:weekId/workouts",
+    authenticate,
+    groupMiddleware.validateAddWorkout,
+    groupController.addWorkout,
+);
+groupRouter.put(
+    "/:groupId/programs/weeks/workouts/:workoutId",
+    authenticate,
+    groupMiddleware.validateUpdateWorkout,
+    groupController.updateWorkout,
+);
+groupRouter.delete(
+    "/:groupId/programs/weeks/workouts/:workoutId",
+    authenticate,
+    groupMiddleware.validateDeleteWorkout,
+    groupController.deleteWorkout,
+);
+
+groupRouter.post(
+    "/:groupId/programs/weeks/workouts/:workoutId/exercises",
+    authenticate,
+    groupController.addExerciseToWorkout,
+);
+groupRouter.put(
+    "/:groupId/programs/weeks/workouts/exercises/:exerciseId",
+    authenticate,
+    groupController.updateExerciseInWorkout,
+);
+groupRouter.delete(
+    "/:groupId/programs/weeks/workouts/exercises/:exerciseId",
+    authenticate,
+    groupController.deleteExerciseInWorkout,
+);
+
+groupRouter.post(
+    "/:groupId/programs/weeks/workouts/exercises/:exerciseId/sets",
+    authenticate,
+    groupController.addSetToExercise,
+);
+groupRouter.put(
+    "/:groupId/programs/weeks/workouts/exercises/sets/:setId",
+    authenticate,
+    groupController.updateSetInExercise,
+);
+groupRouter.delete(
+    "/:groupId/programs/weeks/workouts/exercises/sets/:setId",
+    authenticate,
+    groupController.deleteSetInExercise,
 );
 
 export default groupRouter;
