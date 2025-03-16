@@ -1,4 +1,15 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, Document, Types } from "mongoose";
+
+export interface SetDocument extends Document {
+    weight?: number;
+    reps?: number;
+    completed?: boolean;
+    imagePath?: string;
+    link?: string;
+    createdBy: Types.ObjectId;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
 
 const SetSchema: Schema = new Schema(
     {
@@ -31,4 +42,4 @@ const SetSchema: Schema = new Schema(
     { timestamps: true },
 );
 
-export const SetModel = model("Set", SetSchema);
+export const SetModel = model<SetDocument>("Set", SetSchema);

@@ -1,4 +1,19 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, Document, Types } from "mongoose";
+
+export interface ExerciseDocument extends Document {
+    name?: string;
+    group?: string;
+    imagePath?: string;
+    weight?: string;
+    targetSets?: number;
+    targetReps?: number;
+    notes?: string;
+    completed?: boolean;
+    createdBy: Types.ObjectId;
+    sets: Types.ObjectId[];
+    createdAt?: Date;
+    updatedAt?: Date;
+}
 
 const ExerciseSchema: Schema = new Schema(
     {
@@ -49,4 +64,7 @@ const ExerciseSchema: Schema = new Schema(
     { timestamps: true },
 );
 
-export const ExerciseModel = model("Exercise", ExerciseSchema);
+export const ExerciseModel = model<ExerciseDocument>(
+    "Exercise",
+    ExerciseSchema,
+);
