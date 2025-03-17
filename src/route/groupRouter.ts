@@ -15,8 +15,7 @@ import WorkoutRepository from "../infrastructure/database/repositories/WorkoutRe
 import ExerciseRepository from "../infrastructure/database/repositories/ExerciseRepository";
 import SetRepository from "../infrastructure/database/repositories/SetRepository";
 import GroupProgramRepository from "../infrastructure/database/repositories/GroupProgramRepository";
-import GroupProgramService from "../app/groups/services/GroupProgramService";
-import groupProgramRoutes from "../app/groups/routes/groupProgramRoutes";
+import { GroupProgramsModel } from "../infrastructure/database/models/groupProgramModel";
 
 const groupDAO = new GroupDAO(GroupModel);
 const userGroupsDAO = new UserGroupsDAO(UserGroupsModel);
@@ -25,20 +24,20 @@ const weekRepository = new WeekRepository();
 const workoutRepository = new WorkoutRepository();
 const exerciseRepository = new ExerciseRepository();
 const setRepository = new SetRepository();
-const groupProgramRepository = new GroupProgramRepository();
-const groupProgramService = new GroupProgramService(groupProgramRepository);
+const groupProgramRepository = new GroupProgramRepository(GroupProgramsModel);
 
-const groupService = new GroupService(groupDAO, userGroupsDAO);
+const groupService = new GroupService(groupDAO, userGroupsDAO, groupProgramRepository);
 const programService = new ProgramService(
     programRepository,
     weekRepository,
     workoutRepository,
     exerciseRepository,
     setRepository,
-    groupProgramService,
+    groupProgramRepository
 );
-const groupController = new GroupController(groupService, programService);
 
+
+const groupController = new GroupController(groupService, programService);
 const groupMiddleware = new GroupMiddleware(groupDAO);
 
 groupRouter.get("/:groupId", authenticate, groupController.fetchGroup);
@@ -162,6 +161,11 @@ groupRouter.delete(
     groupController.deleteSetInExercise,
 );
 
-groupRouter.use("/:groupId/programs", authenticate, groupProgramRoutes);
+// Get all programs for a group (basic info)
+groupRouter.get(
+    "/:groupId/programs",
+    authenticate,
+    groupController.getGroupPrograms
+  );
 
 export default groupRouter;

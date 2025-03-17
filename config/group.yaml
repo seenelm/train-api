@@ -237,6 +237,73 @@ paths:
                 500:
                     description: Internal server error
     /groups/{groupId}/programs:
+        get:
+            tags:
+                - Group Programs
+            summary: Get all programs for a group
+            description: Retrieves all programs associated with a specific group
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: groupId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the group
+            responses:
+                200:
+                    description: Programs retrieved successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                        example: true
+                                    data:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                _id:
+                                                    type: string
+                                                    description: The unique identifier of the program
+                                                name:
+                                                    type: string
+                                                    description: The name of the program
+                                                description:
+                                                    type: string
+                                                    description: The description of the program
+                                                category:
+                                                    type: string
+                                                    description: The category of the program
+                                                imagePath:
+                                                    type: string
+                                                    description: The path to the program image
+                                                createdBy:
+                                                    type: string
+                                                    description: The ID of the user who created the program
+                                                numWeeks:
+                                                    type: integer
+                                                    description: The number of weeks in the program
+                                                weeks:
+                                                    type: array
+                                                    items:
+                                                        type: string
+                                                    description: Array of week IDs in the program
+                                                difficulty:
+                                                    type: string
+                                                    description: The difficulty level of the program
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                403:
+                    description: Forbidden - User doesn't have permission to view programs in this group
+                404:
+                    description: Group not found
+                500:
+                    description: Internal server error
         post:
             tags:
                 - Group Programs
@@ -270,6 +337,51 @@ paths:
                     description: Unauthorized - Token not provided or invalid
                 403:
                     description: Forbidden - User doesn't have permission to create programs in this group
+                404:
+                    description: Group not found
+                500:
+                    description: Internal server error
+    /groups/{groupId}/programs/detailed:
+        get:
+            tags:
+                - Group Programs
+            summary: Get detailed information for all programs in a group
+            description: Retrieves detailed information about all programs associated with a specific group
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: groupId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the group
+            responses:
+                200:
+                    description: Detailed programs retrieved successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                        example: true
+                                    data:
+                                        type: object
+                                        properties:
+                                            groupId:
+                                                type: string
+                                                description: The unique identifier of the group
+                                            programs:
+                                                type: array
+                                                items:
+                                                    $ref: '#/components/schemas/ProgramResponse'
+                                                description: Array of detailed program information
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                403:
+                    description: Forbidden - User doesn't have permission to view programs in this group
                 404:
                     description: Group not found
                 500:
@@ -454,7 +566,7 @@ paths:
                     description: Group, program, or week not found
                 500:
                     description: Internal server error
-    /groups/{groupId}/programs/weeks/{weekId}/workouts:
+    /groups/{groupId}/programs/weeks/workouts:
         post:
             tags:
                 - Group Programs
@@ -569,7 +681,7 @@ paths:
                     description: Group, program, week, or workout not found
                 500:
                     description: Internal server error
-    /groups/{groupId}/programs/weeks/workouts/{workoutId}/exercises:
+    /groups/{groupId}/programs/weeks/workouts/exercises:
         post:
             tags:
                 - Group Programs

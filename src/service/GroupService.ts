@@ -6,15 +6,21 @@ import UserGroupsDAO from "../dao/UserGroupsDAO";
 import CustomLogger from "../common/logger";
 import { ProfileAccess } from "../common/enums";
 import { IUserProfile } from "../model/userProfile";
+import { DetailedGroupProgramsResponse } from "../app/groups/dto/groupProgramDto";
+import GroupProgram from "../infrastructure/database/entity/GroupProgram";
+import GroupProgramRepository from "../infrastructure/database/repositories/GroupProgramRepository";
+import { APIError } from "../common/errors/APIError";
 
 class GroupService {
     private groupDAO: GroupDAO;
     private userGroupsDAO: UserGroupsDAO;
+    private groupProgramRepository: GroupProgramRepository;
     private logger: CustomLogger;
 
-    constructor(groupDAO: GroupDAO, userGroupsDAO: UserGroupsDAO) {
+    constructor(groupDAO: GroupDAO, userGroupsDAO: UserGroupsDAO, groupProgramRepository: GroupProgramRepository) {
         this.groupDAO = groupDAO;
         this.userGroupsDAO = userGroupsDAO;
+        this.groupProgramRepository = groupProgramRepository;
         this.logger = new CustomLogger(this.constructor.name);
     }
 
@@ -608,6 +614,17 @@ class GroupService {
 
         return updatedGroup;
     }
+
+    async getGroupPrograms(groupId: Types.ObjectId): Promise<DetailedGroupProgramsResponse[]> {
+        try {
+          const groupProgram = await this.groupProgramRepository.findGroupPrograms(groupId);
+          return groupProgram;
+        } catch (error) {
+          console.error("Error getting group programs:", error);
+          throw APIError.InternalServerError("Failed to get group programs", error);
+        }
+      }
+    
 }
 
 export default GroupService;
