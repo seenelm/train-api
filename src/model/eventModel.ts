@@ -8,6 +8,7 @@ export interface IEvent extends Document {
     endTime?: Date;
     location?: string;
     description?: string;
+    alerts?: Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -48,6 +49,10 @@ const EventSchema: Schema = new Schema(
         description: {
             type: String,
             required: false,
+        },
+        alerts: {
+            type: Schema.Types.ObjectId,
+            ref: "Alert",
         },
     },
     { timestamps: true },

@@ -9,6 +9,12 @@ export enum EventStatus {
     Rejected = 3,
 }
 
+export enum ProgramDifficulty {
+    Beginner = "Beginner",
+    Intermediate = "Intermediate",
+    Advanced = "Advanced",
+}
+
 export enum MongoServerErrorType {
     ValidationError = "ValidationError",
     CastError = "CastError",

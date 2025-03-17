@@ -4,17 +4,27 @@ import { EventRequest } from "../dto/EventRequest";
 import { EventResponse } from "../dto/EventResponse";
 import { IEvent } from "../model/eventModel";
 import { ObjectId } from "mongodb";
-import { InternalServerError, handleDatabaseError } from "../utils/errors";
+import { handleDatabaseError } from "../utils/errors";
 import mongoose from "mongoose";
 import { UserEventEntity } from "../entity/UserEventEntity";
 import { ResourceNotFoundError } from "../utils/errors";
 import { UserEventResponse } from "../dto/UserEventResponse";
+import { APIError } from "../common/errors/APIError";
+import { AuthError } from "../common/errors/AuthError";
+import UserEventStatusRequest from "../dto/UserEventStatusRequest";
+import AlertDAO from "../dao/AlertDAO";
 
 export default class EventService {
     private eventDAO: EventDAO;
     private userEventDAO: UserEventDAO;
+    private alertDAO: AlertDAO;
 
-    constructor(eventDAO: EventDAO, userEventDAO: UserEventDAO) {
+    constructor(
+        eventDAO: EventDAO,
+        userEventDAO: UserEventDAO,
+        alertDAO: AlertDAO,
+    ) {
+        this.alertDAO = alertDAO;
         this.eventDAO = eventDAO;
         this.userEventDAO = userEventDAO;
     }
@@ -33,11 +43,32 @@ export default class EventService {
         console.debug("Transaction started for session: ", session.id);
 
         try {
-            // Check if event already exists
-            const event: IEvent = await this.eventDAO.create(
-                createEventRequest,
+            const alert = await this.alertDAO.create(
+                createEventRequest.getAlertRequest(),
                 { session },
             );
+            if (!alert) {
+                console.error("Error creating alert");
+                return;
+            }
+
+            const newEvent: Partial<IEvent> = {
+                name: createEventRequest.getName(),
+                admin: createEventRequest.getAdmin(),
+                invitees: createEventRequest.getInvitees(),
+                startTime: createEventRequest.getStartTime(),
+                endTime: createEventRequest.getEndTime(),
+                location: createEventRequest.getLocation(),
+                description: createEventRequest.getDescription(),
+                alerts: alert._id,
+            };
+
+            console.log("New Event: ", newEvent);
+
+            // Check if event already exists
+            const event: IEvent = await this.eventDAO.create(newEvent, {
+                session,
+            });
             console.debug("Event created: ", event);
 
             // Add event into user's event list
@@ -89,6 +120,170 @@ export default class EventService {
             }
 
             return UserEventResponse.from(userEventEntityList);
+        } catch (error) {
+            throw handleDatabaseError(error);
+        }
+    }
+
+    public async getUserEventById(
+        userId: ObjectId,
+        eventId: ObjectId,
+    ): Promise<UserEventResponse> {
+        try {
+            const userEvent = await this.userEventDAO.findOne({
+                userId,
+                "events.eventId": eventId,
+            });
+
+            if (!userEvent) {
+                throw APIError.NotFound("Event not found");
+            }
+
+            return UserEventResponse.fromUserEvent(userEvent);
+        } catch (error) {
+            throw handleDatabaseError(error);
+        }
+    }
+
+    public async updateEvent(
+        eventRequest: EventRequest,
+        eventId: ObjectId,
+        adminId: ObjectId,
+    ): Promise<void> {
+        try {
+            const event = await this.eventDAO.findById(eventId);
+
+            if (!event) {
+                throw APIError.NotFound("Event not found");
+            }
+
+            const isOwner = event.admin.some((admin) =>
+                admin._id.equals(adminId),
+            );
+
+            if (!isOwner) {
+                throw AuthError.Forbidden("User is not an admin of the event");
+            }
+
+            await this.eventDAO.findOneAndUpdate(
+                { _id: eventId },
+                { $set: eventRequest },
+                { new: true },
+            );
+        } catch (error) {
+            throw handleDatabaseError(error);
+        }
+    }
+
+    public async updateUserEventStatus(
+        eventId: ObjectId,
+        userEventStatusRequest: UserEventStatusRequest,
+    ): Promise<void> {
+        try {
+            const userId = new ObjectId(userEventStatusRequest.getUserId());
+            const eventStatus = userEventStatusRequest.getEventStatus();
+
+            const response = await this.userEventDAO.findOneAndUpdate(
+                { userId, "events.eventId": eventId },
+                { $set: { "events.$.status": eventStatus } },
+                { new: true },
+            );
+
+            if (!response) {
+                throw APIError.NotFound("Event not found");
+            }
+
+            console.log("STATUS**: ", response);
+        } catch (error) {
+            console.log("ERROR: ", error);
+            throw handleDatabaseError(error);
+        }
+    }
+
+    public async deleteEvent(
+        eventId: ObjectId,
+        adminId: ObjectId,
+    ): Promise<void> {
+        // TODO: Add transaction
+        try {
+            const event = await this.eventDAO.findById(eventId);
+
+            if (!event) {
+                throw APIError.NotFound("Event not found");
+            }
+
+            const isOwner = event.admin.some((admin) =>
+                admin._id.equals(adminId),
+            );
+
+            if (!isOwner) {
+                throw AuthError.Forbidden("User is not an admin of the event");
+            }
+
+            await this.eventDAO.findByIdAndDelete(eventId);
+            await this.userEventDAO.updateMany(
+                { "events.eventId": eventId },
+                { $pull: { events: { eventId } } },
+            );
+        } catch (error) {
+            throw handleDatabaseError(error);
+        }
+    }
+
+    public async removeUserFromEvent(
+        eventId: ObjectId,
+        userId: ObjectId,
+        adminId: ObjectId,
+    ): Promise<void> {
+        // TODO: Add transaction
+        try {
+            const event = await this.eventDAO.findById(eventId);
+
+            if (!event) {
+                throw APIError.NotFound("Event not found");
+            }
+
+            const isOwner = event.admin.some((admin) =>
+                admin._id.equals(adminId),
+            );
+
+            if (!isOwner) {
+                throw AuthError.Forbidden("Admin cannot be removed from event");
+            }
+
+            await this.eventDAO.updateOne(
+                { _id: eventId },
+                { $pull: { invitees: userId } },
+            );
+            await this.userEventDAO.updateOne(
+                { userId },
+                { $pull: { events: { eventId } } },
+            );
+        } catch (error) {
+            throw handleDatabaseError(error);
+        }
+    }
+
+    public async deleteUserEvent(
+        eventId: ObjectId,
+        userId: ObjectId,
+    ): Promise<void> {
+        // TODO: Add transaction
+        try {
+            const event = await this.eventDAO.findById(eventId);
+
+            if (!event) {
+                throw APIError.NotFound("Event not found");
+            }
+
+            await this.eventDAO.updateOne(
+                { _id: eventId },
+                { $pull: { invitees: userId } },
+            );
+            await this.userEventDAO.updateOne(
+                { userId },
+                { $pull: { events: { eventId } } },
+            );
         } catch (error) {
             throw handleDatabaseError(error);
         }
