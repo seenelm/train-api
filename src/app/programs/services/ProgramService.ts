@@ -12,6 +12,7 @@ import { ExerciseRequest, ExerciseResponse } from "../dto/exerciseDto";
 import ExerciseRepository from "../../../infrastructure/database/repositories/ExerciseRepository";
 import SetRepository from "../../../infrastructure/database/repositories/SetRepository";
 import { SetRequest, SetResponse } from "../dto/setDto";
+import GroupProgramService from "../../groups/services/GroupProgramService";
 
 export default class ProgramService {
     private programRepository: ProgramRepository;
@@ -19,6 +20,7 @@ export default class ProgramService {
     private workoutRepository: WorkoutRepository;
     private exerciseRepository: ExerciseRepository;
     private setRepository: SetRepository;
+    private groupProgramService: GroupProgramService;
 
     constructor(
         programRepository: ProgramRepository,
@@ -26,12 +28,14 @@ export default class ProgramService {
         workoutRepository: WorkoutRepository,
         exerciseRepository: ExerciseRepository,
         setRepository: SetRepository,
+        groupProgramService: GroupProgramService,
     ) {
         this.programRepository = programRepository;
         this.weekRepository = weekRepository;
         this.workoutRepository = workoutRepository;
         this.exerciseRepository = exerciseRepository;
         this.setRepository = setRepository;
+        this.groupProgramService = groupProgramService;
     }
 
     private toResponse(program: Program): ProgramResponse {
@@ -51,6 +55,7 @@ export default class ProgramService {
 
     public async createProgram(
         programRequest: ProgramRequest,
+        groupId?: string,
     ): Promise<ProgramResponse> {
         try {
             // TODO: Add transaction
@@ -82,6 +87,14 @@ export default class ProgramService {
                 await this.programRepository.updateOne(
                     { _id: program.getId() },
                     { weeks: weekIds }
+                );
+            }
+
+            // If groupId is provided, add the program to the group's programs
+            if (groupId) {
+                await this.groupProgramService.addProgramToGroup(
+                    groupId,
+                    program.getId().toString()
                 );
             }
 

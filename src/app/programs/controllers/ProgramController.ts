@@ -18,7 +18,7 @@ export default class ProgramController {
         try {
             const programRequest: ProgramRequest = req.body;
             const programResponse =
-                await this.programService.createProgram(programRequest);
+                await this.programService.createProgram(programRequest, null);
             return res.status(HttpStatusCode.CREATED).json(programResponse);
         } catch (error) {
             next(error);
