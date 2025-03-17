@@ -4,6 +4,7 @@ export interface IUser extends Document {
     username: string;
     password: string;
     isActive: boolean;
+    deviceToken?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -18,6 +19,9 @@ const userSchema = new Schema(
         password: {
             type: String,
             required: true,
+        },
+        deviceToken: {
+            type: String,
         },
         isActive: {
             type: Boolean,
