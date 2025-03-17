@@ -2,15 +2,17 @@ import BaseRepository from "./BaseRepository";
 import { GroupProgramsModel, IGroupPrograms } from "../models/groupProgramModel";
 import { IGroupProgramRepository } from "../interfaces/IGroupProgramRepository";
 import GroupProgram from "../entity/GroupProgram";
-import { Types } from "mongoose";
-import { GroupProgramsRequest } from "../../../app/groups/dto/groupProgramDto";
+import { Types, Model } from "mongoose";
+import { GroupProgramsRequest, DetailedGroupProgramsResponse } from "../../../app/groups/dto/groupProgramDto";
 
 export default class GroupProgramRepository 
   extends BaseRepository<GroupProgram, IGroupPrograms>
   implements IGroupProgramRepository 
 {
-  constructor() {
-    super(GroupProgramsModel);
+  private groupPrograms: Model<IGroupPrograms>;
+  constructor(groupPrograms: Model<IGroupPrograms>) {
+    super(groupPrograms);
+    this.groupPrograms = groupPrograms;
   }
 
   toEntity(doc: IGroupPrograms): GroupProgram {
@@ -32,10 +34,35 @@ export default class GroupProgramRepository
     };
   }
 
-  async findByGroupId(groupId: string): Promise<GroupProgram> {
-    const groupObjectId = new Types.ObjectId(groupId);
-    return this.findOne({ groupId: groupObjectId });
-  }
+  public async findGroupPrograms(groupId: Types.ObjectId): Promise<DetailedGroupProgramsResponse[]> {
+    const groupPrograms = await this.groupPrograms
+    .aggregate([
+            {
+                $match: {
+                    groupId
+                },
+            },
+            {
+                $lookup: {
+                    from: "programs",
+                    localField: "programs",
+                    foreignField: "_id",
+                    as: "programs",
+                },
+            },
+            {
+                $unwind: "$programs",
+            },
+            {
+                $replaceRoot: { newRoot: "$programs" },
+            },
+        ])
+        .exec();
+
+    console.log("Group Programs: ", groupPrograms);
+
+    return groupPrograms;
+}
 
   async addProgramToGroup(groupId: string, programId: string): Promise<GroupProgram> {
     const groupObjectId = new Types.ObjectId(groupId);

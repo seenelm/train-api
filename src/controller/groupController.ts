@@ -8,6 +8,7 @@ import { WeekRequest } from "../app/programs/dto/weekDto";
 import { WorkoutRequest } from "../app/programs/dto/workoutDto";
 import { ExerciseRequest } from "../app/programs/dto/exerciseDto";
 import { SetRequest } from "../app/programs/dto/setDto";
+import { APIError } from "../common/errors/APIError";
 
 export default class GroupController {
     private groupService: GroupService;
@@ -156,7 +157,7 @@ export default class GroupController {
 
         try {
             const programResponse =
-                await this.programService.createProgram(programRequest, groupId);
+                await this.programService.createProgram(programRequest, new Types.ObjectId(groupId));
             return res.status(HttpStatusCode.CREATED).json(programResponse);
         } catch (error) {
             next(error);
@@ -416,4 +417,25 @@ export default class GroupController {
             next(error);
         }
     };
+
+    getGroupPrograms = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+          const { groupId } = req.params;
+          
+          if (!groupId) {
+            throw APIError.BadRequest("Group ID is required");
+          }
+          
+          const groupPrograms = await this.groupService.getGroupPrograms(new Types.ObjectId(groupId));
+          
+          res.status(200).json({
+            success: true,
+            data: groupPrograms
+          });
+        } catch (error) {
+          next(error);
+        }
+      };
+    
+      
 }

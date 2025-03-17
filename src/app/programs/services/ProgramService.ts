@@ -12,7 +12,7 @@ import { ExerciseRequest, ExerciseResponse } from "../dto/exerciseDto";
 import ExerciseRepository from "../../../infrastructure/database/repositories/ExerciseRepository";
 import SetRepository from "../../../infrastructure/database/repositories/SetRepository";
 import { SetRequest, SetResponse } from "../dto/setDto";
-import GroupProgramService from "../../groups/services/GroupProgramService";
+import GroupProgramRepository from "../../../infrastructure/database/repositories/GroupProgramRepository";
 
 export default class ProgramService {
     private programRepository: ProgramRepository;
@@ -20,7 +20,7 @@ export default class ProgramService {
     private workoutRepository: WorkoutRepository;
     private exerciseRepository: ExerciseRepository;
     private setRepository: SetRepository;
-    private groupProgramService: GroupProgramService;
+    private groupProgramRepository: GroupProgramRepository;
 
     constructor(
         programRepository: ProgramRepository,
@@ -28,14 +28,14 @@ export default class ProgramService {
         workoutRepository: WorkoutRepository,
         exerciseRepository: ExerciseRepository,
         setRepository: SetRepository,
-        groupProgramService: GroupProgramService,
+        groupProgramRepository: GroupProgramRepository
     ) {
         this.programRepository = programRepository;
         this.weekRepository = weekRepository;
         this.workoutRepository = workoutRepository;
         this.exerciseRepository = exerciseRepository;
         this.setRepository = setRepository;
-        this.groupProgramService = groupProgramService;
+        this.groupProgramRepository = groupProgramRepository;
     }
 
     private toResponse(program: Program): ProgramResponse {
@@ -55,7 +55,7 @@ export default class ProgramService {
 
     public async createProgram(
         programRequest: ProgramRequest,
-        groupId?: string,
+        groupId?: Types.ObjectId,
     ): Promise<ProgramResponse> {
         try {
             // TODO: Add transaction
@@ -92,9 +92,11 @@ export default class ProgramService {
 
             // If groupId is provided, add the program to the group's programs
             if (groupId) {
-                await this.groupProgramService.addProgramToGroup(
-                    groupId,
-                    program.getId().toString()
+                await this.groupProgramRepository.create(
+                    {
+                        groupId: groupId,
+                        programs: [program.getId()],
+                    }
                 );
             }
 
@@ -124,6 +126,25 @@ export default class ProgramService {
     }
 
     public async deleteProgram(id: Types.ObjectId): Promise<void> {}
+
+    /**
+     * Get a program by its ID
+     * @param programId The ID of the program to retrieve
+     * @returns The program entity or null if not found
+     */
+    public async getProgramById(programId: Types.ObjectId): Promise<ProgramResponse> {
+        try {
+            const program = await this.programRepository.findById(programId);
+            
+            if (!program) {
+                throw APIError.NotFound("Program not found");
+            }
+            
+            return this.toResponse(program);
+        } catch (error) {
+            throw handleDatabaseError(error);
+        }
+    }
 
     public async addWeekToProgram(
         weekRequest: WeekRequest,
