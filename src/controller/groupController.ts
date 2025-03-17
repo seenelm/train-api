@@ -151,11 +151,12 @@ export default class GroupController {
         res: Response,
         next: NextFunction,
     ) => {
+        const { groupId } = req.params;
         const programRequest: ProgramRequest = req.body;
 
         try {
             const programResponse =
-                await this.programService.createProgram(programRequest);
+                await this.programService.createProgram(programRequest, groupId);
             return res.status(HttpStatusCode.CREATED).json(programResponse);
         } catch (error) {
             next(error);

@@ -8,19 +8,24 @@ import WorkoutRepository from "../../../infrastructure/database/repositories/Wor
 import ExerciseRepository from "../../../infrastructure/database/repositories/ExerciseRepository";
 import SetRepository from "../../../infrastructure/database/repositories/SetRepository";
 import { authenticate } from "../../../middleware/authenticate";
+import GroupProgramRepository from "../../../infrastructure/database/repositories/GroupProgramRepository";
+import GroupProgramService from "../../groups/services/GroupProgramService";
 
 const programRepository = new ProgramRepository();
 const weekRepository = new WeekRepository();
 const workoutRepository = new WorkoutRepository();
 const exerciseRepository = new ExerciseRepository();
 const setRepository = new SetRepository();
+const groupProgramRepository = new GroupProgramRepository();
+const groupProgramService = new GroupProgramService(groupProgramRepository);
 
 const programService = new ProgramService(
     programRepository,
     weekRepository,
     workoutRepository,
     exerciseRepository,
-    setRepository
+    setRepository,
+    groupProgramService
 );
 const programController = new ProgramController(programService);
 

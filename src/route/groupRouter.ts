@@ -14,6 +14,9 @@ import WeekRepository from "../infrastructure/database/repositories/WeekReposito
 import WorkoutRepository from "../infrastructure/database/repositories/WorkoutRepository";
 import ExerciseRepository from "../infrastructure/database/repositories/ExerciseRepository";
 import SetRepository from "../infrastructure/database/repositories/SetRepository";
+import GroupProgramRepository from "../infrastructure/database/repositories/GroupProgramRepository";
+import GroupProgramService from "../app/groups/services/GroupProgramService";
+import groupProgramRoutes from "../app/groups/routes/groupProgramRoutes";
 
 const groupDAO = new GroupDAO(GroupModel);
 const userGroupsDAO = new UserGroupsDAO(UserGroupsModel);
@@ -22,6 +25,8 @@ const weekRepository = new WeekRepository();
 const workoutRepository = new WorkoutRepository();
 const exerciseRepository = new ExerciseRepository();
 const setRepository = new SetRepository();
+const groupProgramRepository = new GroupProgramRepository();
+const groupProgramService = new GroupProgramService(groupProgramRepository);
 
 const groupService = new GroupService(groupDAO, userGroupsDAO);
 const programService = new ProgramService(
@@ -30,6 +35,7 @@ const programService = new ProgramService(
     workoutRepository,
     exerciseRepository,
     setRepository,
+    groupProgramService,
 );
 const groupController = new GroupController(groupService, programService);
 
@@ -155,5 +161,7 @@ groupRouter.delete(
     authenticate,
     groupController.deleteSetInExercise,
 );
+
+groupRouter.use("/:groupId/programs", authenticate, groupProgramRoutes);
 
 export default groupRouter;
