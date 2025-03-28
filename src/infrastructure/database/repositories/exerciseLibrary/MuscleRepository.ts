@@ -3,7 +3,10 @@ import { MuscleDocument } from "../../models/exerciseLibrary/muscleModel";
 import Muscle from "../../../../app/exerciseLibrary/entity/Muscle";
 import { Model } from "mongoose";
 import BaseRepository from "../BaseRepository";
-import { MuscleRequest } from "../../../../app/exerciseLibrary/dto/libraryExerciseDto";
+import {
+    MuscleRequest,
+    MuscleResponse,
+} from "../../../../app/exerciseLibrary/dto/libraryExerciseDto";
 
 export interface IMuscleRepository
     extends IBaseRepository<Muscle, MuscleDocument> {}
@@ -30,6 +33,15 @@ export default class MuscleRepository
 
         return {
             name: request.name,
+        };
+    }
+
+    toResponse(entity: Muscle): MuscleResponse {
+        if (!entity) return null;
+
+        return {
+            id: entity.getId(),
+            name: entity.getName(),
         };
     }
 }

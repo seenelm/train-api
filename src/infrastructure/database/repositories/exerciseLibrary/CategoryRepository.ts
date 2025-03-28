@@ -3,7 +3,10 @@ import { CategoryDocument } from "../../models/exerciseLibrary/categoryModel";
 import Category from "../../../../app/exerciseLibrary/entity/Category";
 import { Model } from "mongoose";
 import BaseRepository from "../BaseRepository";
-import { CategoryRequest } from "../../../../app/exerciseLibrary/dto/libraryExerciseDto";
+import {
+    CategoryRequest,
+    CategoryResponse,
+} from "../../../../app/exerciseLibrary/dto/libraryExerciseDto";
 
 export interface ICategoryRepository
     extends IBaseRepository<Category, CategoryDocument> {}
@@ -37,6 +40,16 @@ export default class CategoryRepository
         return {
             name: request.name,
             description: request.description,
+        };
+    }
+
+    toResponse(entity: Category): CategoryResponse {
+        if (!entity) return null;
+
+        return {
+            id: entity.getId(),
+            name: entity.getName(),
+            description: entity.getDescription(),
         };
     }
 }

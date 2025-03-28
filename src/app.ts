@@ -14,6 +14,7 @@ import searchRouter from "./route/searchRouter";
 import eventRouter from "./route/eventRouter";
 import fileRouter from "./route/fileRouter";
 import programRouter from "./app/programs/routes/programRoutes";
+import exerciseLibraryRouter from "./app/exerciseLibrary/exerciseLibraryRouter";
 
 import { Event } from "./model/eventModel";
 import admin from "./infrastructure/firebase";
@@ -168,6 +169,7 @@ app.use("/api/events", eventRouter);
 app.use("/api", searchRouter);
 app.use("/api/files", fileRouter);
 app.use("/api/programs", programRouter);
+app.use("/api/exercise-library", exerciseLibraryRouter);
 
 app.use(errorHandler);
 

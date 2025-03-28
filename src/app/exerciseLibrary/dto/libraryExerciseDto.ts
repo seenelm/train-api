@@ -6,6 +6,24 @@ export interface FullLibraryExerciseRequest {
     muscleRequest: MuscleRequest[];
 }
 
+export interface FullLibraryExerciseResponse {
+    libraryExercise: LibraryExerciseResponse;
+    category: CategoryResponse;
+    muscles: MuscleResponse[];
+}
+
+export function toFullLibraryExerciseResponse(
+    libraryExercise: LibraryExerciseResponse,
+    category: CategoryResponse,
+    muscles: MuscleResponse[],
+): FullLibraryExerciseResponse {
+    return {
+        libraryExercise,
+        category,
+        muscles,
+    };
+}
+
 export interface LibaryExerciseRequest {
     name: string;
     imagePath?: string;
@@ -15,12 +33,11 @@ export interface LibaryExerciseRequest {
     equipment?: string[];
 }
 
-export interface LibaryExerciseResponse {
+export interface LibraryExerciseResponse {
     id: Types.ObjectId;
     name: string;
     imagePath?: string;
     description?: string;
-    categoryId?: Types.ObjectId;
     difficulty?: string;
     equipment?: string[];
 }
@@ -30,6 +47,17 @@ export interface CategoryRequest {
     description?: string;
 }
 
+export interface CategoryResponse {
+    id: Types.ObjectId;
+    name: string;
+    description?: string;
+}
+
 export interface MuscleRequest {
+    name: string;
+}
+
+export interface MuscleResponse {
+    id: Types.ObjectId;
     name: string;
 }

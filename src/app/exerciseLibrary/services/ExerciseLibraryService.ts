@@ -6,10 +6,16 @@ import {
     LibaryExerciseRequest,
     CategoryRequest,
     MuscleRequest,
+    FullLibraryExerciseResponse,
+    CategoryResponse,
+    MuscleResponse,
+    LibraryExerciseResponse,
+    toFullLibraryExerciseResponse,
 } from "../dto/libraryExerciseDto";
 import { APIError } from "../../../common/errors/APIError";
 import Muscle from "../entity/Muscle";
 import Category from "../entity/Category";
+import LibraryExercise from "../entity/LibraryExercise";
 
 export default class ExerciseLibraryService {
     private libraryExerciseRepository: LibraryExerciseRepository;
@@ -26,28 +32,74 @@ export default class ExerciseLibraryService {
         this.muscleRepository = muscleRepository;
     }
 
-    async createLibraryExercise(
+    public async createLibraryExercise(
         request: FullLibraryExerciseRequest,
-    ): Promise<void> {
+    ): Promise<FullLibraryExerciseResponse> {
         const { libraryExerciseRequest, categoryRequest, muscleRequest } =
             request;
+
+        let categoryResponse: CategoryResponse = null;
+        let libraryExerciseResponse: LibraryExerciseResponse = null;
+        let muscles: MuscleResponse[] = [];
 
         const category: Category = await this.categoryRepository.findOne({
             name: categoryRequest.name,
         });
 
-        if (category) {
-            throw APIError.Conflict(
-                `Category with name ${categoryRequest.name} already exists`,
-            );
+        // Create category if it doesn't exist
+        if (!category) {
+            const categoryDoc =
+                this.categoryRepository.toDocument(categoryRequest);
+            const categoryEntity: Category =
+                await this.categoryRepository.create(categoryDoc);
+            categoryResponse =
+                this.categoryRepository.toResponse(categoryEntity);
+
+            libraryExerciseRequest.categoryId = categoryEntity.getId();
+            const libraryExerciseDoc =
+                this.libraryExerciseRepository.toDocument(
+                    libraryExerciseRequest,
+                );
+            const libraryExercise: LibraryExercise =
+                await this.libraryExerciseRepository.create(libraryExerciseDoc);
+            libraryExerciseResponse =
+                this.libraryExerciseRepository.toResponse(libraryExercise);
         }
 
-        const categoryDoc = this.categoryRepository.toDocument(categoryRequest);
-        const categoryEntity: Category =
-            await this.categoryRepository.create(categoryDoc);
+        // Use existing category if it exists
+        categoryResponse = this.categoryRepository.toResponse(category);
 
-        const muscles: Muscle[] = await this.muscleRepository.find({
-            name: { $in: muscleRequest.map((m) => m.name) },
-        });
+        libraryExerciseRequest.categoryId = category.getId();
+        const libraryExerciseDoc = this.libraryExerciseRepository.toDocument(
+            libraryExerciseRequest,
+        );
+        const libraryExercise: LibraryExercise =
+            await this.libraryExerciseRepository.create(libraryExerciseDoc);
+        libraryExerciseResponse =
+            this.libraryExerciseRepository.toResponse(libraryExercise);
+
+        for (const muscle of muscleRequest) {
+            const existingMuscle = await this.muscleRepository.findOne({
+                name: muscle.name,
+            });
+            if (!existingMuscle) {
+                const muscleDoc = this.muscleRepository.toDocument(muscle);
+                const muscleEntity: Muscle =
+                    await this.muscleRepository.create(muscleDoc);
+
+                const muscleResponse: MuscleResponse =
+                    this.muscleRepository.toResponse(muscleEntity);
+                muscles.push(muscleResponse);
+            }
+            const muscleResponse: MuscleResponse =
+                this.muscleRepository.toResponse(existingMuscle);
+            muscles.push(muscleResponse);
+        }
+
+        return toFullLibraryExerciseResponse(
+            libraryExerciseResponse,
+            categoryResponse,
+            muscles,
+        );
     }
 }
