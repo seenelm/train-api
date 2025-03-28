@@ -28,7 +28,7 @@ export interface LibaryExerciseRequest {
     name: string;
     imagePath?: string;
     description?: string;
-    categoryId?: Types.ObjectId;
+    categoryId?: string | Types.ObjectId;
     difficulty?: string;
     equipment?: string[];
 }
