@@ -5,6 +5,7 @@ import {
     FullLibraryExerciseRequest,
     FullLibraryExerciseResponse,
 } from "../dto/libraryExerciseDto";
+import { Types } from "mongoose";
 
 export default class ExerciseLibraryController {
     private exerciseLibraryService: ExerciseLibraryService;
@@ -19,16 +20,17 @@ export default class ExerciseLibraryController {
         next: NextFunction,
     ) => {
         try {
-            const libraryExerciseRequest: FullLibraryExerciseRequest = req.body;
+            const fullLibraryExerciseRequest: FullLibraryExerciseRequest =
+                req.body;
 
-            const libraryExerciseResponse: FullLibraryExerciseResponse =
+            const fullLibraryExerciseResponse: FullLibraryExerciseResponse =
                 await this.exerciseLibraryService.createLibraryExercise(
-                    libraryExerciseRequest,
+                    fullLibraryExerciseRequest,
                 );
 
             return res
                 .status(HttpStatusCode.CREATED)
-                .json(libraryExerciseResponse);
+                .json(fullLibraryExerciseResponse);
         } catch (error) {
             next(error);
         }

@@ -28,7 +28,7 @@ const exerciseLibraryController = new ExerciseLibraryController(
 
 exerciseLibraryRouter.post(
     "/",
-    authenticate,
+    // authenticate,
     exerciseLibraryController.createLibraryExercise,
 );
 
