@@ -17,18 +17,22 @@ const LibraryExerciseSchema: Schema = new Schema(
             type: String,
             required: true,
         },
+        imagePath: {
+            type: String,
+            required: false,
+        },
         description: {
             type: String,
-            required: true,
+            required: false,
         },
         categoryId: {
             type: Schema.Types.ObjectId,
             ref: "Category",
-            required: true,
+            required: false,
         },
         difficulty: {
             type: String,
-            required: true,
+            required: false,
         },
         equipment: [
             {

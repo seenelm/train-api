@@ -3,8 +3,9 @@ import { Types } from "mongoose";
 export default class LibraryExercise {
     private id: Types.ObjectId;
     private name: string;
-    private description: string;
-    private categoryId: Types.ObjectId;
+    private imagePath?: string;
+    private description?: string;
+    private categoryId?: Types.ObjectId;
     private difficulty: string;
     private equipment?: string[];
     private createdAt?: Date;
@@ -13,6 +14,7 @@ export default class LibraryExercise {
     constructor(builder: LibraryExerciseBuilder) {
         this.id = builder.id;
         this.name = builder.name;
+        this.imagePath = builder.imagePath;
         this.description = builder.description;
         this.categoryId = builder.categoryId;
         this.difficulty = builder.difficulty;
@@ -33,19 +35,23 @@ export default class LibraryExercise {
         return this.name;
     }
 
-    public getDescription(): string {
+    public getImagePath(): string | undefined {
+        return this.imagePath;
+    }
+
+    public getDescription(): string | undefined {
         return this.description;
     }
 
-    public getCategoryId(): Types.ObjectId {
+    public getCategoryId(): Types.ObjectId | undefined {
         return this.categoryId;
     }
 
-    public getDifficulty(): string {
+    public getDifficulty(): string | undefined {
         return this.difficulty;
     }
 
-    public getEquipment(): string[] {
+    public getEquipment(): string[] | undefined {
         return this.equipment;
     }
 
@@ -61,9 +67,10 @@ export default class LibraryExercise {
 export class LibraryExerciseBuilder {
     id: Types.ObjectId;
     name: string;
-    description: string;
-    categoryId: Types.ObjectId;
-    difficulty: string;
+    imagePath?: string;
+    description?: string;
+    categoryId?: Types.ObjectId;
+    difficulty?: string;
     equipment?: string[];
     createdAt?: Date;
     updatedAt?: Date;
@@ -75,6 +82,11 @@ export class LibraryExerciseBuilder {
 
     public setName(name: string): this {
         this.name = name;
+        return this;
+    }
+
+    public setImagePath(imagePath: string): this {
+        this.imagePath = imagePath;
         return this;
     }
 
