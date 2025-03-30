@@ -56,7 +56,7 @@ export default class LibraryExerciseRepository
         if (!entity) return null;
 
         return {
-            id: entity.getId(),
+            id: entity.getId().toString(),
             name: entity.getName(),
             imagePath: entity.getImagePath(), // Assuming getImagePath() method exists in LibraryExercise
             description: entity.getDescription(),

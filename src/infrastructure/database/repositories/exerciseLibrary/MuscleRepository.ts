@@ -40,7 +40,7 @@ export default class MuscleRepository
         if (!entity) return null;
 
         return {
-            id: entity.getId(),
+            id: entity.getId().toString(),
             name: entity.getName(),
         };
     }

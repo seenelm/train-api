@@ -47,7 +47,7 @@ export default class CategoryRepository
         if (!entity) return null;
 
         return {
-            id: entity.getId(),
+            id: entity.getId().toString(),
             name: entity.getName(),
             description: entity.getDescription(),
         };

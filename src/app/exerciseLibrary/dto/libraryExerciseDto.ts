@@ -9,13 +9,13 @@ export interface FullLibraryExerciseRequest {
 export interface FullLibraryExerciseResponse {
     libraryExercise: LibraryExerciseResponse;
     category: CategoryResponse;
-    muscles: MuscleResponse[];
+    muscles: ExerciseMusclesResponse[];
 }
 
 export function toFullLibraryExerciseResponse(
     libraryExercise: LibraryExerciseResponse,
     category: CategoryResponse,
-    muscles: MuscleResponse[],
+    muscles: ExerciseMusclesResponse[],
 ): FullLibraryExerciseResponse {
     return {
         libraryExercise,
@@ -34,7 +34,7 @@ export interface LibaryExerciseRequest {
 }
 
 export interface LibraryExerciseResponse {
-    id: Types.ObjectId;
+    id: string;
     name: string;
     imagePath?: string;
     description?: string;
@@ -48,16 +48,30 @@ export interface CategoryRequest {
 }
 
 export interface CategoryResponse {
-    id: Types.ObjectId;
+    id: string;
     name: string;
     description?: string;
 }
 
 export interface MuscleRequest {
     name: string;
+    primary?: boolean;
 }
 
 export interface MuscleResponse {
-    id: Types.ObjectId;
+    id: string;
     name: string;
+}
+
+export interface ExerciseMusclesResponse {
+    id: string;
+    exerciseId?: string;
+    muscle: MuscleResponse;
+    primary: boolean;
+}
+
+export interface ExerciseMusclesRequest {
+    exerciseId: string;
+    muscleId: string;
+    primary: boolean;
 }

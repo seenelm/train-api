@@ -12,7 +12,7 @@ const ExerciseMusclesSchema: Schema = new Schema(
     {
         exerciseId: {
             type: Schema.Types.ObjectId,
-            ref: "Exercise",
+            ref: "LibraryExercise",
             required: true,
         },
         muscleId: {
