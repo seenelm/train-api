@@ -1,6 +1,9 @@
 import axios from "axios";
 import { exerciseLibraryData } from "./exerciseLibraryData";
-import { FullLibraryExerciseRequest } from "../src/app/exerciseLibrary/dto/libraryExerciseDto";
+import {
+    FullLibraryExerciseRequest,
+    FullLibraryExerciseResponse,
+} from "../src/app/exerciseLibrary/dto/libraryExerciseDto";
 
 const API_URL = "http://localhost:3000/api/exercise-library";
 
@@ -17,19 +20,43 @@ const api = axios.create({
  */
 async function createExercise(
     exerciseData: FullLibraryExerciseRequest,
-): Promise<void> {
+): Promise<FullLibraryExerciseResponse> {
     try {
-        console.log(
-            `Creating exercise: ${exerciseData.libraryExerciseRequest.name}`,
-        );
-
         const response = await api.post("/", exerciseData);
+        const { data } = response;
 
-        console.log(response);
-        console.log(`Response status: ${response.status}`);
-        console.log(`Exercise ID: ${response.data.id}`);
+        // Create a nicely formatted console output
+        console.log("\n---------------------------------------------");
+        console.log(`✅ Created: ${data.libraryExercise.name}`);
+        console.log("---------------------------------------------");
 
-        return response.data;
+        // Print library exercise details
+        console.log("\nLIBRARY EXERCISE:");
+        console.log(JSON.stringify(data.libraryExercise, null, 2));
+
+        // Print category details
+        console.log("\nCATEGORY:");
+        console.log(JSON.stringify(data.category, null, 2));
+
+        // Print each muscle in detail
+        console.log("\nMUSCLES:");
+        if (data.muscles && data.muscles.length > 0) {
+            // Print each muscle object individually with indentation
+            data.muscles.forEach((muscle, index) => {
+                console.log(`\n  MUSCLE ${index + 1}:`);
+                console.log(
+                    "  " +
+                        JSON.stringify(muscle, null, 2).replace(/\n/g, "\n  "),
+                );
+            });
+            console.log(`\nTotal muscles: ${data.muscles.length}`);
+        } else {
+            console.log("  No muscles associated with this exercise.");
+        }
+
+        console.log("\n---------------------------------------------\n");
+
+        return data;
     } catch (error) {
         if (axios.isAxiosError(error)) {
             console.error(
@@ -54,10 +81,6 @@ async function createExercise(
  * Creates all exercises in the library via API calls
  */
 async function createAllExercises(): Promise<void> {
-    console.log(
-        `Starting to create ${exerciseLibraryData.length} exercises...`,
-    );
-
     // Process exercises sequentially to avoid overwhelming the API
     for (const exerciseData of exerciseLibraryData) {
         try {
@@ -68,8 +91,6 @@ async function createAllExercises(): Promise<void> {
             );
         }
     }
-
-    console.log("Finished creating exercises");
 }
 
 /**
@@ -77,14 +98,7 @@ async function createAllExercises(): Promise<void> {
  */
 async function main(): Promise<void> {
     try {
-        // Choose one of the following methods:
-
-        // 1. Sequential creation (safer, slower)
         await createAllExercises();
-
-        // 2. Batch creation with concurrency (faster, but more API load)
-        // await createExercisesInBatches(3);
-
         console.log("Exercise creation completed successfully");
     } catch (error) {
         console.error("Exercise creation failed:", error);

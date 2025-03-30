@@ -1,4 +1,12 @@
-import { Model, Document, FilterQuery, UpdateQuery, Types } from "mongoose";
+import {
+    Model,
+    Document,
+    FilterQuery,
+    UpdateQuery,
+    Types,
+    QueryOptions,
+    CreateOptions,
+} from "mongoose";
 import { IBaseRepository } from "../interfaces/IBaseRepository";
 
 export default abstract class BaseRepository<T, TDocument extends Document>
@@ -36,15 +44,29 @@ export default abstract class BaseRepository<T, TDocument extends Document>
         return docs.map((doc) => this.toEntity(doc));
     }
 
-    public async create(doc: Partial<TDocument>): Promise<T> {
-        const entity = await this.model.create(doc);
-        return this.toEntity(entity);
+    public async create(
+        doc: Partial<TDocument>,
+        options?: CreateOptions,
+    ): Promise<T> {
+        const entity = await this.model.create([doc], options);
+        return this.toEntity(entity[0]);
+    }
+
+    public async insertMany(
+        docs: Partial<TDocument>[],
+        options?: object,
+    ): Promise<T[]> {
+        const entities = (await this.model.insertMany(
+            docs,
+            options,
+        )) as unknown as TDocument[];
+        return entities.map((doc) => this.toEntity(doc));
     }
 
     public async findOneAndUpdate(
         query: FilterQuery<TDocument>,
         update: UpdateQuery<TDocument>,
-        options?: object,
+        options?: QueryOptions<TDocument>,
     ): Promise<T | null> {
         const doc = await this.model
             .findOneAndUpdate(query, update, options)
@@ -55,7 +77,7 @@ export default abstract class BaseRepository<T, TDocument extends Document>
     public async findByIdAndUpdate(
         id: Types.ObjectId,
         update: UpdateQuery<TDocument>,
-        options?: object,
+        options?: QueryOptions<TDocument>,
     ): Promise<T | null> {
         const doc = await this.model
             .findByIdAndUpdate(id, update, options)

@@ -9,17 +9,23 @@ import { LibraryExerciseModel } from "../../infrastructure/database/models/exerc
 import { CategoryModel } from "../../infrastructure/database/models/exerciseLibrary/categoryModel";
 import { MuscleModel } from "../../infrastructure/database/models/exerciseLibrary/muscleModel";
 import { authenticate } from "../../middleware/authenticate";
+import { ExerciseMusclesModel } from "../../infrastructure/database/models/exerciseLibrary/exerciseMusclesModel";
+import ExerciseMusclesRepository from "../../infrastructure/database/repositories/exerciseLibrary/ExerciseMusclesRepository";
 
 const libraryExerciseRepository = new LibraryExerciseRepository(
     LibraryExerciseModel,
 );
 const categoryRepository = new CategoryRepository(CategoryModel);
 const muscleRepository = new MuscleRepository(MuscleModel);
+const exerciseMusclesRepository = new ExerciseMusclesRepository(
+    ExerciseMusclesModel,
+);
 
 const exerciseLibraryService = new ExerciseLibraryService(
     libraryExerciseRepository,
     categoryRepository,
     muscleRepository,
+    exerciseMusclesRepository,
 );
 
 const exerciseLibraryController = new ExerciseLibraryController(
