@@ -1,58 +1,60 @@
 import { transports, format, createLogger, Logger } from "winston";
 
 class CustomLogger {
-  private logger: Logger;
-  private className: string;
+    private logger: Logger;
+    private className: string;
 
-  constructor(className: string) {
-    this.className = className;
-    this.logger = createLogger({
-      transports: [
-        new transports.File({
-          level: "info",
-          filename: "./logs/app.log",
-          handleExceptions: true,
-          format: format.combine(
-            format.timestamp(),
-            // format.json(),
-            format.timestamp({ format: "YYYY-MM-DDTHH:mm:ss.SSSZ" }),
-            format.printf((info) => {
-              return JSON.stringify(
-                {
-                  ...info,
-                  timestamp: info.timestamp,
-                  level: info.level.toUpperCase(),
-                },
-                null,
-                2
-              );
-            })
-          ),
-          maxsize: 5242880, // 5MB
-          maxFiles: 5,
-        }),
-      ],
-    });
-  }
+    constructor(className?: string) {
+        this.className = className;
+        this.logger = createLogger({
+            transports: [
+                new transports.File({
+                    level: "info",
+                    filename: "./logs/app.log",
+                    handleExceptions: true,
+                    format: format.combine(
+                        format.timestamp(),
+                        // format.json(),
+                        format.timestamp({
+                            format: "YYYY-MM-DDTHH:mm:ss.SSSZ",
+                        }),
+                        format.printf((info) => {
+                            return JSON.stringify(
+                                {
+                                    ...info,
+                                    timestamp: info.timestamp,
+                                    level: info.level.toUpperCase(),
+                                },
+                                null,
+                                2,
+                            );
+                        }),
+                    ),
+                    maxsize: 5242880, // 5MB
+                    maxFiles: 5,
+                }),
+            ],
+        });
+    }
 
-  logInfo(message: string, additionalFields: object = {}) {
-    this.logger.info({ message, ...additionalFields });
-  }
+    logInfo(message: string, additionalFields: object = {}) {
+        this.logger.info({ message, ...additionalFields });
+    }
 
-  logError(
-    message: string,
-    error: Error,
-    additionalFields: object = {},
-    errors: object = {}
-  ) {
-    this.logger.error({
-      message,
-      errorMessage: error.message,
-      ...additionalFields,
-      ...errors,
-      stack: error.stack,
-    });
-  }
+    logError(
+        message: string,
+        error?: Error,
+        additionalFields?: object,
+        errors?: object,
+    ) {
+        this.logger.error({
+            message,
+            errorMessage: error.message,
+            ...additionalFields,
+            ...errors,
+            stack: error.stack,
+        });
+    }
 }
 
 export default CustomLogger;

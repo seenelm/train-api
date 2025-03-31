@@ -23,12 +23,14 @@ import mongoose, { Types } from "mongoose";
 import { handleDatabaseError } from "../../../utils/errors";
 import { ExerciseMusclesDocument } from "../../../infrastructure/database/models/exerciseLibrary/exerciseMusclesModel";
 import ExerciseMuscles from "../entity/ExerciseMuscles";
+import CustomLogger from "../../../common/logger";
 
 export default class ExerciseLibraryService {
     private libraryExerciseRepository: LibraryExerciseRepository;
     private categoryRepository: CategoryRepository;
     private muscleRepository: MuscleRepository;
     private exerciseMusclesRepository: ExerciseMusclesRepository;
+    private logger: CustomLogger;
 
     constructor(
         libraryExerciseRepository: LibraryExerciseRepository,
@@ -40,6 +42,7 @@ export default class ExerciseLibraryService {
         this.categoryRepository = categoryRepository;
         this.muscleRepository = muscleRepository;
         this.exerciseMusclesRepository = exerciseMusclesRepository;
+        this.logger = new CustomLogger(this.constructor.name);
     }
 
     public async createLibraryExercise(
@@ -47,10 +50,10 @@ export default class ExerciseLibraryService {
     ): Promise<FullLibraryExerciseResponse> {
         const { libraryExerciseRequest, categoryRequest, muscleRequest } =
             request;
-        const session = await mongoose.startSession();
+        // const session = await mongoose.startSession();
 
         try {
-            session.startTransaction();
+            // session.startTransaction();
 
             const existingLibraryExercise =
                 await this.libraryExerciseRepository.findOne({
@@ -73,8 +76,8 @@ export default class ExerciseLibraryService {
                     throw APIError.NotFound("Exercise muscles not found");
                 }
 
-                await session.abortTransaction();
-                session.endSession();
+                // await session.abortTransaction();
+                // session.endSession();
 
                 return toFullLibraryExerciseResponse(
                     this.libraryExerciseRepository.toResponse(
@@ -87,40 +90,61 @@ export default class ExerciseLibraryService {
 
             let category: Category;
 
-            category = await this.categoryRepository.findOne({
-                name: categoryRequest.name,
-            });
-            if (!category) {
-                const categoryDoc =
-                    this.categoryRepository.toDocument(categoryRequest);
-                category = await this.categoryRepository.create(categoryDoc, {
-                    session,
+            try {
+                category = await this.categoryRepository.findOne({
+                    name: categoryRequest.name,
                 });
-            }
-            console.log("Category: ", category);
 
-            if (!category) {
-                console.error("Category not found");
-                throw APIError.NotFound("Category not found");
-            }
+                if (!category) {
+                    this.logger.logInfo("Category not found, creating new", {
+                        categoryName: categoryRequest.name,
+                    });
 
+                    const categoryDoc =
+                        this.categoryRepository.toDocument(categoryRequest);
+
+                    if (!categoryDoc) {
+                        throw APIError.BadRequest(
+                            "Failed to create category document",
+                        );
+                    }
+
+                    category =
+                        await this.categoryRepository.create(categoryDoc);
+
+                    if (!category) {
+                        throw APIError.InternalServerError(
+                            "Failed to create category",
+                        );
+                    }
+
+                    this.logger.logInfo("Category created successfully", {
+                        categoryId: category.getId(),
+                        categoryName: category.getName(),
+                    });
+                } else {
+                    this.logger.logInfo("Found existing category", {
+                        categoryId: category.getId(),
+                        categoryName: category.getName(),
+                    });
+                }
+            } catch (error) {
+                console.error("Error finding or creating category: ", error);
+                throw error;
+            }
             libraryExerciseRequest.categoryId = category.getId();
             const libraryExerciseDoc =
                 this.libraryExerciseRepository.toDocument(
                     libraryExerciseRequest,
                 );
             const libraryExercise: LibraryExercise =
-                await this.libraryExerciseRepository.create(
-                    libraryExerciseDoc,
-                    { session },
-                );
+                await this.libraryExerciseRepository.create(libraryExerciseDoc);
             const libraryExerciseResponse =
                 this.libraryExerciseRepository.toResponse(libraryExercise);
 
             await this.processMusclesForExercise(
                 new Types.ObjectId(libraryExerciseResponse.id),
                 muscleRequest,
-                session,
             );
 
             const exerciseMusclesResponse =
@@ -128,7 +152,7 @@ export default class ExerciseLibraryService {
                     new Types.ObjectId(libraryExerciseResponse.id),
                 );
 
-            await session.commitTransaction();
+            // await session.commitTransaction();
 
             const response = toFullLibraryExerciseResponse(
                 libraryExerciseResponse,
@@ -138,17 +162,17 @@ export default class ExerciseLibraryService {
             console.log("Response: ", response);
             return response;
         } catch (error) {
-            await session.abortTransaction();
+            // await session.abortTransaction();
             throw handleDatabaseError(error);
         } finally {
-            session.endSession();
+            // session.endSession();
         }
     }
 
     private async processMusclesForExercise(
         exerciseId: Types.ObjectId,
         muscleRequests: MuscleRequest[],
-        session: mongoose.ClientSession,
+        // session: mongoose.ClientSession,
     ): Promise<void> {
         const exerciseMusclesRequests: ExerciseMusclesRequest[] = [];
 
@@ -160,9 +184,7 @@ export default class ExerciseLibraryService {
                 if (!muscle) {
                     const muscleDoc =
                         this.muscleRepository.toDocument(muscleRequest);
-                    muscle = await this.muscleRepository.create(muscleDoc, {
-                        session,
-                    });
+                    muscle = await this.muscleRepository.create(muscleDoc);
                 }
 
                 const exerciseMuscleDoc = {
@@ -170,9 +192,7 @@ export default class ExerciseLibraryService {
                     muscleId: muscle.getId(),
                     primary: muscleRequest.primary,
                 };
-                await this.exerciseMusclesRepository.create(exerciseMuscleDoc, {
-                    session,
-                });
+                await this.exerciseMusclesRepository.create(exerciseMuscleDoc);
             }
 
             // if (exerciseMusclesRequests.length > 0) {
@@ -191,7 +211,7 @@ export default class ExerciseLibraryService {
 
     private async upsertExerciseMuscles(
         exerciseMusclesDocs: Partial<ExerciseMusclesDocument>[],
-        session: mongoose.ClientSession,
+        // session: mongoose.ClientSession,
     ): Promise<ExerciseMuscles[]> {
         const promises = exerciseMusclesDocs.map(async (doc) => {
             const result =
@@ -205,7 +225,7 @@ export default class ExerciseLibraryService {
                             primary: doc.primary,
                         },
                     },
-                    { upsert: true, new: true, session },
+                    { upsert: true, new: true },
                 );
 
             return result;

@@ -161,4 +161,164 @@ export const exerciseLibraryData: FullLibraryExerciseRequest[] = [
             },
         ],
     },
+    {
+        libraryExerciseRequest: {
+            name: "Chin Up",
+            imagePath: undefined,
+            description: undefined,
+            categoryId: undefined,
+            difficulty: "Beginner",
+            equipment: [],
+        },
+        categoryRequest: {
+            name: "Back",
+            description: undefined,
+        },
+        muscleRequest: [
+            {
+                name: "Lats",
+                primary: true,
+            },
+            {
+                name: "Biceps",
+                primary: false,
+            },
+            {
+                name: "Upper Back",
+                primary: false,
+            },
+        ],
+    },
+    {
+        libraryExerciseRequest: {
+            name: "Deadlift",
+            imagePath: undefined,
+            description: undefined,
+            categoryId: undefined,
+            difficulty: "Beginner",
+            equipment: ["Barbell", "Dumbbell"],
+        },
+        categoryRequest: {
+            name: "Back",
+            description: undefined,
+        },
+        muscleRequest: [
+            {
+                name: "Lower Back",
+                primary: true,
+            },
+            {
+                name: "Glutes",
+                primary: true,
+            },
+            {
+                name: "Hamstrings",
+                primary: true,
+            },
+            {
+                name: "Adductors",
+                primary: false,
+            },
+            {
+                name: "Trapezius",
+                primary: false,
+            },
+        ],
+    },
+    {
+        libraryExerciseRequest: {
+            name: "Dumbbell Row",
+            imagePath: undefined,
+            description: undefined,
+            categoryId: undefined,
+            difficulty: "Beginner",
+            equipment: ["Dumbbell"],
+        },
+        categoryRequest: {
+            name: "Back",
+            description: undefined,
+        },
+        muscleRequest: [
+            {
+                name: "Lats",
+                primary: true,
+            },
+            {
+                name: "Rear Delts",
+                primary: false,
+            },
+        ],
+    },
+    {
+        libraryExerciseRequest: {
+            name: "Hyperextensions",
+            imagePath: undefined,
+            description: undefined,
+            categoryId: undefined,
+            difficulty: "Beginner",
+            equipment: ["Hyperextension Bench"],
+        },
+        categoryRequest: {
+            name: "Back",
+            description: undefined,
+        },
+        muscleRequest: [
+            {
+                name: "Lower Back",
+                primary: true,
+            },
+        ],
+    },
+    {
+        libraryExerciseRequest: {
+            name: "Pull Up",
+            imagePath: undefined,
+            description: undefined,
+            categoryId: undefined,
+            difficulty: "Beginner",
+            equipment: [],
+        },
+        categoryRequest: {
+            name: "Back",
+            description: undefined,
+        },
+        muscleRequest: [
+            {
+                name: "Lats",
+                primary: true,
+            },
+            {
+                name: "Upper Back",
+                primary: false,
+            },
+            {
+                name: "Biceps",
+                primary: false,
+            },
+        ],
+    },
+    {
+        libraryExerciseRequest: {
+            name: "Pulldowns",
+            imagePath: undefined,
+            description: undefined,
+            categoryId: undefined,
+            difficulty: "Beginner",
+            equipment: [],
+        },
+        categoryRequest: {
+            name: "Back",
+            description: undefined,
+        },
+        muscleRequest: [
+            {
+                name: "Lats",
+                primary: true,
+            },
+            {
+                name: "Biceps",
+                primary: false,
+            },
+        ],
+    },
 ];
