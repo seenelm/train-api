@@ -26,16 +26,19 @@ const exerciseRepository = new ExerciseRepository();
 const setRepository = new SetRepository();
 const groupProgramRepository = new GroupProgramRepository(GroupProgramsModel);
 
-const groupService = new GroupService(groupDAO, userGroupsDAO, groupProgramRepository);
+const groupService = new GroupService(
+    groupDAO,
+    userGroupsDAO,
+    groupProgramRepository,
+);
 const programService = new ProgramService(
     programRepository,
     weekRepository,
     workoutRepository,
     exerciseRepository,
     setRepository,
-    groupProgramRepository
+    groupProgramRepository,
 );
-
 
 const groupController = new GroupController(groupService, programService);
 const groupMiddleware = new GroupMiddleware(groupDAO);
@@ -164,8 +167,8 @@ groupRouter.delete(
 // Get all programs for a group (basic info)
 groupRouter.get(
     "/:groupId/programs",
-    authenticate,
-    groupController.getGroupPrograms
-  );
+    // authenticate,
+    groupController.getGroupPrograms,
+);
 
 export default groupRouter;

@@ -2,7 +2,7 @@ import { Schema, model, Document, Types } from "mongoose";
 
 export interface ExerciseDocument extends Document {
     name?: string;
-    group?: string;
+    group?: string; // rename to category
     imagePath?: string;
     weight?: string;
     targetSets?: number;
