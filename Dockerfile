@@ -1,14 +1,20 @@
-FROM node:latest
+FROM node:20-alpine
+
 WORKDIR /app
-COPY package*.json ./
+
+COPY package.json ./
 RUN npm install
-RUN npm install -g nodemon
-COPY . /app
-EXPOSE 3000
+
+COPY . .
+
+ARG APP_VERSION
+ARG NODE_ENV=$NODE_ENV
+LABEL train.api.version="$APP_VERSION"
+LABEL train.api.build.timestamp="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
 
 # Build api
-RUN npm run build:dev
+RUN npm run build
 
 # Set environment variables
-ENV NODE_ENV=development
-CMD ["nodemon", "./dist/server.js"]
+ENV NODE_ENV=$NODE_ENV
+CMD ["node", "./dist/server.js"]
