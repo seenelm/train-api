@@ -1,15 +1,13 @@
 import { app, db } from "./app";
-import config from "config";
 import mongoose from "mongoose";
 
-const port = config.get("MongoDB.dbConfig.port");
 let server: any = null;
 
 db.connect()
     .then(() => {
         mongoose.set("debug", true);
-        server = app.listen(port, () => {
-            console.log(`Server is running on port ${port}`);
+        server = app.listen(3000, () => {
+            console.log(`Server is running on port ${3000}`);
         });
     })
     .catch((error) => {

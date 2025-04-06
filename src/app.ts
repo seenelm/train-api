@@ -2,7 +2,6 @@ import express from "express";
 import "dotenv/config";
 import bodyParser from "body-parser";
 import cors from "cors";
-import config from "config";
 
 import MongoDB from "./dao/MongoDB";
 import { errorHandler } from "./middleware/errorHandler";
@@ -24,10 +23,14 @@ import { EventRequest } from "./dto/EventRequest";
 import { EventResponse } from "./dto/EventResponse";
 import { AlertModel } from "./model/alertModel";
 
+import config from "./common/config";
+
 const app = express();
-const dbUri: string = config.get("MongoDB.dbConfig.host");
+// const dbUri: string = config.get("MongoDB.dbConfig.host");
 const swaggerJSDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
+
+const dbUri: string = config.database.uri;
 
 const db = new MongoDB(dbUri);
 const agenda = new Agenda({
