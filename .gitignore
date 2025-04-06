@@ -2,6 +2,8 @@ node_modules
 .expo
 .env
 
+# Ignore config directory 
+config/
 # Ignore dist directory
 dist/
 
@@ -9,6 +11,7 @@ dist/
 .vscode/
 
 # Ignore logs directory
+logs/
 logs/.DS_Store
 
 # Ignore config directory
