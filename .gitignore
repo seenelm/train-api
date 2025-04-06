@@ -10,3 +10,12 @@ dist/
 
 # Ignore logs directory
 logs/.DS_Store
+
+# Ignore config directory
+config/.DS_Store
+
+#Ignore env
+.env
+
+# Ignore jest config
+jest.config.js
