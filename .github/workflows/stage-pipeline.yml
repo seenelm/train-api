@@ -2,9 +2,9 @@ name: TrainApi CI
 
 on:
     push:
-        branches: ["main"]
+        branches: ["develop"]
     pull_request:
-        branches: ["main"]
+        branches: ["develop"]
 
 env:
     APP_NAME: train-api
@@ -29,7 +29,7 @@ jobs:
               uses: actions/checkout@v4
 
             - name: Install Docker
-              run: apt-get update && apt-get install -y docker.io docker-compose jq
+              run: apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin jq
 
             - uses: google-github-actions/auth@v2
               with:
@@ -52,7 +52,7 @@ jobs:
               env:
                   MONGO_URI: ${{ steps.get_secrets.outputs.MONGO_URI }}
                   NODE_ENV: stage
-              run: docker-compose build --build-arg APP_NAME=$APP_NAME --build-arg APP_VERSION=$APP_VERSION train-api
+              run: docker compose build --build-arg APP_NAME=$APP_NAME --build-arg APP_VERSION=$APP_VERSION train-api
 
             - name: Configure Docker for GCR
               run: gcloud auth configure-docker ${{ env.GCP_REGION}}-docker.pkg.dev
