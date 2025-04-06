@@ -17,6 +17,7 @@ logs/
 config/firebase-config.json
 config/google-cloud-storage.json
 config/development.json
+
 # Ignore test files
 scripts/test-firebase.sh
 
