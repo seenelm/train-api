@@ -47,6 +47,8 @@ jobs:
                   apt-get update
 
                   apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin jq
+                  docker --version
+                  docker compose version
 
             - uses: google-github-actions/auth@v2
               with:
