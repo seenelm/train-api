@@ -52,7 +52,7 @@ jobs:
               env:
                   MONGO_URI: ${{ steps.get_secrets.outputs.MONGO_URI }}
                   NODE_ENV: stage
-              run: docker compose build --build-arg APP_NAME=$APP_NAME --build-arg APP_VERSION=$APP_VERSION train-api
+              run: docker-compose build --build-arg APP_NAME=$APP_NAME --build-arg APP_VERSION=$APP_VERSION train-api
 
             - name: Configure Docker for GCR
               run: gcloud auth configure-docker ${{ env.GCP_REGION}}-docker.pkg.dev
