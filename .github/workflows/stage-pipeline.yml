@@ -16,19 +16,24 @@ jobs:
     deploy-stage:
         name: Build
         runs-on: ubuntu-latest
+
+        permissions:
+            contents: read
+            id-token: write
+
         container:
             image: google/cloud-sdk:517.0.0
             options: --user root
         steps:
             - name: Checkout
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
 
             - name: Install Docker
               run: apt-get update && apt-get install -y docker.io docker-compose jq
 
-            - id: auth
-              uses: google-github-actions/auth@v2.0.0
+            - uses: google-github-actions/auth@v2
               with:
+                  project_id: train-api-staging
                   workload_identity_provider: "projects/892549741395/locations/global/workloadIdentityPools/github-trainapi-pool-staging/providers/github"
                   service_account: "github-wif@train-api-staging.iam.gserviceaccount.com"
 
