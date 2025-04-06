@@ -2,4 +2,4 @@ database:
     uri: ${MONGO_URI}
 
 server:
-    port: 3000
+    port: ${PORT}
