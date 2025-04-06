@@ -12,13 +12,15 @@ dist/
 
 # Ignore logs directory
 logs/
-logs/.DS_Store
 
-# Ignore config directory
-config/.DS_Store
+# Ignore configuration files with sensitive information
+config/firebase-config.json
+config/google-cloud-storage.json
+config/development.json
+# Ignore test files
+scripts/test-firebase.sh
 
-#Ignore env
-.env
-
-# Ignore jest config
-jest.config.js
+# Ignore macOS system files
+.DS_Store
+**/.DS_Store
+.DS_Store??

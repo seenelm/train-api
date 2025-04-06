@@ -1,0 +1,243 @@
+openapi: 3.0.0
+info:
+    title: Train API
+    version: 1.0.0
+    description: Train API documentation
+servers:
+    - url: http://localhost:3000/api
+tags:
+    - name: Events
+      description: Operations related to events
+paths:
+    /events:
+        post:
+            tags: [Events]
+            summary: Create a new event
+            description: Endpoint to create a new event.
+            operationId: addEvent
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                name:
+                                    {
+                                        type: string,
+                                        example: "Team Meeting",
+                                        description: "The name of the event.",
+                                    }
+                                admin:
+                                    {
+                                        type: array,
+                                        items:
+                                            {
+                                                type: string,
+                                                example: "60d0fe4f5311236168a109ca",
+                                            },
+                                        description: "List of admin user IDs.",
+                                    }
+                                invitees:
+                                    {
+                                        type: array,
+                                        items:
+                                            {
+                                                type: string,
+                                                example: "60d0fe4f5311236168a109cb",
+                                            },
+                                        description: "List of invitee user IDs.",
+                                    }
+                                date:
+                                    {
+                                        type: string,
+                                        format: date,
+                                        example: "2024-01-15",
+                                        description: "Date of the event.",
+                                    }
+                                startTime:
+                                    {
+                                        type: string,
+                                        format: time,
+                                        example: "14:00",
+                                        description: "Start time of the event.",
+                                    }
+                                endTime:
+                                    {
+                                        type: string,
+                                        format: time,
+                                        example: "16:00",
+                                        description: "End time of the event.",
+                                    }
+                                location:
+                                    {
+                                        type: string,
+                                        example: "Conference Room 1",
+                                        description: "Location of the event.",
+                                    }
+                                description:
+                                    {
+                                        type: string,
+                                        example: "Monthly review meeting.",
+                                        description: "A short description of the event.",
+                                    }
+                            required:
+                                [
+                                    name,
+                                    admin,
+                                    invitees,
+                                    date,
+                                    startTime,
+                                    endTime,
+                                ]
+            responses:
+                201:
+                    description: Event created successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    id:
+                                        {
+                                            type: string,
+                                            example: "60d0fe4f5311236168a109c8",
+                                            description: "The unique ID of the created event.",
+                                        }
+                                    name:
+                                        {
+                                            type: string,
+                                            example: "Team Meeting",
+                                        }
+                                    admin:
+                                        {
+                                            type: array,
+                                            items: { type: string },
+                                            example:
+                                                ["60d0fe4f5311236168a109ca"],
+                                        }
+                                    invitees:
+                                        {
+                                            type: array,
+                                            items: { type: string },
+                                            example:
+                                                ["60d0fe4f5311236168a109cb"],
+                                        }
+                                    date:
+                                        { type: string, example: "2024-01-15" }
+                                    startTime:
+                                        { type: string, example: "14:00" }
+                                    endTime: { type: string, example: "16:00" }
+                                    location:
+                                        {
+                                            type: string,
+                                            example: "Conference Room 1",
+                                        }
+                                    description:
+                                        {
+                                            type: string,
+                                            example: "Monthly review meeting.",
+                                        }
+                400: { description: Invalid request parameters }
+                500: { description: Internal server error }
+    /events/users/{userId}:
+        get:
+            tags: [Events]
+            summary: Get events for a user
+            description: Endpoint to get events for a user.
+            operationId: getUserEvents
+            parameters:
+                - in: path
+                  name: userId
+                  required: true
+                  schema: { type: string }
+                  description: The ID of the user
+            responses:
+                200:
+                    description: Events retrieved successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    {
+                                        $ref: "#/components/schemas/CreateEventResponse",
+                                    }
+                404: { description: User not found }
+                500: { description: Internal server error }
+    /events/{eventId}/status:
+        put:
+            tags: [Events]
+            summary: Update user event status
+            description: Updates the event status for a user in a specific event.
+            operationId: updateUserEventStatus
+            security: [{ bearerAuth: [] }]
+            parameters:
+                - in: path
+                  name: eventId
+                  required: true
+                  schema: { type: string }
+                  description: The ID of the event
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            UserEventStatusRequest:
+                                type: object
+                                properties:
+                                    userId: { type: string }
+                                    eventStatus:
+                                        {
+                                            type: integer,
+                                            description: "The new status of the user for the event",
+                                        }
+                                required: [userId, eventStatus]
+            responses:
+                200:
+                    description: Event status updated successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        {
+                                            type: string,
+                                            example: "Event status updated successfully",
+                                        }
+                400:
+                    {
+                        description: Bad request (e.g.,
+                        missing eventStatus in request body),
+                    }
+                404: { description: User or event not found }
+                500: { description: Internal server error }
+components:
+    securitySchemes:
+        bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+    schemas:
+        CreateEventRequest:
+            type: object
+            properties:
+                name: { type: string }
+                admin: { type: array, items: { type: string } }
+                invitees: { type: array, items: { type: string } }
+                date: { type: string, format: date }
+                startTime: { type: string, format: time }
+                endTime: { type: string, format: time }
+                location: { type: string }
+                description: { type: string }
+            required: [name, admin, invitees, date, startTime, endTime]
+        CreateEventResponse:
+            type: object
+            properties:
+                id: { type: string }
+                name: { type: string }
+                admin: { type: array, items: { type: string } }
+                invitees: { type: array, items: { type: string } }
+                date: { type: string }
+                startTime: { type: string }
+                endTime: { type: string }
+                location: { type: string }
+                description: { type: string }

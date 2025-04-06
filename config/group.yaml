@@ -9,6 +9,8 @@ servers:
 tags:
     - name: Groups
       description: Operations related to groups
+    - name: Group Programs
+      description: Operations related to programs within groups
 
 paths:
     /groups:
@@ -234,9 +236,971 @@ paths:
                     description: Group not found
                 500:
                     description: Internal server error
+    /groups/{groupId}/programs:
+        get:
+            tags:
+                - Group Programs
+            summary: Get all programs for a group
+            description: Retrieves all programs associated with a specific group
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: groupId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the group
+            responses:
+                200:
+                    description: Programs retrieved successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                        example: true
+                                    data:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                _id:
+                                                    type: string
+                                                    description: The unique identifier of the program
+                                                name:
+                                                    type: string
+                                                    description: The name of the program
+                                                description:
+                                                    type: string
+                                                    description: The description of the program
+                                                category:
+                                                    type: string
+                                                    description: The category of the program
+                                                imagePath:
+                                                    type: string
+                                                    description: The path to the program image
+                                                createdBy:
+                                                    type: string
+                                                    description: The ID of the user who created the program
+                                                numWeeks:
+                                                    type: integer
+                                                    description: The number of weeks in the program
+                                                weeks:
+                                                    type: array
+                                                    items:
+                                                        type: string
+                                                    description: Array of week IDs in the program
+                                                difficulty:
+                                                    type: string
+                                                    description: The difficulty level of the program
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                403:
+                    description: Forbidden - User doesn't have permission to view programs in this group
+                404:
+                    description: Group not found
+                500:
+                    description: Internal server error
+        post:
+            tags:
+                - Group Programs
+            summary: Create a program in a group
+            description: Creates a new fitness program within a specific group
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: groupId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the group
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ProgramRequest'
+            responses:
+                201:
+                    description: Program created successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ProgramResponse'
+                400:
+                    description: Bad request - Invalid input
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                403:
+                    description: Forbidden - User doesn't have permission to create programs in this group
+                404:
+                    description: Group not found
+                500:
+                    description: Internal server error
+    /groups/{groupId}/programs/detailed:
+        get:
+            tags:
+                - Group Programs
+            summary: Get detailed information for all programs in a group
+            description: Retrieves detailed information about all programs associated with a specific group
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: groupId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the group
+            responses:
+                200:
+                    description: Detailed programs retrieved successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                        example: true
+                                    data:
+                                        type: object
+                                        properties:
+                                            groupId:
+                                                type: string
+                                                description: The unique identifier of the group
+                                            programs:
+                                                type: array
+                                                items:
+                                                    $ref: '#/components/schemas/ProgramResponse'
+                                                description: Array of detailed program information
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                403:
+                    description: Forbidden - User doesn't have permission to view programs in this group
+                404:
+                    description: Group not found
+                500:
+                    description: Internal server error
+    /groups/{groupId}/programs/{programId}:
+        put:
+            tags:
+                - Group Programs
+            summary: Update a program in a group
+            description: Updates an existing fitness program within a specific group
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: groupId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the group
+                - in: path
+                  name: programId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the program to update
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ProgramRequest'
+            responses:
+                200:
+                    description: Program updated successfully
+                400:
+                    description: Bad request - Invalid input
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                403:
+                    description: Forbidden - User doesn't have permission to update programs in this group
+                404:
+                    description: Group or program not found
+                500:
+                    description: Internal server error
+        delete:
+            tags:
+                - Group Programs
+            summary: Delete a program from a group
+            description: Deletes a fitness program from a specific group
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: groupId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the group
+                - in: path
+                  name: programId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the program to delete
+            responses:
+                204:
+                    description: Program deleted successfully
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                403:
+                    description: Forbidden - User doesn't have permission to delete programs in this group
+                404:
+                    description: Group or program not found
+                500:
+                    description: Internal server error
+    /groups/{groupId}/programs/weeks:
+        post:
+            tags:
+                - Group Programs
+            summary: Add a week to a program
+            description: Adds a new week to an existing program within a group
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: groupId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the group
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/WeekRequest'
+            responses:
+                201:
+                    description: Week added successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/WeekResponse'
+                400:
+                    description: Bad request - Invalid input
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                403:
+                    description: Forbidden - User doesn't have permission to modify programs in this group
+                404:
+                    description: Group or program not found
+                500:
+                    description: Internal server error
+    /groups/{groupId}/programs/weeks/{weekId}:
+        post:
+            tags:
+                - Group Programs
+            summary: Update a week in a program
+            description: Updates an existing week in a program within a group
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: groupId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the group
+                - in: path
+                  name: weekId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the week to update
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/WeekRequest'
+            responses:
+                200:
+                    description: Week updated successfully
+                400:
+                    description: Bad request - Invalid input
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                403:
+                    description: Forbidden - User doesn't have permission to modify programs in this group
+                404:
+                    description: Group, program, or week not found
+                500:
+                    description: Internal server error
+        delete:
+            tags:
+                - Group Programs
+            summary: Delete a week from a program
+            description: Deletes a week from a program within a group
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: groupId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the group
+                - in: path
+                  name: weekId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the week to delete
+            responses:
+                204:
+                    description: Week deleted successfully
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                403:
+                    description: Forbidden - User doesn't have permission to modify programs in this group
+                404:
+                    description: Group, program, or week not found
+                500:
+                    description: Internal server error
+    /groups/{groupId}/programs/weeks/workouts:
+        post:
+            tags:
+                - Group Programs
+            summary: Add a workout to a week
+            description: Adds a new workout to a week within a program in a group
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: groupId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the group
+                - in: path
+                  name: weekId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the week
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/WorkoutRequest'
+            responses:
+                201:
+                    description: Workout added successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/WorkoutResponse'
+                400:
+                    description: Bad request - Invalid input
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                403:
+                    description: Forbidden - User doesn't have permission to modify programs in this group
+                404:
+                    description: Group, program, or week not found
+                500:
+                    description: Internal server error
+    /groups/{groupId}/programs/weeks/workouts/{workoutId}:
+        put:
+            tags:
+                - Group Programs
+            summary: Update a workout
+            description: Updates an existing workout within a program in a group
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: groupId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the group
+                - in: path
+                  name: workoutId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the workout to update
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/WorkoutRequest'
+            responses:
+                200:
+                    description: Workout updated successfully
+                400:
+                    description: Bad request - Invalid input
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                403:
+                    description: Forbidden - User doesn't have permission to modify programs in this group
+                404:
+                    description: Group, program, week, or workout not found
+                500:
+                    description: Internal server error
+        delete:
+            tags:
+                - Group Programs
+            summary: Delete a workout
+            description: Deletes a workout from a program in a group
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: groupId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the group
+                - in: path
+                  name: workoutId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the workout to delete
+            responses:
+                204:
+                    description: Workout deleted successfully
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                403:
+                    description: Forbidden - User doesn't have permission to modify programs in this group
+                404:
+                    description: Group, program, week, or workout not found
+                500:
+                    description: Internal server error
+    /groups/{groupId}/programs/weeks/workouts/exercises:
+        post:
+            tags:
+                - Group Programs
+            summary: Add an exercise to a workout
+            description: Adds a new exercise to a workout within a program in a group
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: groupId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the group
+                - in: path
+                  name: workoutId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the workout
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ExerciseRequest'
+            responses:
+                201:
+                    description: Exercise added successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ExerciseResponse'
+                400:
+                    description: Bad request - Invalid input
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                403:
+                    description: Forbidden - User doesn't have permission to modify programs in this group
+                404:
+                    description: Group, program, week, or workout not found
+                500:
+                    description: Internal server error
+    /groups/{groupId}/programs/weeks/workouts/exercises/{exerciseId}:
+        put:
+            tags:
+                - Group Programs
+            summary: Update an exercise
+            description: Updates an existing exercise within a program in a group
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: groupId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the group
+                - in: path
+                  name: exerciseId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the exercise to update
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ExerciseRequest'
+            responses:
+                200:
+                    description: Exercise updated successfully
+                400:
+                    description: Bad request - Invalid input
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                403:
+                    description: Forbidden - User doesn't have permission to modify programs in this group
+                404:
+                    description: Group, program, week, workout, or exercise not found
+                500:
+                    description: Internal server error
+        delete:
+            tags:
+                - Group Programs
+            summary: Delete an exercise
+            description: Deletes an exercise from a program in a group
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: groupId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the group
+                - in: path
+                  name: exerciseId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the exercise to delete
+            responses:
+                204:
+                    description: Exercise deleted successfully
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                403:
+                    description: Forbidden - User doesn't have permission to modify programs in this group
+                404:
+                    description: Group, program, week, workout, or exercise not found
+                500:
+                    description: Internal server error
+    /groups/{groupId}/programs/weeks/workouts/exercises/{exerciseId}/sets:
+        post:
+            tags:
+                - Group Programs
+            summary: Add a set to an exercise
+            description: Adds a new set to an exercise within a program in a group
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: groupId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the group
+                - in: path
+                  name: exerciseId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the exercise
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/SetRequest'
+            responses:
+                201:
+                    description: Set added successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SetResponse'
+                400:
+                    description: Bad request - Invalid input
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                403:
+                    description: Forbidden - User doesn't have permission to modify programs in this group
+                404:
+                    description: Group, program, week, workout, or exercise not found
+                500:
+                    description: Internal server error
+    /groups/{groupId}/programs/weeks/workouts/exercises/sets/{setId}:
+        put:
+            tags:
+                - Group Programs
+            summary: Update a set
+            description: Updates an existing set within a program in a group
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: groupId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the group
+                - in: path
+                  name: setId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the set to update
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/SetRequest'
+            responses:
+                200:
+                    description: Set updated successfully
+                400:
+                    description: Bad request - Invalid input
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                403:
+                    description: Forbidden - User doesn't have permission to modify programs in this group
+                404:
+                    description: Group, program, week, workout, exercise, or set not found
+                500:
+                    description: Internal server error
+        delete:
+            tags:
+                - Group Programs
+            summary: Delete a set
+            description: Deletes a set from a program in a group
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: groupId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the group
+                - in: path
+                  name: setId
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique identifier of the set to delete
+            responses:
+                204:
+                    description: Set deleted successfully
+                401:
+                    description: Unauthorized - Token not provided or invalid
+                403:
+                    description: Forbidden - User doesn't have permission to modify programs in this group
+                404:
+                    description: Group, program, week, workout, exercise, or set not found
+                500:
+                    description: Internal server error
+
 components:
     securitySchemes:
         bearerAuth:
             type: http
             scheme: bearer
             bearerFormat: JWT
+    schemas:
+        ProgramRequest:
+          type: object
+          required:
+            - name
+            - createdBy
+            - weeks
+          properties:
+            name:
+              type: string
+              description: Name of the program
+            description:
+              type: string
+              description: Description of the program
+            category:
+              type: string
+              description: Category of the program (e.g., strength, cardio)
+            imagePath:
+              type: string
+              description: Path to program image
+            createdBy:
+              type: string
+              description: ID of the user who created the program
+            numWeeks:
+              type: integer
+              description: Number of weeks in the program
+            weeks:
+              type: array
+              items:
+                type: string
+              description: Array of week IDs
+            difficulty:
+              type: string
+              description: Difficulty level of the program
+        
+        ProgramResponse:
+          type: object
+          properties:
+            id:
+              type: string
+              description: Unique identifier for the program
+            name:
+              type: string
+              description: Name of the program
+            description:
+              type: string
+              description: Description of the program
+            category:
+              type: string
+              description: Category of the program
+            imagePath:
+              type: string
+              description: Path to program image
+            createdBy:
+              type: string
+              description: ID of the user who created the program
+            numWeeks:
+              type: integer
+              description: Number of weeks in the program
+            weeks:
+              type: array
+              items:
+                type: string
+              description: Array of week IDs
+            difficulty:
+              type: string
+              description: Difficulty level of the program
+        
+        WeekRequest:
+          type: object
+          required:
+            - programId
+            - name
+            - weekNumber
+            - workouts
+          properties:
+            programId:
+              type: string
+              description: ID of the program this week belongs to
+            name:
+              type: string
+              description: Name of the week
+            description:
+              type: string
+              description: Description of the week
+            imagePath:
+              type: string
+              description: Path to week image
+            weekNumber:
+              type: integer
+              description: Number of the week in the program sequence
+            workouts:
+              type: array
+              items:
+                type: string
+              description: Array of workout IDs
+        
+        WeekResponse:
+          type: object
+          properties:
+            id:
+              type: string
+              description: Unique identifier for the week
+            programId:
+              type: string
+              description: ID of the program this week belongs to
+            name:
+              type: string
+              description: Name of the week
+            description:
+              type: string
+              description: Description of the week
+            imagePath:
+              type: string
+              description: Path to week image
+            weekNumber:
+              type: integer
+              description: Number of the week in the program sequence
+            workouts:
+              type: array
+              items:
+                type: string
+              description: Array of workout IDs
+        
+        WorkoutRequest:
+          type: object
+          required:
+            - createdBy
+            - exercises
+          properties:
+            title:
+              type: string
+              description: Title of the workout
+            description:
+              type: string
+              description: Description of the workout
+            imagePath:
+              type: string
+              description: Path to workout image
+            completed:
+              type: boolean
+              description: Whether the workout is completed
+            createdBy:
+              type: string
+              description: ID of the user who created the workout
+            exercises:
+              type: array
+              items:
+                type: string
+              description: Array of exercise IDs
+        
+        WorkoutResponse:
+          type: object
+          properties:
+            id:
+              type: string
+              description: Unique identifier for the workout
+            title:
+              type: string
+              description: Title of the workout
+            description:
+              type: string
+              description: Description of the workout
+            imagePath:
+              type: string
+              description: Path to workout image
+            completed:
+              type: boolean
+              description: Whether the workout is completed
+            createdBy:
+              type: string
+              description: ID of the user who created the workout
+            exercises:
+              type: array
+              items:
+                type: string
+              description: Array of exercise IDs
+        
+        ExerciseRequest:
+          type: object
+          required:
+            - createdBy
+            - sets
+          properties:
+            name:
+              type: string
+              description: Name of the exercise
+            description:
+              type: string
+              description: Description of the exercise
+            imagePath:
+              type: string
+              description: Path to exercise image
+            link:
+              type: string
+              description: Link to video demonstration
+            completed:
+              type: boolean
+              description: Whether the exercise is completed
+            createdBy:
+              type: string
+              description: ID of the user who created the exercise
+            sets:
+              type: array
+              items:
+                type: string
+              description: Array of set IDs
+        
+        ExerciseResponse:
+          type: object
+          properties:
+            id:
+              type: string
+              description: Unique identifier for the exercise
+            name:
+              type: string
+              description: Name of the exercise
+            description:
+              type: string
+              description: Description of the exercise
+            imagePath:
+              type: string
+              description: Path to exercise image
+            link:
+              type: string
+              description: Link to video demonstration
+            completed:
+              type: boolean
+              description: Whether the exercise is completed
+            createdBy:
+              type: string
+              description: ID of the user who created the exercise
+            sets:
+              type: array
+              items:
+                type: string
+              description: Array of set IDs
+        
+        SetRequest:
+          type: object
+          required:
+            - createdBy
+          properties:
+            weight:
+              type: number
+              description: Weight used for the set
+            reps:
+              type: integer
+              description: Number of repetitions in the set
+            completed:
+              type: boolean
+              description: Whether the set is completed
+            imagePath:
+              type: string
+              description: Path to set image
+            link:
+              type: string
+              description: Link to video demonstration
+            createdBy:
+              type: string
+              description: ID of the user who created the set
+        
+        SetResponse:
+          type: object
+          properties:
+            id:
+              type: string
+              description: Unique identifier for the set
+            weight:
+              type: number
+              description: Weight used for the set
+            reps:
+              type: integer
+              description: Number of repetitions in the set
+            completed:
+              type: boolean
+              description: Whether the set is completed
+            imagePath:
+              type: string
+              description: Path to set image
+            link:
+              type: string
+              description: Link to video demonstration
+            createdBy:
+              type: string
+              description: ID of the user who created the set

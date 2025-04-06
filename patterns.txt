@@ -1,0 +1,1 @@
+mongodb+srv://username:password@train.hygn1it.mongodb.net/?retryWrites=true&w=majority==>mongodb+srv://REDACTED:REDACTED@train.hygn1it.mongodb.net/?retryWrites=true&w=majority
