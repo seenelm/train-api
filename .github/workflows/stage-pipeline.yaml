@@ -1,0 +1,39 @@
+name: TrainApi CI
+
+on:
+push:
+    branches: ["main"]
+pull_request:
+    branches: ["main"]
+
+env:
+    APP_NAME: train-api
+    APP_VERSION: 1.0.${{ github.run_number }}
+
+jobs:
+    deploy-stage:
+        name: Build
+        runs-on: ubuntu-latest
+        container:
+            image: google/cloud-sdk:517.0.0
+            options: --user root
+        steps:
+            - name: Install Docker
+              run: apt-get update && apt-get install -y docker.io docker-compose jq
+
+            - name: Retrieve Secrets from GCP Secret Manager
+              id: get_secrets
+              run: |
+                SECRET_DATA=$(gcloud secrets versions access latest --secret="mongo-secrets")
+                MONGO_USER=$(echo $SECRET_DATA | jq -r '.MONGO_USER')
+                MONGO_PASS=$(echo $SECRET_DATA | jq -r '.MONGO_PASS')
+                MONGO_CLUSTER=$(echo $SECRET_DATA | jq -r '.MONGO_CLUSTER')
+                MONGO_DB=$(echo $SECRET_DATA | jq -r '.MONGO_DB')
+                MONGO_PARAMS=$( echo $SECRET_DATA | jq -r '.MONGO_PARAMS')
+                MONGO_URI="mongodb+srv://${MONGO_USER}:${MONGO_PASS}$@{MONGO_CLUSTER}/${MONGO_DB}?${MONGO_PARAMS}"
+
+            - name: Build Docker Image
+              env:
+                MONGO_URI: ${{ steps.get_secrets.outputs.MONGO_URI }}
+                NODE_ENV: stage
+              run: docker compose build --build-arg APP_NAME=$APP_NAME --build-arg APP_VERSION=$APP_VERSION train-api
