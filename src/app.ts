@@ -60,11 +60,6 @@ const options = {
                 bearerAuth: [],
             },
         ],
-        servers: [
-            {
-                url: "http://localhost:3000/api",
-            },
-        ],
         basePath: "/api",
     },
     apis: ["./config/*.yaml"],
