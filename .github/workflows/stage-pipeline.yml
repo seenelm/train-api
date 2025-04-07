@@ -10,7 +10,7 @@ env:
     APP_NAME: train-api
     APP_VERSION: 1.0.${{ github.run_number }}
     GCP_REGION: us-east1
-    ARTIFACT_REGISTRY: "${GCP_REGION}-docker.pkg.dev/train-api-staging/container-registry"
+    ARTIFACT_REGISTRY: "${GCP_REGION}-docker.pkg.dev/train-api-staging/container-registry/${APP_NAME}"
 
 jobs:
     deploy-stage:
