@@ -85,7 +85,7 @@ class UserDAO extends BaseDAO<IUser> {
             `User Groups for User ${user.username} was deleted`,
         );
 
-        if (userGroups) {
+        if (userGroups && userGroups.groups && userGroups.groups.length > 0) {
             const groupIds = userGroups.groups;
 
             // await Promise.all(groupIds.map(async (groupId) => {
