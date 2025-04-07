@@ -21,8 +21,5 @@ export const errorHandler = (
     const unknownError = APIError.InternalServerError("Unknown error occurred");
     const errorResponse = unknownError.toJSON();
 
-    return res
-        .status(500)
-        .json(HttpStatusCode.INTERNAL_SERVER_ERROR)
-        .json(errorResponse);
+    return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json(errorResponse);
 };
