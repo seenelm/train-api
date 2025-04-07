@@ -46,6 +46,16 @@ const options = {
             version: "1.0.0",
             description: "Train API",
         },
+        servers: [
+            {
+                url: process.env.NODE_ENV === 'production' 
+                    ? "https://train-api-staging.ue.r.appspot.com/api"
+                    : "/api",
+                description: process.env.NODE_ENV === 'production' 
+                    ? "Production server" 
+                    : "Development server"
+            }
+        ],
         components: {
             securitySchemes: {
                 bearerAuth: {
@@ -60,7 +70,6 @@ const options = {
                 bearerAuth: [],
             },
         ],
-        basePath: "/api",
     },
     apis: ["./config/*.yaml"],
 };
