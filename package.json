@@ -8,6 +8,7 @@
         "start:test": "NODE_ENV=test nodemon ./dist/server.js",
         "build:dev": "NODE_ENV=dev tsc",
         "build:test": "NODE_ENV=test tsc",
+        "build": "tsc",
         "test": "NODE_ENV=test jest --runInBand",
         "test:integration": "NODE_ENV=development jest --testPathPattern=__tests__/integration",
         "populate-exercises": "ts-node scripts/populateExerciseLibrary.ts"
