@@ -1,14 +1,25 @@
-FROM node:latest
+# syntax=docker/dockerfile:1.4
+FROM node:20-alpine
+
 WORKDIR /app
+
 COPY package*.json ./
 RUN npm install
-RUN npm install -g nodemon
-COPY . /app
-EXPOSE 3000
+
+COPY . .
+
+ARG APP_VERSION
+ARG NODE_ENV=$NODE_ENV
+ARG MONGO_URI
+ARG SECRET_CODE
+LABEL train.api.version="$APP_VERSION"
+LABEL train.api.build.timestamp="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
 
 # Build api
-RUN npm run build:dev
+RUN npm run build
 
 # Set environment variables
-ENV NODE_ENV=development
-CMD ["nodemon", "./dist/server.js"]
+ENV NODE_ENV=$NODE_ENV
+ENV MONGO_URI=$MONGO_URI
+ENV SECRET_CODE=$SECRET_CODE
+CMD ["node", "./dist/server.js"]

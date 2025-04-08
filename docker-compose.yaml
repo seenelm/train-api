@@ -1,0 +1,16 @@
+services:
+    train-api:
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                - APP_NAME=${APP_NAME}
+                - APP_VERSION=${APP_VERSION}
+                - NODE_ENV=${NODE_ENV}
+        image: ${APP_NAME}:${APP_VERSION}
+        environment:
+            - MONGO_URI=${MONGO_URI}
+            - NODE_ENV=${NODE_ENV}
+        ports:
+            - 3000:3000
+

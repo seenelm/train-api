@@ -78,21 +78,21 @@ class UserDAO extends BaseDAO<IUser> {
             username: user.username,
         });
 
-        const userGroups = await UserGroupsModel.findOneAndDelete({
-            userId,
-        }).exec();
+        // Get the document first
+        const userGroupsDoc = await UserGroupsModel.findOne({ userId }).exec();
+
+        // Store the groups before deletion if they exist
+        const groups = userGroupsDoc?.groups || [];
+
+        // Then delete the document
+        await UserGroupsModel.deleteOne({ userId }).exec();
+
         this.logger.logInfo(
             `User Groups for User ${user.username} was deleted`,
         );
 
-        if (userGroups) {
-            const groupIds = userGroups.groups;
-
-            // await Promise.all(groupIds.map(async (groupId) => {
-            //   await GroupModel.deleteOne({_id: groupId}).exec();
-            //   logger.info(`User ${userId} deleted Group ${groupId}`)
-            // }));
-            await GroupModel.deleteMany({ _id: { $in: groupIds } }).exec();
+        if (groups.length > 0) {
+            await GroupModel.deleteMany({ _id: { $in: groups } }).exec();
         }
     }
 }
