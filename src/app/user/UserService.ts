@@ -1,39 +1,43 @@
-import UserDAO from "../dao/UserDAO";
-import * as Errors from "../utils/errors";
-import JWTUtil from "../utils/JWTUtil";
-import BcryptUtil from "../utils/BcryptUtil";
-import { IUser } from "../model/userModel";
-import UserProfileDAO from "../dao/UserProfileDAO";
-import UserGroupsDAO from "../dao/UserGroupsDAO";
-import FollowDAO from "../dao/FollowDAO";
-import CustomLogger from "../common/logger";
+import UserRepository from "../../infrastructure/database/repositories/user/UserRepository";
+import * as Errors from "../../utils/errors";
+import JWTUtil from "../../utils/JWTUtil";
+import BcryptUtil from "../../utils/BcryptUtil";
+import { UserDocument } from "../../infrastructure/database/models/user/userModel";
+import UserProfileDAO from "../../dao/UserProfileDAO";
+import UserGroupsDAO from "../../dao/UserGroupsDAO";
+import FollowDAO from "../../dao/FollowDAO";
+import CustomLogger from "../../common/logger";
 import { Types } from "mongoose";
+import User from "../../infrastructure/database/entity/user/User";
 
-import { UserLoginRequest } from "../dto/userRequest";
-import { UserRegisterResponse, UserLoginResponse } from "../dto/userResponse";
-import UserRegisterRequest from "../dto/UserRegisterRequest";
+import {
+    UserLoginRequest,
+    UserRegisterRequest,
+    UserResponse,
+} from "./dto/userDto";
+
 import mongoose from "mongoose";
-import { APIError } from "../common/errors/APIError";
+import { APIError } from "../../common/errors/APIError";
 
 export interface TokenPayload {
     name: string;
     userId: Types.ObjectId;
 }
 
-class UserService {
-    private userDAO: UserDAO;
+export default class UserService {
+    private userRepository: UserRepository;
     private userProfileDAO: UserProfileDAO;
     private userGroupsDAO: UserGroupsDAO;
     private followDAO: FollowDAO;
     private logger: CustomLogger;
 
     constructor(
-        userDAO: UserDAO,
+        userRepository: UserRepository,
         userProfileDAO: UserProfileDAO,
         userGroupsDAO: UserGroupsDAO,
         followDAO: FollowDAO,
     ) {
-        this.userDAO = userDAO;
+        this.userRepository = userRepository;
         this.userProfileDAO = userProfileDAO;
         this.userGroupsDAO = userGroupsDAO;
         this.followDAO = followDAO;
@@ -42,15 +46,18 @@ class UserService {
 
     public async registerUser(
         userRegisterRequest: UserRegisterRequest,
-    ): Promise<UserRegisterResponse> {
-        const username = userRegisterRequest.getUsername();
-        const password = userRegisterRequest.getPassword();
-        const name = userRegisterRequest.getName();
+    ): Promise<UserResponse> {
+        const username = userRegisterRequest.username;
+        const password = userRegisterRequest.password;
+        const name = userRegisterRequest.name;
         const session = await mongoose.startSession();
-        session.startTransaction();
 
         try {
-            const existingUser = await this.userDAO.findOne({ username });
+            session.startTransaction();
+
+            const existingUser: User = await this.userRepository.findOne({
+                username,
+            });
             if (existingUser) {
                 throw APIError.Conflict("username already taken");
             }
@@ -58,7 +65,7 @@ class UserService {
             // Hash password
             const hash = await BcryptUtil.hashPassword(password);
 
-            const newUser = await this.userDAO.create({
+            const newUser: User = await this.userRepository.create({
                 username,
                 password: hash,
                 isActive: true,
@@ -67,7 +74,7 @@ class UserService {
             await Promise.all([
                 this.userProfileDAO.create(
                     {
-                        userId: newUser._id,
+                        userId: newUser.getId(),
                         name,
                         username,
                     },
@@ -75,58 +82,41 @@ class UserService {
                 ),
                 this.userGroupsDAO.create(
                     {
-                        userId: newUser._id,
+                        userId: newUser.getId(),
                     },
                     { session },
                 ),
-                await this.userGroupsDAO.create(
+                this.followDAO.create(
                     {
-                        userId: newUser._id,
+                        userId: newUser.getId(),
                     },
                     { session },
                 ),
             ]);
 
-            // const newUserProfile = await this.userProfileDAO.create({
-            //     userId: newUser._id,
-            //     name,
-            //     username,
-            // });
-
-            // const userGroups = await this.userGroupsDAO.create({
-            //     userId: newUser._id,
-            // });
-
-            // const follow = await this.followDAO.create({ userId: newUser._id });
-
             const payload: TokenPayload = {
                 name,
-                userId: newUser._id,
+                userId: newUser.getId(),
             };
 
             const token = await JWTUtil.sign(payload, process.env.SECRET_CODE);
 
             // TODO: FIX THIS.
             if (!token) {
-                throw new Errors.InternalServerError("Error signing JWT");
+                throw APIError.InternalServerError(
+                    "Failed to generate JWT authentication token",
+                );
             }
 
-            const userRegisterResponse: UserRegisterResponse = {
-                userId: newUser._id,
-                token,
-                username,
-                name,
-            };
-
-            return userRegisterResponse;
+            return this.userRepository.toResponse(newUser, token, name);
         } catch (error) {}
     }
 
     public async loginUser(
         userLoginRequest: UserLoginRequest,
-    ): Promise<UserLoginResponse> {
+    ): Promise<UserResponse> {
         const { username, password } = userLoginRequest;
-        const user = await this.userDAO.findOne({ username });
+        const user: User = await this.userRepository.findOne({ username });
         let errors = {};
 
         if (!user) {
@@ -136,7 +126,7 @@ class UserService {
 
         const validPassword = await BcryptUtil.comparePassword(
             password,
-            user.password,
+            user.getPassword(),
         ).catch((error) => {
             this.logger.logError(
                 `Error validating password for user ${username}`,
@@ -150,12 +140,12 @@ class UserService {
         }
 
         const userProfile = await this.userProfileDAO.findOne({
-            userId: user._id,
+            userId: user.getId(),
         });
 
         const payload: TokenPayload = {
             name: userProfile.name,
-            userId: user._id,
+            userId: user.getId(),
         };
 
         const token = await JWTUtil.sign(
@@ -173,38 +163,32 @@ class UserService {
             throw new Errors.InternalServerError("Error signing JWT");
         }
 
-        this.logger.logInfo("User logged in", { username, userId: user._id });
-
-        const userLoginResponse: UserLoginResponse = {
-            userId: user._id,
-            token,
+        this.logger.logInfo("User logged in", {
             username,
-            name: userProfile.name,
-        };
+            userId: user.getId(),
+        });
 
-        return userLoginResponse;
+        return this.userRepository.toResponse(user, token, userProfile.name);
     }
 
-    public async findUserById(userId: Types.ObjectId): Promise<IUser | null> {
-        const user = await this.userDAO.findUserById(
-            userId,
-            "username isActive",
-        );
+    // public async findUserById(userId: Types.ObjectId): Promise<IUser | null> {
+    //     const user = await this.userRepository.findUserById(
+    //         userId,
+    //         "username isActive",
+    //     );
 
-        if (!user) {
-            throw new Errors.ResourceNotFoundError("User not found", {
-                userId,
-            });
-        }
+    //     if (!user) {
+    //         throw new Errors.ResourceNotFoundError("User not found", {
+    //             userId,
+    //         });
+    //     }
 
-        this.logger.logInfo("Find User By Id", { user });
+    //     this.logger.logInfo("Find User By Id", { user });
 
-        return user;
-    }
+    //     return user;
+    // }
 
-    public async deleteUserAccount(userId: Types.ObjectId): Promise<void> {
-        await this.userDAO.deleteUserAccount(userId);
-    }
+    // public async deleteUserAccount(userId: Types.ObjectId): Promise<void> {
+    //     await this.userRepository.deleteUserAccount(userId);
+    // }
 }
-
-export default UserService;

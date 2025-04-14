@@ -1,15 +1,15 @@
-import BaseRepository from "./BaseRepository";
+import BaseRepository from "../BaseRepository";
 import {
     GroupProgramsModel,
     IGroupPrograms,
-} from "../models/groupProgramModel";
-import { IGroupProgramRepository } from "../interfaces/IGroupProgramRepository";
-import GroupProgram from "../entity/GroupProgram";
+} from "../../models/groupProgramModel";
+import { IGroupProgramRepository } from "../../interfaces/IGroupProgramRepository";
+import GroupProgram from "../../entity/GroupProgram";
 import { Types, Model } from "mongoose";
 import {
     GroupProgramsRequest,
     DetailedGroupProgramsResponse,
-} from "../../../app/groups/dto/groupProgramDto";
+} from "../../../../app/groups/dto/groupProgramDto";
 
 export default class GroupProgramRepository
     extends BaseRepository<GroupProgram, IGroupPrograms>
