@@ -122,67 +122,60 @@ class UserService {
         } catch (error) {}
     }
 
-    public async loginUser(
-        userLoginRequest: UserLoginRequest,
-    ): Promise<UserLoginResponse> {
+    public async loginUser(userLoginRequest: UserLoginRequest): Promise<UserLoginResponse> {
         const { username, password } = userLoginRequest;
-        const user = await this.userDAO.findOne({ username });
         let errors = {};
-
-        if (!user) {
-            errors = { username: "Incorrect Username or Password" };
-            throw new Errors.AuthError(errors, 400);
+    
+        try {
+            const user = await this.userDAO.findOne({ username });
+            if (!user) {
+                errors = { username: "Incorrect Username or Password" };
+                throw new Errors.AuthError(errors, 400);
+            }
+    
+            const validPassword = await BcryptUtil.comparePassword(password, user.password);
+            if (!validPassword) {
+                errors = { password: "Incorrect Username or Password" };
+                throw new Errors.AuthError(errors, 400);
+            }
+    
+            const userProfile = await this.userProfileDAO.findOne({ userId: user._id });
+            if (!userProfile) {
+                this.logger.logError(`User profile not found for user: ${username}`);
+                throw new Errors.InternalServerError("User profile not found");
+            }
+    
+            const payload: TokenPayload = {
+                name: userProfile.name,
+                userId: user._id,
+            };
+    
+            const token = await JWTUtil.sign(payload, process.env.SECRET_CODE);
+            if (!token) {
+                throw new Errors.InternalServerError("Error signing JWT");
+            }
+    
+            this.logger.logInfo("User logged in", { username, userId: user._id });
+    
+            return {
+                userId: user._id,
+                token,
+                username,
+                name: userProfile.name,
+            };
+        } catch (err) {
+            // Type check the error before passing to logError
+            if (err instanceof Error) {
+                this.logger.logError("Login failed", err);
+            } else {
+                this.logger.logError("Login failed with unknown error", new Error(String(err)));
+            }
+            
+            if (err instanceof Errors.AuthError) {
+                throw err;
+            }
+            throw new Errors.InternalServerError("Unexpected error occurred during login");
         }
-
-        const validPassword = await BcryptUtil.comparePassword(
-            password,
-            user.password,
-        ).catch((error) => {
-            this.logger.logError(
-                `Error validating password for user ${username}`,
-                error,
-            );
-        });
-
-        if (!validPassword) {
-            errors = { password: "Incorrect Username or Password" };
-            throw new Errors.AuthError(errors, 400);
-        }
-
-        const userProfile = await this.userProfileDAO.findOne({
-            userId: user._id,
-        });
-
-        const payload: TokenPayload = {
-            name: userProfile.name,
-            userId: user._id,
-        };
-
-        const token = await JWTUtil.sign(
-            payload,
-            process.env.SECRET_CODE,
-        ).catch((error) => {
-            this.logger.logError(
-                `Error signing JWT for user ${username}`,
-                error,
-            );
-        });
-
-        // TODO: FIX THIS.
-        if (!token) {
-            throw new Errors.InternalServerError("Error signing JWT");
-        }
-
-        this.logger.logInfo("User logged in", { username, userId: user._id });
-
-        const userLoginResponse: UserLoginResponse = {
-            userId: user._id,
-            token,
-            username,
-            name: userProfile.name,
-        };
-
-        return userLoginResponse;
     }
 
     public async findUserById(userId: Types.ObjectId): Promise<IUser | null> {
