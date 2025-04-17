@@ -1,18 +1,18 @@
-import ProgramRepository from "../../../infrastructure/database/repositories/ProgramRepository";
+import ProgramRepository from "../../../infrastructure/database/repositories/programs/ProgramRepository";
 import { ProgramRequest, ProgramResponse } from "../dto/programDto";
 import Program from "../../../infrastructure/database/entity/Program";
 import { handleDatabaseError } from "../../../utils/errors";
-import WeekRepository from "../../../infrastructure/database/repositories/WeekRepository";
+import WeekRepository from "../../../infrastructure/database/repositories/programs/WeekRepository";
 import { Types } from "mongoose";
 import { WeekRequest, WeekResponse } from "../dto/weekDto";
 import { APIError } from "../../../common/errors/APIError";
 import { WorkoutRequest, WorkoutResponse } from "../dto/workoutDto";
-import WorkoutRepository from "../../../infrastructure/database/repositories/WorkoutRepository";
+import WorkoutRepository from "../../../infrastructure/database/repositories/programs/WorkoutRepository";
 import { ExerciseRequest, ExerciseResponse } from "../dto/exerciseDto";
-import ExerciseRepository from "../../../infrastructure/database/repositories/ExerciseRepository";
-import SetRepository from "../../../infrastructure/database/repositories/SetRepository";
+import ExerciseRepository from "../../../infrastructure/database/repositories/programs/ExerciseRepository";
+import SetRepository from "../../../infrastructure/database/repositories/programs/SetRepository";
 import { SetRequest, SetResponse } from "../dto/setDto";
-import GroupProgramRepository from "../../../infrastructure/database/repositories/GroupProgramRepository";
+import GroupProgramRepository from "../../../infrastructure/database/repositories/programs/GroupProgramRepository";
 import mongoose from "mongoose";
 
 export default class ProgramService {

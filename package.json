@@ -4,10 +4,12 @@
     "description": "",
     "main": "app.js",
     "scripts": {
-        "start": "NODE_ENV=development nodemon ./dist/server.js",
+        "start": "NODE_ENV=dev nodemon ./dist/server.js",
         "start:test": "NODE_ENV=test nodemon ./dist/server.js",
-        "build:dev": "NODE_ENV=development tsc",
+        "build:dev": "NODE_ENV=dev tsc",
         "build:test": "NODE_ENV=test tsc",
+        "build": "tsc",
+        "test-logger": "ts-node src/common/logger2.ts",
         "test": "NODE_ENV=test jest --runInBand",
         "test:integration": "NODE_ENV=development jest --testPathPattern=__tests__/integration",
         "populate-exercises": "ts-node scripts/populateExerciseLibrary.ts"
@@ -16,6 +18,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "@google-cloud/logging-winston": "^6.0.0",
         "@google-cloud/storage": "^7.15.2",
         "agenda": "^5.0.0",
         "axios": "^1.4.0",
@@ -39,7 +42,8 @@
         "node-cache": "^5.1.2",
         "swagger-jsdoc": "^6.2.8",
         "swagger-ui-express": "^5.0.0",
-        "winston": "^3.11.0"
+        "winston": "^3.11.0",
+        "yaml": "^2.7.1"
     },
     "devDependencies": {
         "@babel/core": "^7.23.2",

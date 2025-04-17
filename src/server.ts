@@ -1,9 +1,9 @@
 import { app, db } from "./app";
-import config from "config";
 import mongoose from "mongoose";
+import config from "./common/config";
 
-const port = config.get("MongoDB.dbConfig.port");
 let server: any = null;
+const port = config.server.port || 3000;
 
 db.connect()
     .then(() => {

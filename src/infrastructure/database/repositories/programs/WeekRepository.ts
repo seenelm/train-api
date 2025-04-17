@@ -1,9 +1,12 @@
-import BaseRepository from "./BaseRepository";
-import Week from "../entity/Week";
-import { WeekDocument } from "../models/weekModel";
-import { IWeekRepository } from "../interfaces/IWeekRepository";
-import { WeekModel } from "../models/weekModel";
-import { WeekRequest, WeekResponse } from "../../../app/programs/dto/weekDto";
+import BaseRepository from "../BaseRepository";
+import Week from "../../entity/Week";
+import { WeekDocument } from "../../models/weekModel";
+import { IWeekRepository } from "../../interfaces/IWeekRepository";
+import { WeekModel } from "../../models/weekModel";
+import {
+    WeekRequest,
+    WeekResponse,
+} from "../../../../app/programs/dto/weekDto";
 import { Types } from "mongoose";
 
 export default class WeekRepository

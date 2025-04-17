@@ -8,7 +8,7 @@ import { ProfileAccess } from "../common/enums";
 import { IUserProfile } from "../model/userProfile";
 import { DetailedGroupProgramsResponse } from "../app/groups/dto/groupProgramDto";
 import GroupProgram from "../infrastructure/database/entity/GroupProgram";
-import GroupProgramRepository from "../infrastructure/database/repositories/GroupProgramRepository";
+import GroupProgramRepository from "../infrastructure/database/repositories/programs/GroupProgramRepository";
 import { APIError } from "../common/errors/APIError";
 
 class GroupService {
@@ -17,7 +17,11 @@ class GroupService {
     private groupProgramRepository: GroupProgramRepository;
     private logger: CustomLogger;
 
-    constructor(groupDAO: GroupDAO, userGroupsDAO: UserGroupsDAO, groupProgramRepository: GroupProgramRepository) {
+    constructor(
+        groupDAO: GroupDAO,
+        userGroupsDAO: UserGroupsDAO,
+        groupProgramRepository: GroupProgramRepository,
+    ) {
         this.groupDAO = groupDAO;
         this.userGroupsDAO = userGroupsDAO;
         this.groupProgramRepository = groupProgramRepository;
@@ -616,16 +620,21 @@ class GroupService {
         return updatedGroup;
     }
 
-    async getGroupPrograms(groupId: Types.ObjectId): Promise<DetailedGroupProgramsResponse[]> {
+    async getGroupPrograms(
+        groupId: Types.ObjectId,
+    ): Promise<DetailedGroupProgramsResponse[]> {
         try {
-          const groupProgram = await this.groupProgramRepository.findGroupPrograms(groupId);
-          return groupProgram;
+            const groupProgram =
+                await this.groupProgramRepository.findGroupPrograms(groupId);
+            return groupProgram;
         } catch (error) {
-          console.error("Error getting group programs:", error);
-          throw APIError.InternalServerError("Failed to get group programs", error);
+            console.error("Error getting group programs:", error);
+            throw APIError.InternalServerError(
+                "Failed to get group programs",
+                error,
+            );
         }
-      }
-    
+    }
 }
 
 export default GroupService;

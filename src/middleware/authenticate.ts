@@ -7,7 +7,7 @@ import {
 } from "../utils/errors";
 import { UserModel, IUser } from "../model/userModel";
 import { Types } from "mongoose";
-import { TokenPayload } from "../service/UserService";
+import { TokenPayload } from "../app/user/UserService";
 
 import * as jwt from "jsonwebtoken";
 import CustomLogger from "../common/logger";

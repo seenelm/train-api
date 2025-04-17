@@ -1,8 +1,8 @@
-import BaseRepository from "./BaseRepository";
-import { IProgramRepository } from "../interfaces/IProgramRepository";
-import Program from "../entity/Program";
-import { ProgramModel, ProgramDocument } from "../models/programModel";
-import { ProgramRequest } from "../../../app/programs/dto/programDto";
+import BaseRepository from "../BaseRepository";
+import { IProgramRepository } from "../../interfaces/IProgramRepository";
+import Program from "../../entity/Program";
+import { ProgramModel, ProgramDocument } from "../../models/programModel";
+import { ProgramRequest } from "../../../../app/programs/dto/programDto";
 import { Types } from "mongoose";
 
 export default class ProgramRepository

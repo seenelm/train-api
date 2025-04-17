@@ -2,12 +2,11 @@ import express from "express";
 import "dotenv/config";
 import bodyParser from "body-parser";
 import cors from "cors";
-import config from "config";
 
 import MongoDB from "./dao/MongoDB";
 import { errorHandler } from "./middleware/errorHandler";
 
-import userRouter from "./route/userRouter";
+import userRouter from "./app/user/userRouter";
 import groupRouter from "./route/groupRouter";
 import userProfileRouter from "./route/userProfileRouter";
 import searchRouter from "./route/searchRouter";
@@ -24,10 +23,14 @@ import { EventRequest } from "./dto/EventRequest";
 import { EventResponse } from "./dto/EventResponse";
 import { AlertModel } from "./model/alertModel";
 
+import config from "./common/config";
+
 const app = express();
-const dbUri: string = config.get("MongoDB.dbConfig.host");
+// const dbUri: string = config.get("MongoDB.dbConfig.host");
 const swaggerJSDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
+
+const dbUri: string = config.database.uri;
 
 const db = new MongoDB(dbUri);
 const agenda = new Agenda({
@@ -43,6 +46,18 @@ const options = {
             version: "1.0.0",
             description: "Train API",
         },
+        servers: [
+            {
+                url:
+                    process.env.NODE_ENV === "production"
+                        ? "https://train-api-staging.ue.r.appspot.com/api"
+                        : "/api",
+                description:
+                    process.env.NODE_ENV === "production"
+                        ? "Production server"
+                        : "Development server",
+            },
+        ],
         components: {
             securitySchemes: {
                 bearerAuth: {
@@ -57,12 +72,6 @@ const options = {
                 bearerAuth: [],
             },
         ],
-        servers: [
-            {
-                url: "http://localhost:3000/api",
-            },
-        ],
-        basePath: "/api",
     },
     apis: ["./config/*.yaml"],
 };

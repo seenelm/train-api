@@ -1,12 +1,12 @@
-import BaseRepository from "./BaseRepository";
-import Exercise from "../entity/Exercise";
-import { ExerciseDocument } from "../models/exerciseModel";
-import { IExerciseRepository } from "../interfaces/IExerciseRepository";
-import { ExerciseModel } from "../models/exerciseModel";
+import BaseRepository from "../BaseRepository";
+import Exercise from "../../entity/Exercise";
+import { ExerciseDocument } from "../../models/exerciseModel";
+import { IExerciseRepository } from "../../interfaces/IExerciseRepository";
+import { ExerciseModel } from "../../models/exerciseModel";
 import {
     ExerciseRequest,
     ExerciseResponse,
-} from "../../../app/programs/dto/exerciseDto";
+} from "../../../../app/programs/dto/exerciseDto";
 import { Types } from "mongoose";
 
 export default class ExerciseRepository

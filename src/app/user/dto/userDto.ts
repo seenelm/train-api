@@ -8,3 +8,10 @@ export interface UserLoginRequest {
     username: string;
     password: string;
 }
+
+export interface UserResponse {
+    userId: string;
+    token: string;
+    username: string;
+    name: string;
+}
