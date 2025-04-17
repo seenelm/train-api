@@ -6,7 +6,7 @@ import cors from "cors";
 import MongoDB from "./dao/MongoDB";
 import { errorHandler } from "./middleware/errorHandler";
 
-import userRouter from "./route/userRouter";
+import userRouter from "./app/user/userRouter";
 import groupRouter from "./route/groupRouter";
 import userProfileRouter from "./route/userProfileRouter";
 import searchRouter from "./route/searchRouter";
@@ -48,13 +48,15 @@ const options = {
         },
         servers: [
             {
-                url: process.env.NODE_ENV === 'production' 
-                    ? "https://train-api-staging.ue.r.appspot.com/api"
-                    : "/api",
-                description: process.env.NODE_ENV === 'production' 
-                    ? "Production server" 
-                    : "Development server"
-            }
+                url:
+                    process.env.NODE_ENV === "production"
+                        ? "https://train-api-staging.ue.r.appspot.com/api"
+                        : "/api",
+                description:
+                    process.env.NODE_ENV === "production"
+                        ? "Production server"
+                        : "Development server",
+            },
         ],
         components: {
             securitySchemes: {

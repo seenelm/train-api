@@ -1,9 +1,9 @@
-import BaseRepository from "./BaseRepository";
-import Set from "../entity/Set";
-import { SetDocument } from "../models/setModel";
-import { ISetRepository } from "../interfaces/ISetRepository";
-import { SetModel } from "../models/setModel";
-import { SetRequest, SetResponse } from "../../../app/programs/dto/setDto";
+import BaseRepository from "../BaseRepository";
+import Set from "../../entity/Set";
+import { SetDocument } from "../../models/setModel";
+import { ISetRepository } from "../../interfaces/ISetRepository";
+import { SetModel } from "../../models/setModel";
+import { SetRequest, SetResponse } from "../../../../app/programs/dto/setDto";
 import { Types } from "mongoose";
 
 export default class SetRepository

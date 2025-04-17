@@ -1,12 +1,12 @@
-import BaseRepository from "./BaseRepository";
-import Workout from "../entity/Workout";
-import { WorkoutDocument } from "../models/workoutModel";
-import { IWorkoutRepository } from "../interfaces/IWorkoutRepository";
-import { WorkoutModel } from "../models/workoutModel";
+import BaseRepository from "../BaseRepository";
+import Workout from "../../entity/Workout";
+import { WorkoutDocument } from "../../models/workoutModel";
+import { IWorkoutRepository } from "../../interfaces/IWorkoutRepository";
+import { WorkoutModel } from "../../models/workoutModel";
 import {
     WorkoutRequest,
     WorkoutResponse,
-} from "../../../app/programs/dto/workoutDto";
+} from "../../../../app/programs/dto/workoutDto";
 import { Types } from "mongoose";
 
 export default class WorkoutRepository
