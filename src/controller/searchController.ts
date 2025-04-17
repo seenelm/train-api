@@ -1,6 +1,6 @@
 import SearchService from "../service/SearchService";
 import SearchDAO from "../dao/SearchDAO";
-import { UserModel } from "../model/userModel";
+import { UserModel } from "../infrastructure/database/models/user/userModel";
 import { GroupModel } from "../model/groupModel";
 import { Request, Response, NextFunction } from "express";
 import { Types } from "mongoose";

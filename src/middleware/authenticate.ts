@@ -5,7 +5,7 @@ import {
     ResourceNotFoundError,
     UnauthorizedError,
 } from "../utils/errors";
-import { UserModel, IUser } from "../model/userModel";
+import { UserModel, UserDocument } from "../infrastructure/database/models/user/userModel";
 import { Types } from "mongoose";
 import { TokenPayload } from "../app/user/UserService";
 
@@ -55,7 +55,7 @@ export const authenticate = async (
     next: NextFunction,
 ) => {
     const token = getAccessToken(req.headers.authorization);
-    let user: IUser;
+    let user: UserDocument;
 
     try {
         const decodedToken = await JWTUtil.verify(
