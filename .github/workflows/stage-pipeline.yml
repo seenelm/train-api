@@ -62,31 +62,61 @@ jobs:
               run: |
                   # Get MongoDB secrets
                   SECRET_DATA=$(gcloud secrets versions access latest --secret="mongo-secrets")
-                  MONGO_USER=$(echo "$SECRET_DATA" | jq -r '.username')
-                  MONGO_PASS=$(echo "$SECRET_DATA" | jq -r '.password')
-                  MONGO_CLUSTER=$(echo "$SECRET_DATA" | jq -r '.cluster')
-                  MONGO_DB=$(echo "$SECRET_DATA" | jq -r '.database')
-                  MONGO_PARAMS=$(echo "$SECRET_DATA" | jq -r '.params')
+                  MONGO_USER=$(echo $SECRET_DATA | jq -r '.username')
+                  MONGO_PASS=$(echo $SECRET_DATA | jq -r '.password')
+                  MONGO_CLUSTER=$(echo $SECRET_DATA | jq -r '.cluster')
+                  MONGO_DB=$(echo $SECRET_DATA | jq -r '.database')
+                  MONGO_PARAMS=$(echo $SECRET_DATA | jq -r '.params')
                   MONGO_URI="mongodb+srv://${MONGO_USER}:${MONGO_PASS}@${MONGO_CLUSTER}/${MONGO_DB}?${MONGO_PARAMS}"
                   echo "MONGO_URI=${MONGO_URI}" >> $GITHUB_OUTPUT
 
                   # Get JWT secret
                   JWT_DATA=$(gcloud secrets versions access latest --secret="jwt-secret")
-                  JWT_SECRET=$(echo "$JWT_DATA" | jq -r '.secret_code')
+                  JWT_SECRET=$(echo $JWT_DATA | jq -r '.secret_code')
                   echo "JWT_SECRET=${JWT_SECRET}" >> $GITHUB_OUTPUT
 
-                  # Get Firebase secrets and output as a single JSON string with escaped newlines
+                  # Get Firebase secrets and output as a single string
                   FIREBASE_CONFIG=$(gcloud secrets versions access latest --secret="firebase-secrets")
-                  ESCAPED_FIREBASE_CONFIG=$(echo "$FIREBASE_CONFIG" | jq -c .)
-                  echo "FIREBASE_CONFIG=${ESCAPED_FIREBASE_CONFIG}" >> $GITHUB_OUTPUT
+                  FIREBASE_TYPE=$(echo $FIREBASE_CONFIG | jq -r '.type')
+                  FIREBASE_PROJECT_ID=$(echo $FIREBASE_CONFIG | jq -r '.project_id')
+                  FIREBASE_PRIVATE_KEY_ID=$(echo $FIREBASE_CONFIG | jq -r '.private_key_id')
+                  FIREBASE_PRIVATE_KEY=$(echo $FIREBASE_CONFIG | jq -r '.private_key' | sed ':a;N;$!ba;s/\n/\\n/g')
+                  FIREBASE_CLIENT_EMAIL=$(echo $FIREBASE_CONFIG | jq -r '.client_email')
+                  FIREBASE_CLIENT_ID=$(echo $FIREBASE_CONFIG | jq -r '.client_id')
+                  FIREBASE_AUTH_URI=$(echo $FIREBASE_CONFIG | jq -r '.auth_uri')
+                  FIREBASE_TOKEN_URI=$(echo $FIREBASE_CONFIG | jq -r '.token_uri')
+                  FIREBASE_AUTH_PROVIDER_X509_CERT_URL=$(echo $FIREBASE_CONFIG | jq -r '.auth_provider_x509_cert_url')
+                  FIREBASE_CLIENT_X509_CERT_URL=$(echo $FIREBASE_CONFIG | jq -r '.client_x509_cert_url')
+                  FIREBASE_UNIVERSE_DOMAIN=$(echo $FIREBASE_CONFIG | jq -r '.universe_domain')
+                  echo "FIREBASE_TYPE=${FIREBASE_TYPE}" >> $GITHUB_OUTPUT
+                  echo "FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}" >> $GITHUB_OUTPUT
+                  echo "FIREBASE_PRIVATE_KEY_ID=${FIREBASE_PRIVATE_KEY_ID}" >> $GITHUB_OUTPUT
+                  echo "FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}" >> $GITHUB_OUTPUT
+                  echo "FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}" >> $GITHUB_OUTPUT
+                  echo "FIREBASE_CLIENT_ID=${FIREBASE_CLIENT_ID}" >> $GITHUB_OUTPUT
+                  echo "FIREBASE_AUTH_URI=${FIREBASE_AUTH_URI}" >> $GITHUB_OUTPUT
+                  echo "FIREBASE_TOKEN_URI=${FIREBASE_TOKEN_URI}" >> $GITHUB_OUTPUT
+                  echo "FIREBASE_AUTH_PROVIDER_X509_CERT_URL=${FIREBASE_AUTH_PROVIDER_X509_CERT_URL}" >> $GITHUB_OUTPUT
+                  echo "FIREBASE_CLIENT_X509_CERT_URL=${FIREBASE_CLIENT_X509_CERT_URL}" >> $GITHUB_OUTPUT
+                  echo "FIREBASE_UNIVERSE_DOMAIN=${FIREBASE_UNIVERSE_DOMAIN}" >> $GITHUB_OUTPUT
 
             - name: Build Docker Image
               env:
                   MONGO_URI: ${{ steps.get_secrets.outputs.MONGO_URI }}
                   SECRET_CODE: ${{ steps.get_secrets.outputs.JWT_SECRET }}
-                  FIREBASE_CONFIG: ${{ steps.get_secrets.outputs.FIREBASE_CONFIG }}
+                  FIREBASE_TYPE: ${{ steps.get_secrets.outputs.FIREBASE_TYPE }}
+                  FIREBASE_PROJECT_ID: ${{ steps.get_secrets.outputs.FIREBASE_PROJECT_ID }}
+                  FIREBASE_PRIVATE_KEY_ID: ${{ steps.get_secrets.outputs.FIREBASE_PRIVATE_KEY_ID }}
+                  FIREBASE_PRIVATE_KEY: ${{ steps.get_secrets.outputs.FIREBASE_PRIVATE_KEY }}
+                  FIREBASE_CLIENT_EMAIL: ${{ steps.get_secrets.outputs.FIREBASE_CLIENT_EMAIL }}
+                  FIREBASE_CLIENT_ID: ${{ steps.get_secrets.outputs.FIREBASE_CLIENT_ID }}
+                  FIREBASE_AUTH_URI: ${{ steps.get_secrets.outputs.FIREBASE_AUTH_URI }}
+                  FIREBASE_TOKEN_URI: ${{ steps.get_secrets.outputs.FIREBASE_TOKEN_URI }}
+                  FIREBASE_AUTH_PROVIDER_X509_CERT_URL: ${{ steps.get_secrets.outputs.FIREBASE_AUTH_PROVIDER_X509_CERT_URL }}
+                  FIREBASE_CLIENT_X509_CERT_URL: ${{ steps.get_secrets.outputs.FIREBASE_CLIENT_X509_CERT_URL }}
+                  FIREBASE_UNIVERSE_DOMAIN: ${{ steps.get_secrets.outputs.FIREBASE_UNIVERSE_DOMAIN }}
                   NODE_ENV: stage
-              run: docker compose build --build-arg APP_NAME=$APP_NAME --build-arg APP_VERSION=$APP_VERSION --build-arg MONGO_URI=$MONGO_URI --build-arg SECRET_CODE=$SECRET_CODE --build-arg FIREBASE_CONFIG="$FIREBASE_CONFIG" train-api
+              run: docker compose build --build-arg APP_NAME=$APP_NAME --build-arg APP_VERSION=$APP_VERSION --build-arg MONGO_URI=$MONGO_URI --build-arg SECRET_CODE=$SECRET_CODE --build-arg FIREBASE_CONFIG=$FIREBASE_CONFIG train-api
 
             - name: Configure Docker for GCR
               run: gcloud auth configure-docker ${{ env.GCP_REGION}}-docker.pkg.dev
