@@ -75,9 +75,9 @@ jobs:
                   JWT_SECRET=$(echo $JWT_DATA | jq -r '.secret_code')
                   echo "JWT_SECRET=${JWT_SECRET}" >> $GITHUB_OUTPUT
 
-                  # Get Firebase secrets
+                  # Get Firebase secrets and output as a single string
                   FIREBASE_CONFIG=$(gcloud secrets versions access latest --secret="firebase-secrets")
-                  echo "FIREBASE_CONFIG=${FIREBASE_CONFIG}" >> $GITHUB_OUTPUT
+                  echo "FIREBASE_CONFIG=$(echo "$FIREBASE_CONFIG" | jq -c '.')" >> $GITHUB_OUTPUT
 
             - name: Build Docker Image
               env:
