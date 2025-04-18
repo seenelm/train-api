@@ -1,27 +1,26 @@
 import admin from "firebase-admin";
+import fs from "fs";
+import path from "path";
 
-const firebaseConfig = {
-  type: process.env.FIREBASE_TYPE,
-  project_id: process.env.FIREBASE_PROJECT_ID,
-  private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
-  private_key: process.env.FIREBASE_PRIVATE_KEY,
-  client_email: process.env.FIREBASE_CLIENT_EMAIL,
-  client_id: process.env.FIREBASE_CLIENT_ID,
-  auth_uri: process.env.FIREBASE_AUTH_URI,
-  token_uri: process.env.FIREBASE_TOKEN_URI,
-  auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
-  client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL,
-  universe_domain: process.env.FIREBASE_UNIVERSE_DOMAIN
-};
+const firebaseConfigPath = process.env.FIREBASE_CONFIG;
 
-// Initialize Firebase Admin if configuration is available
-if (firebaseConfig) {
-  admin.initializeApp({
-    credential: admin.credential.cert(firebaseConfig as admin.ServiceAccount),
-  });
-  console.log("Firebase initialized successfully");
+if (!firebaseConfigPath) {
+  console.warn("⚠️ FIREBASE_CONFIG env var is missing.");
 } else {
-  console.warn("Firebase credentials not found. Firebase functionality will not work.");
+  try {
+    // Read the file from the path specified in the environment variable
+    const serviceAccountContent = fs.readFileSync(path.resolve(process.cwd(), firebaseConfigPath), 'utf8');
+    const serviceAccount = JSON.parse(serviceAccountContent);
+
+    if (!admin.apps.length) {
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+      });
+      console.log("✅ Firebase initialized from config file");
+    }
+  } catch (error) {
+    console.error("❌ Error initializing Firebase:", error);
+  }
 }
 
 export default admin;
