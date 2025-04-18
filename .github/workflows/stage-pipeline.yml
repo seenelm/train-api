@@ -62,22 +62,23 @@ jobs:
               run: |
                   # Get MongoDB secrets
                   SECRET_DATA=$(gcloud secrets versions access latest --secret="mongo-secrets")
-                  MONGO_USER=$(echo $SECRET_DATA | jq -r '.username')
-                  MONGO_PASS=$(echo $SECRET_DATA | jq -r '.password')
-                  MONGO_CLUSTER=$(echo $SECRET_DATA | jq -r '.cluster')
-                  MONGO_DB=$(echo $SECRET_DATA | jq -r '.database')
-                  MONGO_PARAMS=$(echo $SECRET_DATA | jq -r '.params')
+                  MONGO_USER=$(echo "$SECRET_DATA" | jq -r '.username')
+                  MONGO_PASS=$(echo "$SECRET_DATA" | jq -r '.password')
+                  MONGO_CLUSTER=$(echo "$SECRET_DATA" | jq -r '.cluster')
+                  MONGO_DB=$(echo "$SECRET_DATA" | jq -r '.database')
+                  MONGO_PARAMS=$(echo "$SECRET_DATA" | jq -r '.params')
                   MONGO_URI="mongodb+srv://${MONGO_USER}:${MONGO_PASS}@${MONGO_CLUSTER}/${MONGO_DB}?${MONGO_PARAMS}"
                   echo "MONGO_URI=${MONGO_URI}" >> $GITHUB_OUTPUT
 
                   # Get JWT secret
                   JWT_DATA=$(gcloud secrets versions access latest --secret="jwt-secret")
-                  JWT_SECRET=$(echo $JWT_DATA | jq -r '.secret_code')
+                  JWT_SECRET=$(echo "$JWT_DATA" | jq -r '.secret_code')
                   echo "JWT_SECRET=${JWT_SECRET}" >> $GITHUB_OUTPUT
 
-                  # Get Firebase secrets and output as a single string
+                  # Get Firebase secrets and output as a single JSON string with escaped newlines
                   FIREBASE_CONFIG=$(gcloud secrets versions access latest --secret="firebase-secrets")
-                  echo "FIREBASE_CONFIG=$(echo "$FIREBASE_CONFIG" | jq -c '.')" >> $GITHUB_OUTPUT
+                  ESCAPED_FIREBASE_CONFIG=$(echo "$FIREBASE_CONFIG" | jq -c .)
+                  echo "FIREBASE_CONFIG=${ESCAPED_FIREBASE_CONFIG}" >> $GITHUB_OUTPUT
 
             - name: Build Docker Image
               env:
@@ -85,7 +86,7 @@ jobs:
                   SECRET_CODE: ${{ steps.get_secrets.outputs.JWT_SECRET }}
                   FIREBASE_CONFIG: ${{ steps.get_secrets.outputs.FIREBASE_CONFIG }}
                   NODE_ENV: stage
-              run: docker compose build --build-arg APP_NAME=$APP_NAME --build-arg APP_VERSION=$APP_VERSION --build-arg MONGO_URI=$MONGO_URI --build-arg SECRET_CODE=$SECRET_CODE --build-arg FIREBASE_CONFIG=$FIREBASE_CONFIG train-api
+              run: docker compose build --build-arg APP_NAME=$APP_NAME --build-arg APP_VERSION=$APP_VERSION --build-arg MONGO_URI=$MONGO_URI --build-arg SECRET_CODE=$SECRET_CODE --build-arg FIREBASE_CONFIG="$FIREBASE_CONFIG" train-api
 
             - name: Configure Docker for GCR
               run: gcloud auth configure-docker ${{ env.GCP_REGION}}-docker.pkg.dev
@@ -95,3 +96,12 @@ jobs:
 
             - name: Push Docker Image to Artifact Registry
               run: docker push ${{ env.ARTIFACT_REGISTRY }}:${{ env.APP_VERSION }}
+
+            - name: Deploy to Google App Engine
+              run: |
+                  # Construct the full image URL
+                  IMAGE_URL="${{ env.ARTIFACT_REGISTRY }}:${{ env.APP_VERSION }}"
+                  echo "Deploying image: $IMAGE_URL"
+
+                  # Deploy to App Engine using the container image
+                  gcloud app deploy --image-url=$IMAGE_URL --quiet
