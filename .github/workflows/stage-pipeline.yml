@@ -72,7 +72,7 @@ jobs:
 
                   # Firebase
                   echo "FIREBASE_CONFIG<<EOF" >> $GITHUB_ENV
-                  gcloud secrets versions access latest --secret="firebase-config" >> $GITHUB_ENV
+                  gcloud secrets versions access latest --secret="firebase-secrets" >> $GITHUB_ENV
                   echo "EOF" >> $GITHUB_ENV
 
             - name: Build Docker Image
