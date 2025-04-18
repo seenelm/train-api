@@ -9,6 +9,11 @@ export interface UserLoginRequest {
     password: string;
 }
 
+export interface GoogleAuthRequest {
+    idToken: string;
+    name?: string;
+}
+
 export interface UserResponse {
     userId: string;
     token: string;

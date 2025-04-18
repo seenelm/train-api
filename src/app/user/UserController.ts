@@ -5,6 +5,7 @@ import {
     UserLoginRequest,
     UserRegisterRequest,
     UserResponse,
+    GoogleAuthRequest,
 } from "./dto/userDto";
 
 export default class UserController {
@@ -34,6 +35,21 @@ export default class UserController {
             const userLoginResponse: UserResponse =
                 await this.userService.loginUser(userLoginRequest);
             return res.status(201).json(userLoginResponse);
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    googleAuth = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { idToken, name } = req.body as GoogleAuthRequest;
+            
+            if (!idToken) {
+                return res.status(400).json({ error: "ID token is required" });
+            }
+            
+            const userResponse = await this.userService.authenticateWithGoogle(idToken, name);
+            return res.status(200).json(userResponse);
         } catch (error) {
             next(error);
         }

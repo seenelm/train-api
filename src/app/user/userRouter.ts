@@ -29,6 +29,8 @@ userRouter.post("/register", validateRegistration, userController.register);
 
 userRouter.post("/login", validateLogin, userController.login);
 
+userRouter.post("/google-auth", userController.googleAuth);
+
 // userRouter.get("/:userId", authenticate, userController.findUserById);
 
 // userRouter.get("/:userId/profile-data", authenticate, userController.fetchUserData);
