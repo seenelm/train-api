@@ -1,13 +1,13 @@
 import { Model, Types } from "mongoose";
-import { IUser } from "../model/userModel";
+import { UserDocument } from "../infrastructure/database/models/user/userModel";
 import { IGroup } from "../model/groupModel";
 import { IUserProfile } from "../model/userProfile";
 
 class SearchDAO {
-    private userModel: Model<IUser>;
+    private userModel: Model<UserDocument>;
     private groupModel: Model<IGroup>;
 
-    constructor(userModel: Model<IUser>, groupModel: Model<IGroup>) {
+    constructor(userModel: Model<UserDocument>, groupModel: Model<IGroup>) {
         this.userModel = userModel;
         this.groupModel = groupModel;
     }
@@ -20,7 +20,7 @@ class SearchDAO {
     public async search(
         query: string | object,
         userId: Types.ObjectId,
-    ): Promise<(IUser & IUserProfile & IGroup)[] | null> {
+    ): Promise<(UserDocument & IUserProfile & IGroup)[] | null> {
         const users = await this.userModel.aggregate([
             {
                 $lookup: {
