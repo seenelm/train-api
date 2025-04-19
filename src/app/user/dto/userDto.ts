@@ -15,3 +15,8 @@ export interface UserResponse {
     username: string;
     name: string;
 }
+
+export interface GoogleAuthRequest {
+    idToken: string;
+    name?: string;
+}
